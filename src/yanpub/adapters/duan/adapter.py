@@ -27,8 +27,9 @@ class DuanAdapter(SubprocessAdapter):
             lang_id="duan",
             version="1.3.8",
             extensions=[".段", ".duan"],
-            # 段言 CLI: python cli/duan.py run <file>
-            run_command=["python", _DUAN_CLI, "run"],
+            # 段言 CLI: python cli/duan.py run --backend src <file>
+            # 使用 --backend src 避免 ANTLR ATN 版本不匹配问题
+            run_command=["python", _DUAN_CLI, "run", "--backend", "src"],
             # 段言无 -e 选项，使用临时文件 fallback（父类自动处理）
             eval_command=None,
             repl_command=None,
