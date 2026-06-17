@@ -1,15 +1,15 @@
 {
   "name": "yanpub",
   "displayName": "言埠 YanPub — 中文编程语言支持",
-  "description": "统一中文编程语言工具链：语法高亮、代码补全、诊断、格式化。支持段言/言/墨言等多种中文编程语言。",
-  "version": "0.2.0",
+  "description": "统一中文编程语言工具链：语法高亮、代码补全、诊断、格式化、调试、AI辅助、沙箱执行。支持段言/言/墨言等多种中文编程语言。",
+  "version": "0.9.0",
   "publisher": "yanpub",
   "license": "MIT",
   "engines": {
     "vscode": "^1.75.0"
   },
-  "categories": ["Programming Languages", "Language Packs"],
-  "keywords": ["chinese", "programming-language", "duan", "yan", "moyan", "xinyu", "yanlv", "yanzhi", "zhixing", "mingdao", "hanyu", "traeyan", "中文编程"],
+  "categories": ["Debuggers", "Programming Languages", "Other"],
+  "keywords": ["chinese", "programming-language", "duan", "yan", "moyan", "xinyu", "yanlv", "yanzhi", "zhixing", "mingdao", "hanyu", "traeyan", "中文编程", "debug", "sandbox", "ai"],
   "icon": "icon.png",
   "activationEvents": [
     "onLanguage:duan",
@@ -21,7 +21,12 @@
     "onLanguage:zhixing",
     "onLanguage:mingdao",
     "onLanguage:hanyu",
-    "onLanguage:traeyan"
+    "onLanguage:traeyan",
+    "onCommand:yanpub.sandbox.run",
+    "onCommand:yanpub.ai.complete",
+    "onCommand:yanpub.ai.nl2code",
+    "onCommand:yanpub.ai.fix",
+    "onCommand:yanpub.debug.start"
   ],
   "main": "./src/extension.js",
   "contributes": {
@@ -151,6 +156,31 @@
       {
         "command": "yanpub.selectLanguage",
         "title": "言埠：选择语言"
+      },
+      {
+        "command": "yanpub.sandbox.run",
+        "title": "YanPub: 在沙箱中执行",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "yanpub.ai.complete",
+        "title": "YanPub: AI 智能补全",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "yanpub.ai.nl2code",
+        "title": "YanPub: 自然语言转代码",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "yanpub.ai.fix",
+        "title": "YanPub: 错误修复建议",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "yanpub.debug.start",
+        "title": "YanPub: 启动调试",
+        "icon": "$(debug-alt)"
       }
     ],
     "menus": {
@@ -159,9 +189,61 @@
           "command": "yanpub.runFile",
           "when": "resourceLangId =~ /^duan|yan|moyan|xinyu|zhixing|yanlv|yanzhi|mingdao|hanyu|traeyan$/",
           "group": "navigation"
+        },
+        {
+          "command": "yanpub.sandbox.run",
+          "when": "resourceLangId =~ /^duan|yan|moyan|xinyu|zhixing|yanlv|yanzhi|mingdao|hanyu|traeyan$/",
+          "group": "navigation"
+        },
+        {
+          "command": "yanpub.debug.start",
+          "when": "resourceLangId =~ /^duan|yan|moyan|xinyu|zhixing|yanlv|yanzhi|mingdao|hanyu|traeyan$/",
+          "group": "navigation"
         }
       ]
     },
+    "debuggers": [
+      {
+        "type": "yanpub",
+        "label": "言埠 YanPub 调试器",
+        "languages": ["duan", "yan", "moyan", "xinyu", "zhixing", "yanlv", "yanzhi", "mingdao", "hanyu", "traeyan"],
+        "configurationAttributes": {
+          "launch": {
+            "required": ["program"],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "要调试的程序文件路径",
+                "default": "${file}"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "在程序入口处暂停",
+                "default": false
+              },
+              "args": {
+                "type": "array",
+                "description": "传递给程序的参数",
+                "default": []
+              }
+            }
+          }
+        },
+        "configurationSnippets": [
+          {
+            "label": "YanPub: 调试当前文件",
+            "description": "使用言埠调试器调试当前中文编程语言文件",
+            "body": {
+              "type": "yanpub",
+              "request": "launch",
+              "name": "调试 ${1:当前文件}",
+              "program": "^\"\\${file}\"",
+              "stopOnEntry": false
+            }
+          }
+        ]
+      }
+    ],
     "configuration": {
       "title": "言埠 YanPub",
       "properties": {
@@ -179,6 +261,34 @@
           "type": "number",
           "default": 2087,
           "description": "LSP 服务端口"
+        },
+        "yanpub.dap.port": {
+          "type": "number",
+          "default": 4711,
+          "description": "DAP 调试端口"
+        },
+        "yanpub.sandbox.backend": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "docker", "podman", "freebsd_jail", "process"],
+          "enumDescriptions": [
+            "自动检测可用的沙箱后端",
+            "使用 Docker 容器沙箱",
+            "使用 Podman 容器沙箱",
+            "使用 FreeBSD jail 沙箱",
+            "使用进程级沙箱（无容器隔离）"
+          ],
+          "description": "沙箱执行后端"
+        },
+        "yanpub.ai.provider": {
+          "type": "string",
+          "default": "local",
+          "description": "AI 辅助引擎提供者（local 为内置规则引擎）"
+        },
+        "yanpub.playground.url": {
+          "type": "string",
+          "default": "http://127.0.0.1:8000",
+          "description": "Playground 服务 URL（AI 辅助 API 端点）"
         }
       }
     }

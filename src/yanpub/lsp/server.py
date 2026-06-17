@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from typing import Optional
@@ -134,6 +135,11 @@ class YanLanguageServer:
             doc = params.text_document
             self._documents[doc.uri] = doc.text
             logger.debug("文档打开: %s", doc.uri)
+
+            # 检查签名伴随文件，发布签名诊断
+            sig_diags = self._check_signature_diagnostics(doc.uri)
+            if sig_diags:
+                self.server.publish_diagnostics(doc.uri, sig_diags)
 
         @server.feature(lsp.TEXT_DOCUMENT_DID_CHANGE)
         def did_change(params: lsp.DidChangeTextDocumentParams) -> None:
@@ -837,6 +843,20 @@ class YanLanguageServer:
                     data={"uri": params.text_document.uri, "action": "rename"},
                 ))
 
+            # 4. 签名操作 — 对文件进行签名
+            actions.append(lsp.CodeAction(
+                title="签名文件 (yanpub/sign)",
+                kind=lsp.CodeActionKind.Source,
+                data={"uri": params.text_document.uri, "action": "sign"},
+            ))
+
+            # 5. 验证签名
+            actions.append(lsp.CodeAction(
+                title="验证签名",
+                kind=lsp.CodeActionKind.Source,
+                data={"uri": params.text_document.uri, "action": "verify-signature"},
+            ))
+
             return actions
 
     # ---- 代码导航逻辑 ----
@@ -1088,6 +1108,65 @@ class YanLanguageServer:
                 ),
             ),
         )
+
+    def _check_signature_diagnostics(self, uri: str) -> list[lsp.Diagnostic]:
+        """检查文件的签名状态，返回签名相关诊断
+
+        如果文件有 .yanpub-sig 伴随文件，验证签名并添加诊断信息。
+        """
+        try:
+            file_path = uri.replace("file://", "").replace("file:", "")
+            sig_path = Path(file_path).with_suffix(
+                Path(file_path).suffix + ".yanpub-sig"
+            )
+        except Exception:
+            return []
+
+        if not sig_path.exists():
+            return []
+
+        try:
+            from yanpub.core.signing import CodeSigner, CodeSignature
+
+            signer = CodeSigner()
+            sig_data = json.loads(sig_path.read_text(encoding="utf-8"))
+            signature = CodeSignature.from_dict(sig_data)
+
+            content = self._documents.get(uri, "")
+            if not content:
+                content = Path(file_path).read_text(encoding="utf-8")
+
+            valid, message = signer.verify(content, signature)
+
+            if valid:
+                # 签名有效 — 信息级别提示
+                severity = lsp.DiagnosticSeverity.Information
+                msg = f"签名有效: {message}"
+            else:
+                # 签名无效 — 警告
+                severity = lsp.DiagnosticSeverity.Warning
+                msg = f"签名验证失败: {message}"
+
+            return [lsp.Diagnostic(
+                range=lsp.Range(
+                    start=lsp.Position(line=0, character=0),
+                    end=lsp.Position(line=0, character=0),
+                ),
+                severity=severity,
+                message=msg,
+                source="yanlsp-sign",
+            )]
+        except Exception as e:
+            logger.debug("签名检查失败: %s", e)
+            return [lsp.Diagnostic(
+                range=lsp.Range(
+                    start=lsp.Position(line=0, character=0),
+                    end=lsp.Position(line=0, character=0),
+                ),
+                severity=lsp.DiagnosticSeverity.Warning,
+                message=f"签名检查错误: {e}",
+                source="yanlsp-sign",
+            )]
 
     def _is_block_definition(self, adapter: LanguageAdapter, line: str) -> bool:
         """判断行是否是块定义（如段落、函数、类）"""

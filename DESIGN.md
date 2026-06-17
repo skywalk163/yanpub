@@ -576,11 +576,18 @@ yanpub/
 - [x] Playground AI 辅助（AIAssistEngine + 智能补全 + 自然语言转代码 + 错误修复建议 + /api/ai/* 路由 + ai CLI）
 - [x] 适配器调试器集成（DebugSession + LineTracer + DebugAdapter DAP协议 + DAPServer JSON-RPC over TCP + debug/dap-server CLI）
 
-## 十三、下一步（v0.9.0 规划）
+## 十三、已完成（v0.9.0）
+
+- [x] 性能监控面板（PerformanceMonitor + MetricSeries + WebSocket 实时推送 + 回归检测 + 仪表板 HTML + /api/monitor/* + /ws/monitor + monitor CLI）
+- [x] VSCode 扩展增强（feature_debug.js 调试适配器 DAP socket 4711 + feature_ai.js AI辅助 Webview + feature_sandbox.js 沙箱执行按钮 OutputChannel + 状态栏）
+- [x] 多语言文档国际化（I18nManager + RuleBasedTranslator + I18nDocsGenerator + zh/en/ja/ko 四语支持 + i18n/docs-i18n CLI）
+- [x] LSP 代码签名（CodeSigner + TrustStore 信任链 + AuditLog 审计日志 + HMAC-SHA256/Ed25519 + sign/verify/trust/keygen/audit CLI）
+
+## 十四、下一步（v1.0.0 规划）
 
 - [ ] 桌面 GUI 封装（Electron/Tauri，离线桌面应用）
 - [ ] 包管理器私有注册中心（自建 Git 仓库 + 镜像同步 + 权限管理）
-- [ ] LSP 代码签名（代码签名验证 + 信任链 + 安全审计）
-- [ ] 多语言文档国际化（i18n 扩展 — 适配器文档自动翻译 + 多语言 API 文档生成）
-- [ ] 性能监控面板（实时性能仪表板 + WebSocket 推送 + 历史趋势图）
-- [ ] VSCode 扩展增强（调试适配器集成 + AI 辅助面板 + 沙箱执行按钮）
+- [ ] LSP 增量同步（TextDocumentSyncKind.Incremental + 仅传输变更部分）
+- [ ] 适配器测试框架（自动化测试套件 + 适配器兼容性验证 + 回归测试生成）
+- [ ] Playground 多文件项目（多文件编辑器 + 文件树 + 项目级执行）
+- [ ] 性能基线管理（基线快照 + CI 回归检测 + 性能预算）

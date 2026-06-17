@@ -30,6 +30,8 @@ from yanpub.core.debugger import (
     LineTracer,
 )
 from yanpub.core.dap_server import DAPServer
+from yanpub.core.signing import SigningKey, CodeSignature, TrustStore, CodeSigner
+from yanpub.core.audit import AuditEntry, AuditLog
 
 __all__ = [
     "LanguageAdapter",
@@ -56,4 +58,10 @@ __all__ = [
     "DebugAdapter",
     "LineTracer",
     "DAPServer",
+    "SigningKey",
+    "CodeSignature",
+    "TrustStore",
+    "CodeSigner",
+    "AuditEntry",
+    "AuditLog",
 ]

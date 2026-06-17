@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 
 import click
 
@@ -125,6 +126,59 @@ def playground(host: str, port: int):
         uvicorn.run(app, host=host, port=port)
     except ImportError as e:
         click.echo(f"Playground 依赖未安装: {e}", err=True)
+        click.echo("请运行: pip install yanpub[playground]", err=True)
+        sys.exit(1)
+
+
+@main.command("monitor")
+@click.option("--host", default="127.0.0.1", help="监听地址")
+@click.option("--port", default=8888, type=int, help="监听端口")
+@click.option("--interval", default=5.0, type=float, help="采样间隔（秒）")
+def start_monitor(host: str, port: int, interval: float):
+    """启动性能监控仪表板"""
+    from yanpub.core.monitor import get_monitor
+
+    click.echo(f"启动性能监控仪表板: http://{host}:{port}")
+    click.echo(f"采样间隔: {interval}秒")
+
+    try:
+        from yanpub.playground.server import create_app
+        import uvicorn
+        import asyncio
+
+        monitor = get_monitor()
+        registry = get_registry()
+
+        # 采样任务：定期对所有适配器执行简单 eval 并记录耗时
+        async def sampling_task():
+            while True:
+                for adapter in registry:
+                    try:
+                        import time
+                        start = time.monotonic()
+                        comment = adapter.comment_syntax or "#"
+                        test_code = f"{comment} monitor sample\n"
+                        result = adapter.eval(test_code)
+                        duration_ms = (time.monotonic() - start) * 1000
+                        monitor.record(adapter, "eval", duration_ms, success=result.success)
+                    except Exception:
+                        duration_ms = 0
+                        try:
+                            duration_ms = (time.monotonic() - start) * 1000
+                        except Exception:
+                            pass
+                        monitor.record(adapter, "eval", duration_ms, success=False)
+                await asyncio.sleep(interval)
+
+        app = create_app()
+
+        @app.on_event("startup")
+        async def start_sampling():
+            asyncio.create_task(sampling_task())
+
+        uvicorn.run(app, host=host, port=port)
+    except ImportError as e:
+        click.echo(f"监控仪表板依赖未安装: {e}", err=True)
         click.echo("请运行: pip install yanpub[playground]", err=True)
         sys.exit(1)
 
@@ -1523,6 +1577,302 @@ def ai_assist(
                 click.echo(f"     {item['detail']}")
             if item.get("insert_text") and item["insert_text"] != item["label"]:
                 click.echo(f"     插入: {item['insert_text']}")
+
+
+# ============================================================
+# 代码签名 CLI 命令
+# ============================================================
+
+
+@main.command("sign")
+@click.argument("file", type=click.Path(exists=True))
+@click.option("--key", "-k", required=True, help="私钥文件路径")
+@click.option("--signer", "-s", required=True, help="签名者标识")
+@click.option("--algorithm", "-a", type=click.Choice(["ed25519", "hmac-sha256"]), default="hmac-sha256")
+def sign_file(file: str, key: str, signer: str, algorithm: str):
+    """对源代码文件进行签名"""
+    from pathlib import Path as P
+    from yanpub.core.signing import CodeSigner
+
+    # 读取私钥
+    key_path = P(key)
+    if not key_path.exists():
+        click.echo(f"私钥文件不存在: {key}", err=True)
+        sys.exit(1)
+    private_key = key_path.read_text(encoding="utf-8").strip()
+
+    # 签名
+    code_signer = CodeSigner()
+    try:
+        signature = code_signer.sign_file(file, private_key, signer, algorithm=algorithm)
+    except Exception as e:
+        click.echo(f"签名失败: {e}", err=True)
+        sys.exit(1)
+
+    sig_path = P(file).with_suffix(P(file).suffix + ".yanpub-sig")
+    click.echo("[OK] 签名成功")
+    click.echo(f"  签名者: {signature.signer}")
+    click.echo(f"  密钥ID: {signature.key_id}")
+    click.echo(f"  算法:   {signature.algorithm}")
+    click.echo(f"  哈希:   {signature.content_hash[:16]}...")
+    click.echo(f"  签名文件: {sig_path}")
+
+
+@main.command("verify")
+@click.argument("file", type=click.Path(exists=True))
+def verify_file(file: str):
+    """验证源代码文件签名"""
+    from yanpub.core.signing import CodeSigner
+
+    code_signer = CodeSigner()
+    valid, message = code_signer.verify_file(file)
+
+    if valid:
+        click.echo(f"[OK] {message}")
+    else:
+        click.echo(f"[FAIL] {message}", err=True)
+        sys.exit(1)
+
+
+@main.group("trust")
+def trust_group():
+    """信任密钥管理"""
+    pass
+
+
+@trust_group.command("add")
+@click.argument("key_file", type=click.Path(exists=True))
+@click.option("--signer", "-s", required=True)
+@click.option("--level", type=click.Choice(["full", "ca", "user"]), default="user")
+def trust_add(key_file: str, signer: str, level: str):
+    """添加受信任的密钥"""
+    import json
+    from pathlib import Path as P
+    from yanpub.core.signing import SigningKey, TrustStore
+
+    # 读取密钥文件（JSON 格式）
+    key_path = P(key_file)
+    try:
+        key_data = json.loads(key_path.read_text(encoding="utf-8"))
+        key = SigningKey.from_dict(key_data)
+    except Exception as e:
+        click.echo(f"密钥文件格式错误: {e}", err=True)
+        sys.exit(1)
+
+    store = TrustStore()
+    store.add_trusted_key(key, signer, level)
+    click.echo("[OK] 已添加受信任密钥")
+    click.echo(f"  密钥ID: {key.key_id}")
+    click.echo(f"  算法:   {key.algorithm}")
+    click.echo(f"  签名者: {signer}")
+    click.echo(f"  信任级别: {level}")
+
+
+@trust_group.command("list")
+def trust_list():
+    """列出受信任的密钥"""
+    from yanpub.core.signing import TrustStore
+
+    store = TrustStore()
+    keys = store.list_keys()
+
+    if not keys:
+        click.echo("没有受信任的密钥。")
+        return
+
+    click.echo(f"受信任密钥 ({len(keys)} 个)：\n")
+    for k in keys:
+        click.echo(f"  {k['key_id']:10s} {k['algorithm']:14s} {k['signer']:20s} {k['trust_level']}")
+
+
+@trust_group.command("remove")
+@click.argument("key_id")
+def trust_remove(key_id: str):
+    """移除受信任的密钥"""
+    from yanpub.core.signing import TrustStore
+
+    store = TrustStore()
+    trusted, level = store.is_trusted(key_id)
+    if not trusted:
+        click.echo(f"未找到密钥: {key_id}", err=True)
+        sys.exit(1)
+
+    store.remove_key(key_id)
+    click.echo(f"[OK] 已移除密钥: {key_id}")
+
+
+@main.command("keygen")
+@click.option("--algorithm", "-a", type=click.Choice(["ed25519", "hmac-sha256"]), default="hmac-sha256")
+@click.option("--output", "-o", default=None, help="输出目录")
+def generate_key(algorithm: str, output: str):
+    """生成签名密钥对"""
+    import json
+    from pathlib import Path as P
+    from yanpub.core.signing import SigningKey
+
+    key, private_key = SigningKey.generate(algorithm)
+
+    # 确定输出目录
+    out_dir = P(output) if output else P.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # 写入公钥文件
+    pub_path = out_dir / f"yanpub_{key.key_id}.pub"
+    pub_path.write_text(
+        json.dumps(key.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    # 写入私钥文件
+    priv_path = out_dir / f"yanpub_{key.key_id}.key"
+    priv_path.write_text(private_key, encoding="utf-8")
+
+    actual_algo = key.algorithm
+    click.echo("[OK] 密钥对已生成")
+    click.echo(f"  密钥ID: {key.key_id}")
+    click.echo(f"  算法:   {actual_algo}")
+    if actual_algo != algorithm:
+        click.echo(f"  注意: Ed25519 不可用，已降级到 {actual_algo}")
+    click.echo(f"  公钥:   {pub_path}")
+    click.echo(f"  私钥:   {priv_path}")
+    click.echo()
+    click.echo("  请妥善保管私钥文件，不要提交到版本控制！")
+
+
+@main.command("audit")
+@click.option("--action", type=click.Choice(["list", "stats", "export"]), default="list")
+@click.option("--format", "fmt", type=click.Choice(["json", "csv"]), default="json")
+def audit_log(action: str, fmt: str):
+    """查看安全审计日志"""
+    from yanpub.core.audit import AuditLog
+
+    log = AuditLog()
+
+    if action == "list":
+        entries = log.query()
+        if not entries:
+            click.echo("没有审计记录。")
+            return
+
+        click.echo(f"审计记录 ({len(entries)} 条)：\n")
+        for entry in entries:
+            ts = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(entry.timestamp))
+            click.echo(f"  [{ts}] {entry.action:14s} signer={entry.signer} key={entry.key_id}")
+            if entry.details:
+                for k, v in entry.details.items():
+                    click.echo(f"    {k}: {v}")
+
+    elif action == "stats":
+        stats = log.get_stats()
+        click.echo("审计统计：")
+        click.echo(f"  总记录数: {stats['total']}")
+        if stats["by_action"]:
+            click.echo("  按操作类型:")
+            for act, count in stats["by_action"].items():
+                click.echo(f"    {act}: {count}")
+        if stats["by_signer"]:
+            click.echo("  按签名者:")
+            for signer, count in stats["by_signer"].items():
+                click.echo(f"    {signer}: {count}")
+
+    elif action == "export":
+        content = log.export(format=fmt)
+        click.echo(content)
+
+
+@main.command("i18n")
+@click.option("--action", type=click.Choice(["export", "import", "check", "translate"]), required=True)
+@click.option("--lang", "-L", "target_lang", default="en", help="目标语言")
+@click.option("--output", "-o", default=None, help="输出文件路径")
+def i18n_command(action: str, target_lang: str, output: str | None):
+    """国际化管理 — 导出/导入/检查/翻译"""
+    from pathlib import Path as P
+    from yanpub.i18n import I18nManager
+
+    mgr = I18nManager()
+
+    if action == "export":
+        # 导出指定语言的翻译为 YAML
+        out_path = P(output) if output else P(f"{target_lang}.yaml")
+        mgr.export_translations(target_lang, out_path)
+        click.echo(f"[OK] {target_lang} 翻译已导出: {out_path}")
+
+    elif action == "import":
+        # 从目录加载自定义翻译
+        if output is None:
+            click.echo("请指定翻译目录: --output <dir>", err=True)
+            sys.exit(1)
+        lang_dir = P(output)
+        mgr.load_translations(lang_dir)
+        click.echo(f"[OK] 已从 {lang_dir} 加载翻译")
+
+    elif action == "check":
+        # 检查缺失的翻译键
+        missing = mgr.get_missing_keys("zh", target_lang)
+        if not missing:
+            click.echo(f"{target_lang} 翻译完整，无缺失键。")
+        else:
+            click.echo(f"{target_lang} 缺失 {len(missing)} 个翻译键：\n")
+            for key in missing:
+                click.echo(f"  {key}")
+
+    elif action == "translate":
+        # 自动翻译缺失键
+        suggestions = mgr.auto_translate("zh", target_lang)
+        if not suggestions:
+            click.echo(f"{target_lang} 无需翻译（已完整或无源文本）。")
+        else:
+            click.echo(f"自动翻译建议（{len(suggestions)} 个）：\n")
+            for key, suggestion in suggestions.items():
+                click.echo(f"  {key}:")
+                click.echo(f"    → {suggestion}")
+
+
+@main.command("docs-i18n")
+@click.argument("lang_id")
+@click.option("--lang", "-L", "target_lang", default="en", help="目标语言")
+@click.option("--output", "-o", default=None, help="输出目录")
+def docs_i18n(lang_id: str, target_lang: str, output: str | None):
+    """生成多语言适配器文档"""
+    from pathlib import Path as P
+    from yanpub.docs.i18n_docs import I18nDocsGenerator
+    import json
+
+    registry = get_registry()
+    generator = I18nDocsGenerator(registry)
+
+    if output:
+        out_dir = P(output)
+    else:
+        out_dir = P("yandocs_i18n") / target_lang
+
+    # 生成 API 参考
+    api_ref = generator.generate_api_reference(lang_id, target_lang)
+    if not api_ref:
+        click.echo(f"未知语言: {lang_id}", err=True)
+        sys.exit(1)
+
+    # 生成语言概览
+    overview = generator.generate_language_overview(lang_id, target_lang)
+
+    # 写入文件
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    api_file = out_dir / f"{lang_id}_api.json"
+    api_file.write_text(
+        json.dumps(api_ref, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    overview_file = out_dir / f"{lang_id}_overview.json"
+    overview_file.write_text(
+        json.dumps(overview, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    click.echo(f"[OK] {lang_id} 的 {target_lang} 文档已生成: {out_dir}")
+    click.echo(f"  API 参考: {api_file}")
+    click.echo(f"  语言概览: {overview_file}")
 
 
 if __name__ == "__main__":

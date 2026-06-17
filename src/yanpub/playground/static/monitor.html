@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>言埠 YanPub 性能监控面板</title>
+<style>
+:root {
+    --bg: #1a1a2e;
+    --card-bg: #16213e;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --border: #2a2a4a;
+    --primary: #E85D3A;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --error: #f44336;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+}
+h1 { font-size: 24px; margin-bottom: 20px; color: var(--primary); }
+h2 { font-size: 18px; margin: 20px 0 10px; color: var(--text); }
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--error);
+    animation: pulse 2s infinite;
+}
+.status-dot.connected {
+    background: var(--success);
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+.card h3 { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.card .value { font-size: 28px; font-weight: bold; }
+.card .value.good { color: var(--success); }
+.card .value.warn { color: var(--warning); }
+.card .value.bad { color: var(--error); }
+.card .sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+.chart-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.chart-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chart-title .metric-select {
+    font-size: 12px;
+    background: #0d1b2a;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+.chart-svg {
+    width: 100%;
+    height: 250px;
+    overflow: visible;
+}
+.trend-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.trend-table th, .trend-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+.trend-table th { color: var(--text-dim); font-weight: normal; }
+.regression-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+}
+.regression-badge.alert { background: rgba(244,67,54,0.2); color: var(--error); }
+.regression-badge.ok { background: rgba(76,175,80,0.2); color: var(--success); }
+.adapter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.adapter-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+.adapter-card h3 {
+    font-size: 15px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 13px;
+}
+.metric-row .label { color: var(--text-dim); }
+.metric-row .val { font-weight: bold; }
+.metric-row .val.fast { color: var(--success); }
+.metric-row .val.medium { color: var(--warning); }
+.metric-row .val.slow { color: var(--error); }
+footer {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+.no-data {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 40px 20px;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>言埠 YanPub 性能监控面板</h1>
+    <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">未连接</span>
+    </div>
+</div>
+
+<div class="cards" id="overviewCards">
+    <div class="card">
+        <h3>活跃适配器</h3>
+        <div class="value" id="activeAdapters">0</div>
+        <div class="sub">正在监控中</div>
+    </div>
+    <div class="card">
+        <h3>总样本数</h3>
+        <div class="value" id="totalSamples">0</div>
+        <div class="sub">已采集度量</div>
+    </div>
+    <div class="card">
+        <h3>平均执行耗时</h3>
+        <div class="value" id="avgDuration">--</div>
+        <div class="sub">所有适配器</div>
+    </div>
+    <div class="card">
+        <h3>整体错误率</h3>
+        <div class="value" id="avgErrorRate">--</div>
+        <div class="sub">所有操作</div>
+    </div>
+</div>
+
+<h2>适配器概览</h2>
+<div class="adapter-grid" id="adapterGrid">
+    <div class="no-data">等待数据...</div>
+</div>
+
+<h2>实时折线图</h2>
+<div class="chart-container">
+    <div class="chart-title">
+        <span>度量趋势</span>
+        <select class="metric-select" id="metricSelect">
+            <option value="eval_duration">eval 执行耗时</option>
+            <option value="run_duration">run 执行耗时</option>
+            <option value="tokenize_duration">tokenize 耗时</option>
+            <option value="complete_duration">complete 耗时</option>
+            <option value="error_rate">错误率</option>
+        </select>
+    </div>
+    <svg class="chart-svg" id="chartSvg" viewBox="0 0 800 250">
+        <line x1="50" y1="10" x2="50" y2="230" stroke="#2a2a4a" stroke-width="1"/>
+        <line x1="50" y1="230" x2="790" y2="230" stroke="#2a2a4a" stroke-width="1"/>
+        <text x="40" y="15" fill="#888" font-size="10" text-anchor="end" id="yMax">--</text>
+        <text x="40" y="235" fill="#888" font-size="10" text-anchor="end">0</text>
+        <text x="790" y="248" fill="#888" font-size="10" text-anchor="end" id="xLabel">时间</text>
+        <g id="chartLines"></g>
+        <g id="chartDots"></g>
+    </svg>
+</div>
+
+<h2>趋势分析</h2>
+<div class="chart-container">
+    <table class="trend-table">
+        <thead>
+            <tr>
+                <th>适配器</th>
+                <th>度量</th>
+                <th>近期均值</th>
+                <th>之前均值</th>
+                <th>变化</th>
+                <th>状态</th>
+            </tr>
+        </thead>
+        <tbody id="trendBody">
+            <tr><td colspan="6" style="text-align:center;color:#888;">等待数据...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<footer>
+    言埠 YanPub 性能监控面板 | 实时数据通过 WebSocket 推送
+</footer>
+
+<script>
+var ws = null;
+var metricsData = {};
+var chartColors = [
+    '#E85D3A', '#4CAF50', '#2196F3', '#FF9800',
+    '#9C27B0', '#00BCD4', '#FFEB3B', '#E91E63'
+];
+
+function connectWebSocket() {
+    var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var url = proto + '//' + location.host + '/ws/monitor';
+    ws = new WebSocket(url);
+
+    ws.onopen = function() {
+        document.getElementById('statusDot').classList.add('connected');
+        document.getElementById('statusText').textContent = '已连接';
+    };
+
+    ws.onclose = function() {
+        document.getElementById('statusDot').classList.remove('connected');
+        document.getElementById('statusText').textContent = '已断开';
+        setTimeout(connectWebSocket, 3000);
+    };
+
+    ws.onerror = function() {
+        document.getElementById('statusDot').classList.remove('connected');
+        document.getElementById('statusText').textContent = '连接错误';
+    };
+
+    ws.onmessage = function(event) {
+        var msg = JSON.parse(event.data);
+        if (msg.type === 'metric') {
+            handleMetric(msg.data);
+        } else if (msg.type === 'dashboard') {
+            handleDashboard(msg.data);
+        }
+    };
+}
+
+function handleMetric(data) {
+    var key = data.adapter_id + ':' + data.metric;
+    if (!metricsData[key]) {
+        metricsData[key] = [];
+    }
+    metricsData[key].push(data);
+    // 保留最近 100 个点
+    if (metricsData[key].length > 100) {
+        metricsData[key] = metricsData[key].slice(-100);
+    }
+    updateChart();
+}
+
+function handleDashboard(data) {
+    // 更新概览卡片
+    document.getElementById('activeAdapters').textContent = data.active_adapters || 0;
+    document.getElementById('totalSamples').textContent = data.total_samples || 0;
+
+    // 计算平均执行耗时
+    var totalAvg = 0;
+    var avgCount = 0;
+    var totalErrorRate = 0;
+    var errorCount = 0;
+
+    var adapters = data.adapters || {};
+    var gridHtml = '';
+
+    for (var aid in adapters) {
+        var adapter = adapters[aid];
+        var metrics = adapter.metrics || {};
+        var adapterHtml = '<div class="adapter-card">';
+        adapterHtml += '<h3>' + aid + '</h3>';
+
+        for (var metricName in metrics) {
+            var m = metrics[metricName];
+            var val = m.avg || 0;
+            var cls = '';
+            var unit = '';
+
+            if (metricName.indexOf('duration') >= 0) {
+                unit = ' ms';
+                if (val < 100) cls = 'fast';
+                else if (val < 500) cls = 'medium';
+                else cls = 'slow';
+                totalAvg += val;
+                avgCount++;
+            } else if (metricName === 'error_rate') {
+                unit = '%';
+                if (val < 5) cls = 'fast';
+                else if (val < 20) cls = 'medium';
+                else cls = 'slow';
+                totalErrorRate += val;
+                errorCount++;
+            }
+
+            adapterHtml += '<div class="metric-row">';
+            adapterHtml += '<span class="label">' + formatMetricName(metricName) + '</span>';
+            adapterHtml += '<span class="val ' + cls + '">' + val.toFixed(1) + unit + '</span>';
+            adapterHtml += '</div>';
+        }
+
+        adapterHtml += '</div>';
+        gridHtml += adapterHtml;
+    }
+
+    document.getElementById('adapterGrid').innerHTML = gridHtml || '<div class="no-data">暂无适配器数据</div>';
+
+    // 更新概览
+    var avgDurEl = document.getElementById('avgDuration');
+    if (avgCount > 0) {
+        var avg = totalAvg / avgCount;
+        avgDurEl.textContent = avg.toFixed(1) + ' ms';
+        avgDurEl.className = 'value ' + (avg < 100 ? 'good' : avg < 500 ? 'warn' : 'bad');
+    }
+
+    var avgErrEl = document.getElementById('avgErrorRate');
+    if (errorCount > 0) {
+        var errRate = totalErrorRate / errorCount;
+        avgErrEl.textContent = errRate.toFixed(1) + '%';
+        avgErrEl.className = 'value ' + (errRate < 5 ? 'good' : errRate < 20 ? 'warn' : 'bad');
+    }
+
+    // 更新趋势分析表格
+    updateTrendTable(adapters);
+}
+
+function updateTrendTable(adapters) {
+    var tbody = document.getElementById('trendBody');
+    var rows = '';
+    var hasData = false;
+
+    for (var aid in adapters) {
+        var metrics = adapters[aid].metrics || {};
+        var durationMetrics = ['eval_duration', 'run_duration', 'tokenize_duration', 'complete_duration'];
+
+        for (var i = 0; i < durationMetrics.length; i++) {
+            var mn = durationMetrics[i];
+            if (!metrics[mn]) continue;
+            hasData = true;
+            var m = metrics[mn];
+            var sampleCount = m.sample_count || 0;
+            var avg = m.avg || 0;
+            var status = 'ok';
+            var statusText = '正常';
+            var changeText = '--';
+
+            // 简单趋势判断
+            if (sampleCount >= 20) {
+                var key = aid + ':' + mn;
+                var points = metricsData[key] || [];
+                if (points.length >= 10) {
+                    var recent = points.slice(-5);
+                    var previous = points.slice(-10, -5);
+                    var recentAvg = recent.reduce(function(s, p) { return s + p.value; }, 0) / recent.length;
+                    var prevAvg = previous.reduce(function(s, p) { return s + p.value; }, 0) / previous.length;
+                    if (prevAvg > 0) {
+                        var change = ((recentAvg - prevAvg) / prevAvg) * 100;
+                        changeText = (change >= 0 ? '+' : '') + change.toFixed(1) + '%';
+                        if (change > 50) {
+                            status = 'alert';
+                            statusText = '回归';
+                        }
+                    }
+                }
+            }
+
+            rows += '<tr>';
+            rows += '<td>' + aid + '</td>';
+            rows += '<td>' + formatMetricName(mn) + '</td>';
+            rows += '<td>' + avg.toFixed(2) + ' ms</td>';
+            rows += '<td>' + changeText + '</td>';
+            rows += '<td>' + changeText + '</td>';
+            rows += '<td><span class="regression-badge ' + status + '">' + statusText + '</span></td>';
+            rows += '</tr>';
+        }
+    }
+
+    if (!hasData) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">等待数据...</td></tr>';
+    } else {
+        tbody.innerHTML = rows;
+    }
+}
+
+function formatMetricName(name) {
+    var map = {
+        'eval_duration': 'eval 执行',
+        'run_duration': 'run 执行',
+        'tokenize_duration': 'tokenize',
+        'complete_duration': 'complete',
+        'error_rate': '错误率',
+        'memory_used': '内存使用',
+    };
+    return map[name] || name;
+}
+
+function updateChart() {
+    var selectedMetric = document.getElementById('metricSelect').value;
+    var linesGroup = document.getElementById('chartLines');
+    var dotsGroup = document.getElementById('chartDots');
+    var yMaxEl = document.getElementById('yMax');
+
+    // 收集所有适配器的该指标数据
+    var allSeries = {};
+    var maxVal = 0;
+    var maxLen = 0;
+
+    for (var key in metricsData) {
+        var parts = key.split(':');
+        var aid = parts[0];
+        var metric = parts.slice(1).join(':');
+        if (metric === selectedMetric) {
+            allSeries[aid] = metricsData[key];
+            var points = metricsData[key];
+            if (points.length > maxLen) maxLen = points.length;
+            for (var i = 0; i < points.length; i++) {
+                if (points[i].value > maxVal) maxVal = points[i].value;
+            }
+        }
+    }
+
+    if (maxVal === 0) maxVal = 100;
+    maxVal = maxVal * 1.2; // 留顶部空间
+    yMaxEl.textContent = maxVal.toFixed(0) + (selectedMetric.indexOf('duration') >= 0 ? 'ms' : '%');
+
+    var chartLeft = 50;
+    var chartRight = 790;
+    var chartTop = 10;
+    var chartBottom = 230;
+    var chartWidth = chartRight - chartLeft;
+    var chartHeight = chartBottom - chartTop;
+
+    var linesHtml = '';
+    var dotsHtml = '';
+    var colorIdx = 0;
+
+    for (var aid in allSeries) {
+        var color = chartColors[colorIdx % chartColors.length];
+        colorIdx++;
+        var points = allSeries[aid];
+        var len = points.length;
+        if (len < 2) continue;
+
+        var pathParts = [];
+        for (var j = 0; j < len; j++) {
+            var x = chartLeft + (j / (len - 1)) * chartWidth;
+            var y = chartBottom - (points[j].value / maxVal) * chartHeight;
+            if (j === 0) {
+                pathParts.push('M' + x.toFixed(1) + ',' + y.toFixed(1));
+            } else {
+                pathParts.push('L' + x.toFixed(1) + ',' + y.toFixed(1));
+            }
+        }
+
+        linesHtml += '<path d="' + pathParts.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="2" opacity="0.8"/>';
+
+        // 最后一个点
+        var lastPoint = points[len - 1];
+        var lastX = chartLeft + ((len - 1) / (len - 1)) * chartWidth;
+        var lastY = chartBottom - (lastPoint.value / maxVal) * chartHeight;
+        dotsHtml += '<circle cx="' + lastX.toFixed(1) + '" cy="' + lastY.toFixed(1) + '" r="4" fill="' + color + '"/>';
+        dotsHtml += '<text x="' + (lastX + 8) + '" y="' + (lastY + 4) + '" fill="' + color + '" font-size="11">' + aid + '</text>';
+    }
+
+    linesGroup.innerHTML = linesHtml;
+    dotsGroup.innerHTML = dotsHtml;
+}
+
+function fetchDashboard() {
+    fetch('/api/monitor/metrics')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            handleDashboard(data);
+        })
+        .catch(function() {});
+}
+
+// 定期刷新仪表板数据
+setInterval(fetchDashboard, 5000);
+
+// 监听度量选择变化
+document.getElementById('metricSelect').addEventListener('change', updateChart);
+
+// 初始连接
+connectWebSocket();
+fetchDashboard();
+</script>
+
+</body>
+</html>

@@ -1,13 +1,16 @@
 /**
  * 言埠 YanPub VSCode 扩展
  *
- * 统一中文编程语言支持：语法高亮、代码补全、诊断、格式化。
+ * 统一中文编程语言支持：语法高亮、代码补全、诊断、格式化、调试、AI辅助、沙箱执行。
  * 一个扩展支持所有中文编程语言。
  */
 
 const vscode = require('vscode');
 const { execSync, spawn } = require('child_process');
 const path = require('path');
+const { DebugFeature } = require('./feature_debug');
+const { AIFeature } = require('./feature_ai');
+const { SandboxFeature } = require('./feature_sandbox');
 
 // ---- 语言注册表 ----
 
@@ -300,7 +303,7 @@ function selectLanguage() {
 // ---- 激活 ----
 
 function activate(context) {
-    // 注册命令
+    // 注册基础命令
     context.subscriptions.push(
         vscode.commands.registerCommand('yanpub.runFile', runFile),
         vscode.commands.registerCommand('yanpub.startREPL', startREPL),
@@ -312,6 +315,15 @@ function activate(context) {
 
     // 启动 LSP（如果可用）
     startLSP(context);
+
+    // 注册三大增强特性
+    const debugFeature = new DebugFeature(context);
+    const aiFeature = new AIFeature(context);
+    const sandboxFeature = new SandboxFeature(context);
+
+    debugFeature.register();
+    aiFeature.register();
+    sandboxFeature.register();
 
     // 状态栏
     const statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
