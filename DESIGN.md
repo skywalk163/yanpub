@@ -590,11 +590,18 @@ yanpub/
 - [x] LSP 增量同步（apply_change 精确增量 + TextDocumentSyncKind.Incremental + 版本追踪 + 文档变更回调）
 - [x] 性能基线管理（BaselineManager + BaselineSnapshot + PerformanceBudget + CI 回归检测 + baseline/budget CLI）
 
-## 十五、下一步（v1.1.0 规划）
+## 十五、已完成（v1.1.0）
+
+- [x] Playground 代码分享增强（ShareManager + 短链接 + QR码SVG + /api/share/* + 社交分享按钮 + share CLI）
+- [x] LSP 代码重构增强（RefactoringEngine + Extract Function + Inline Variable + Safe Rename + CodeAction + refactor CLI）
+- [x] 适配器性能优化（LRUCache + AdapterCache 执行/补全/诊断三级缓存 + LazyAdapter 延迟加载 + ProcessPool 连接池 + cache CLI）
+- [x] 文档站 SEO 优化（SEOOptimizer + SitemapGenerator + OpenGraphBuilder + JSON-LD 结构化数据 + robots.txt + seo CLI）
+
+## 十六、下一步（v1.2.0 规划）
 
 - [ ] 桌面 GUI 封装（Electron/Tauri，离线桌面应用）
 - [ ] 包管理器私有注册中心（自建 Git 仓库 + 镜像同步 + 权限管理）
-- [ ] Playground 代码分享增强（短链接 + 二维码 + 社交分享）
-- [ ] LSP 代码重构增强（Extract Function / Inline Variable / Safe Rename）
-- [ ] 适配器性能优化（缓存策略 + 延迟加载 + 连接池）
-- [ ] 文档站 SEO 优化（静态生成 + Sitemap + Open Graph）
+- [ ] Playground 协作增强（文档历史 + 冲突解决 + 离线编辑）
+- [ ] LSP 代码风格检查（Lint 规则引擎 + 自定义规则 + 自动修复）
+- [ ] 适配器热更新（运行时代码替换 + 状态保持 + 版本回退）
+- [ ] 文档站搜索增强（全文搜索 + 关键字联想 + 代码示例搜索）

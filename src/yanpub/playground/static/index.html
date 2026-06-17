@@ -450,6 +450,141 @@
             font-family: 'Microsoft YaHei', sans-serif;
         }
 
+        /* Share modal */
+        .share-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1002;
+            justify-content: center;
+            align-items: center;
+        }
+        .share-modal-overlay.show { display: flex; }
+        .share-modal {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 24px;
+            width: 480px;
+            max-width: 90%;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        .share-modal h3 {
+            margin: 0 0 16px 0;
+            color: var(--text);
+            font-size: 16px;
+        }
+        .share-modal label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            margin-top: 12px;
+        }
+        .share-modal label:first-of-type { margin-top: 0; }
+        .share-modal-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #1e1e1e;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .share-modal-input:focus { border-color: var(--primary); }
+        .share-create-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background 0.2s;
+        }
+        .share-create-btn:hover { background: var(--primary-dark); }
+        .share-create-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .share-result {
+            display: none;
+            margin-top: 16px;
+            padding: 12px;
+            background: #1e1e1e;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+        .share-result.show { display: block; }
+        .share-url-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .share-url-text {
+            flex: 1;
+            padding: 6px 10px;
+            background: #252525;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--primary);
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            user-select: all;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .share-copy-btn, .share-social-btn {
+            padding: 5px 12px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            background: #2d2d2d;
+            color: var(--text-dim);
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .share-copy-btn:hover, .share-social-btn:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
+        .share-qr-container {
+            text-align: center;
+            margin: 12px 0;
+        }
+        .share-qr-container img {
+            max-width: 180px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+        .share-social-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        .share-close-btn {
+            display: block;
+            width: 100%;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #555;
+            color: #ddd;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .share-close-btn:hover { background: #666; }
+
         /* Footer */
         footer {
             padding: 3px 16px;
@@ -908,6 +1043,33 @@
         </div>
     </div>
 
+    <!-- Share Modal -->
+    <div id="share-modal-overlay" class="share-modal-overlay">
+        <div class="share-modal">
+            <h3>分享代码</h3>
+            <label>分享标题（可选）</label>
+            <input id="share-title-input" class="share-modal-input" type="text" placeholder="为你的代码起个名字">
+            <button id="share-create-btn" class="share-create-btn">创建分享链接</button>
+            <div id="share-result" class="share-result">
+                <label>分享链接</label>
+                <div class="share-url-row">
+                    <span id="share-url-text" class="share-url-text"></span>
+                    <button id="share-copy-btn" class="share-copy-btn">复制</button>
+                </div>
+                <label>二维码</label>
+                <div class="share-qr-container">
+                    <img id="share-qr-img" alt="二维码" style="display:none;">
+                </div>
+                <label>社交分享</label>
+                <div class="share-social-row">
+                    <button id="share-weibo-btn" class="share-social-btn">微博</button>
+                    <button id="share-wechat-btn" class="share-social-btn">微信（复制链接）</button>
+                </div>
+            </div>
+            <button id="share-close-btn" class="share-close-btn">关闭</button>
+        </div>
+    </div>
+
     <!-- CodeMirror 5 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/javascript/javascript.min.js"></script>
@@ -1305,7 +1467,20 @@
             });
         });
 
-        // ---- Share (URL hash encoding) ----
+        // ---- Share (URL hash encoding + enhanced share) ----
+        const shareModalOverlay = document.getElementById('share-modal-overlay');
+        const shareTitleInput = document.getElementById('share-title-input');
+        const shareCreateBtn = document.getElementById('share-create-btn');
+        const shareResultEl = document.getElementById('share-result');
+        const shareUrlText = document.getElementById('share-url-text');
+        const shareCopyBtn = document.getElementById('share-copy-btn');
+        const shareQrImg = document.getElementById('share-qr-img');
+        const shareWeiboBtn = document.getElementById('share-weibo-btn');
+        const shareWechatBtn = document.getElementById('share-wechat-btn');
+        const shareCloseBtn = document.getElementById('share-close-btn');
+
+        let currentShareId = null;
+
         function encodeShareData(langId, code) {
             // Format: #lang=<id>&code=<base64url-encoded-code>
             try {
@@ -1327,39 +1502,146 @@
             } catch(e) { return null; }
         }
 
-        function shareCurrentCode() {
+        function openShareModal() {
+            shareResultEl.classList.remove('show');
+            shareTitleInput.value = '';
+            shareCreateBtn.disabled = false;
+            currentShareId = null;
+            shareModalOverlay.classList.add('show');
+        }
+
+        function closeShareModal() {
+            shareModalOverlay.classList.remove('show');
+        }
+
+        shareBtn.addEventListener('click', openShareModal);
+        shareCloseBtn.addEventListener('click', closeShareModal);
+        shareModalOverlay.addEventListener('click', function(e) {
+            if (e.target === shareModalOverlay) closeShareModal();
+        });
+
+        shareCreateBtn.addEventListener('click', function() {
+            var langId, code;
             if (isCompareMode) {
-                // Share left panel in compare mode
-                const langId = langLeft.value;
-                const code = editorLeft.getValue();
-                location.hash = encodeShareData(langId, code);
+                langId = langLeft.value;
+                code = editorLeft.getValue();
             } else {
                 if (!currentLang) { alert('请先选择语言'); return; }
-                const code = editor.getValue();
-                location.hash = encodeShareData(currentLang.id, code);
+                langId = currentLang.id;
+                code = editor.getValue();
             }
-            // Copy URL to clipboard
+
+            shareCreateBtn.disabled = true;
+            shareCreateBtn.textContent = '创建中...';
+
+            var payload = {
+                lang: langId,
+                code: code,
+                title: shareTitleInput.value.trim(),
+            };
+
+            fetch('/api/share/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                shareCreateBtn.disabled = false;
+                shareCreateBtn.textContent = '创建分享链接';
+
+                if (data.error) {
+                    alert('创建失败: ' + data.error);
+                    return;
+                }
+
+                currentShareId = data.id;
+                var fullUrl = location.origin + data.url;
+                shareUrlText.textContent = fullUrl;
+
+                // Load QR code
+                shareQrImg.src = data.qr_url;
+                shareQrImg.style.display = 'inline';
+
+                shareResultEl.classList.add('show');
+            })
+            .catch(function(err) {
+                shareCreateBtn.disabled = false;
+                shareCreateBtn.textContent = '创建分享链接';
+                alert('创建失败: ' + err.message);
+            });
+        });
+
+        shareCopyBtn.addEventListener('click', function() {
+            var url = shareUrlText.textContent;
             try {
-                navigator.clipboard.writeText(location.href).then(function() {
-                    showToast('分享链接已复制到剪贴板');
-                }).catch(function() {
-                    showToast('分享链接已生成（请手动复制地址栏）');
+                navigator.clipboard.writeText(url).then(function() {
+                    shareCopyBtn.textContent = '已复制';
+                    setTimeout(function() { shareCopyBtn.textContent = '复制'; }, 1500);
                 });
             } catch(e) {
-                showToast('分享链接已生成（请手动复制地址栏）');
+                var ta = document.createElement('textarea');
+                ta.value = url;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                shareCopyBtn.textContent = '已复制';
+                setTimeout(function() { shareCopyBtn.textContent = '复制'; }, 1500);
             }
-        }
+        });
 
-        function showToast(msg) {
-            shareToast.textContent = msg;
-            shareToast.classList.add('show');
-            setTimeout(function() { shareToast.classList.remove('show'); }, 2000);
-        }
+        shareWeiboBtn.addEventListener('click', function() {
+            var url = shareUrlText.textContent;
+            var title = shareTitleInput.value.trim() || '中文编程代码分享';
+            window.open('https://service.weibo.com/share/share.php?url=' + encodeURIComponent(url) + '&title=' + encodeURIComponent(title), '_blank', 'width=600,height=400');
+        });
+
+        shareWechatBtn.addEventListener('click', function() {
+            var url = shareUrlText.textContent;
+            try {
+                navigator.clipboard.writeText(url).then(function() {
+                    showToast('链接已复制，可粘贴到微信分享');
+                });
+            } catch(e) {
+                showToast('请手动复制链接分享到微信');
+            }
+        });
 
         function loadFromShare() {
-            const shared = decodeShareData();
+            // Check for #share= short link format first
+            var hash = location.hash.slice(1);
+            var shareParams = new URLSearchParams(hash);
+            var shareId = shareParams.get('share');
+            if (shareId) {
+                fetch('/api/share/' + shareId)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.error) {
+                            showToast('分享加载失败: ' + data.error);
+                            return;
+                        }
+                        var lang = languages.find(function(l) { return l.id === data.lang; });
+                        if (lang) {
+                            selectLanguage(data.lang);
+                        }
+                        editor.setValue(data.code);
+                        editor.clearHistory();
+                        if (data.title) {
+                            document.title = data.title + ' — 言埠 YanPlay';
+                        }
+                        showToast('已加载分享: ' + (data.title || data.id));
+                    })
+                    .catch(function(err) {
+                        showToast('分享加载失败');
+                    });
+                return true;
+            }
+
+            // Fallback: old #lang=&code= format
+            var shared = decodeShareData();
             if (!shared) return false;
-            const lang = languages.find(l => l.id === shared.langId);
+            var lang = languages.find(l => l.id === shared.langId);
             if (!lang) return false;
             selectLanguage(shared.langId);
             editor.setValue(shared.code);
@@ -1367,7 +1649,20 @@
             return true;
         }
 
-        shareBtn.addEventListener('click', shareCurrentCode);
+        // Listen for hash changes to load shares
+        window.addEventListener('hashchange', function() {
+            var hash = location.hash.slice(1);
+            var params = new URLSearchParams(hash);
+            if (params.get('share')) {
+                loadFromShare();
+            }
+        });
+
+        function showToast(msg) {
+            shareToast.textContent = msg;
+            shareToast.classList.add('show');
+            setTimeout(function() { shareToast.classList.remove('show'); }, 2000);
+        }
 
         // ---- WASM Mode Toggle ----
         wasmToggle.addEventListener('click', function() {

@@ -957,7 +957,158 @@ class YanLanguageServer:
                 data={"uri": params.text_document.uri, "action": "verify-signature"},
             ))
 
+            # 6. Extract Function — 当有选中文本时可用
+            if params.range.start != params.range.end:
+                actions.append(lsp.CodeAction(
+                    title="提取为函数 (Extract Function)",
+                    kind=lsp.CodeActionKind.RefactorExtract,
+                    data={
+                        "uri": params.text_document.uri,
+                        "action": "extract-function",
+                        "start_line": params.range.start.line + 1,
+                        "end_line": params.range.end.line + 1,
+                    },
+                ))
+
+            # 7. Inline Variable — 当光标在变量上时可用
+            from yanpub.core.refactor import RefactoringEngine
+            engine = RefactoringEngine(adapter)
+            ident = engine._is_identifier_at(code, line, column)
+            if ident is not None:
+                # 检查是否是变量声明（"设X为Y"模式）
+                decl = engine._find_variable_declaration(code, ident)
+                if decl is not None:
+                    actions.append(lsp.CodeAction(
+                        title="内联变量 (Inline Variable)",
+                        kind=lsp.CodeActionKind.RefactorInline,
+                        data={
+                            "uri": params.text_document.uri,
+                            "action": "inline-variable",
+                            "line": line,
+                            "column": column,
+                        },
+                    ))
+
             return actions
+
+        @server.feature(lsp.CODE_ACTION_RESOLVE)
+        def code_action_resolve(params: lsp.CodeAction) -> lsp.CodeAction:
+            """解析代码操作 — 执行重构并返回 WorkspaceEdit"""
+            data = params.data
+            if data is None:
+                return params
+
+            action = data.get("action", "")
+            uri = data.get("uri", "")
+            code = self._documents.get(uri, "")
+
+            if action == "extract-function":
+                from yanpub.core.refactor import RefactoringEngine
+                engine = RefactoringEngine(self._get_adapter_for_uri(uri))
+                start_line = data.get("start_line", 1)
+                end_line = data.get("end_line", start_line)
+
+                # 使用默认函数名（可通过后续交互修改）
+                new_name = "提取的函数"
+                result = engine.extract_function(code, start_line, end_line, new_name)
+
+                # 构造 WorkspaceEdit
+                lines = code.split("\n")
+                edits = []
+
+                # 1. 在选中代码块之前插入新函数
+                # 找到合适的位置：函数定义之前的空行
+                insert_pos = 0
+                for i in range(start_line - 2, -1, -1):
+                    if i < len(lines) and lines[i].strip() == "":
+                        insert_pos = i
+                        break
+                    elif i < len(lines):
+                        insert_pos = i
+                        break
+
+                # 插入新函数 + 空行
+                new_func_text = result["new_function"] + "\n\n"
+                edits.append(lsp.TextEdit(
+                    range=lsp.Range(
+                        start=lsp.Position(line=insert_pos, character=0),
+                        end=lsp.Position(line=insert_pos, character=0),
+                    ),
+                    new_text=new_func_text,
+                ))
+
+                # 2. 替换选中代码块为函数调用
+                block_start_line = result["range"]["start"]
+                block_end_line = result["range"]["end"]
+                replacement = result["replacement"]
+
+                # 需要调整行号（因为前面插入了新函数）
+                lines_inserted = result["new_function"].count("\n") + 2  # +2 for two newlines
+                adjusted_start = block_start_line + lines_inserted
+                adjusted_end = block_end_line + lines_inserted
+
+                start_char = 0
+                end_char = len(lines[block_end_line]) if block_end_line < len(lines) else 0
+
+                edits.append(lsp.TextEdit(
+                    range=lsp.Range(
+                        start=lsp.Position(line=adjusted_start, character=start_char),
+                        end=lsp.Position(line=adjusted_end, character=end_char),
+                    ),
+                    new_text=replacement,
+                ))
+
+                params.edit = lsp.WorkspaceEdit(changes={uri: edits})
+
+            elif action == "inline-variable":
+                from yanpub.core.refactor import RefactoringEngine
+                engine = RefactoringEngine(self._get_adapter_for_uri(uri))
+                line = data.get("line", 1)
+                column = data.get("column", 1)
+
+                result = engine.inline_variable(code, line, column)
+
+                if not result["value"]:
+                    return params
+
+                edits = []
+
+                # 1. 删除变量声明行
+                decl_range = result["declaration_range"]
+                edits.append(lsp.TextEdit(
+                    range=lsp.Range(
+                        start=lsp.Position(
+                            line=decl_range["start"]["line"],
+                            character=decl_range["start"]["character"],
+                        ),
+                        end=lsp.Position(
+                            line=decl_range["end"]["line"],
+                            character=decl_range["end"]["character"],
+                        ),
+                    ),
+                    new_text="",  # 删除声明
+                ))
+
+                # 2. 替换所有使用处为变量值
+                value = result["value"]
+                for usage in result["usage_ranges"]:
+                    edits.append(lsp.TextEdit(
+                        range=lsp.Range(
+                            start=lsp.Position(
+                                line=usage["start"]["line"],
+                                character=usage["start"]["character"],
+                            ),
+                            end=lsp.Position(
+                                line=usage["end"]["line"],
+                                character=usage["end"]["character"],
+                            ),
+                        ),
+                        new_text=value,
+                    ))
+
+                params.edit = lsp.WorkspaceEdit(changes={uri: edits})
+
+            return params
 
     # ---- 代码导航逻辑 ----
 

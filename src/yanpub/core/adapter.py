@@ -134,24 +134,61 @@ class LanguageAdapter(ABC):
     # ---- LSP 支持（可选）----
 
     def complete(self, code: str, line: int, column: int) -> list[CompletionItem]:
-        """代码补全。默认基于关键字列表。"""
-        return [
+        """代码补全。默认基于关键字列表。支持缓存。"""
+        # 缓存检查
+        if self._enable_cache:
+            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            cache = get_adapter_cache()
+            code_hash = AdapterCache.compute_code_hash(code)
+            cached = cache.get_completions(self._id, code_hash)
+            if cached is not None:
+                return cached
+
+        items = [
             CompletionItem(label=kw, kind="keyword")
             for kw in self.keywords
         ]
 
+        # 写入缓存
+        if self._enable_cache and items:
+            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            cache = get_adapter_cache()
+            code_hash = AdapterCache.compute_code_hash(code)
+            cache.put_completions(self._id, code_hash, items)
+
+        return items
+
     def diagnose(self, code: str) -> list[Diagnostic]:
-        """代码诊断。默认实现尝试 eval 并捕获错误。"""
+        """代码诊断。默认实现尝试 eval 并捕获错误。支持缓存。"""
+        # 缓存检查
+        if self._enable_cache:
+            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            cache = get_adapter_cache()
+            code_hash = AdapterCache.compute_code_hash(code)
+            cached = cache.get_diagnostics(self._id, code_hash)
+            if cached is not None:
+                return cached
+
         result = self.eval(code)
         if result.success:
-            return []
-        # 尝试从 stderr 提取错误行号
-        return [Diagnostic(
-            line=1, column=1,
-            severity="error",
-            message=result.stderr.strip() or "执行错误",
-            source=self.id,
-        )]
+            diags: list[Diagnostic] = []
+        else:
+            # 尝试从 stderr 提取错误行号
+            diags = [Diagnostic(
+                line=1, column=1,
+                severity="error",
+                message=result.stderr.strip() or "执行错误",
+                source=self.id,
+            )]
+
+        # 写入缓存
+        if self._enable_cache:
+            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            cache = get_adapter_cache()
+            code_hash = AdapterCache.compute_code_hash(code)
+            cache.put_diagnostics(self._id, code_hash, diags)
+
+        return diags
 
     def hover(self, code: str, line: int, column: int) -> Optional[str]:
         """悬停文档。默认实现基于关键字分类返回说明。"""
@@ -333,6 +370,47 @@ class LanguageAdapter(ABC):
         """调用层次。返回 {"items": [{"name": str, "kind": str, "uri": str, "range": {...}, "children": [...]}]}"""
         return None
 
+    def extract_function(self, code: str, start_line: int, end_line: int, new_name: str) -> Optional[dict]:
+        """提取函数重构
+
+        将选中的代码块提取为一个新的段落/函数。
+
+        Args:
+            code: 源代码
+            start_line: 起始行号（1-based）
+            end_line: 结束行号（1-based）
+            new_name: 新函数名
+
+        Returns:
+            {
+                "new_function": str,           # 新函数代码
+                "replacement": str,            # 替换选中代码的调用
+                "range": {"start": ..., "end": ...}  # 替换范围
+            }
+            或 None（不支持提取函数重构）
+        """
+        return None
+
+    def inline_variable(self, code: str, line: int, column: int) -> Optional[dict]:
+        """内联变量重构
+
+        将变量使用处替换为变量值，并删除变量声明。
+
+        Args:
+            code: 源代码
+            line: 光标行号（1-based）
+            column: 光标列号（1-based）
+
+        Returns:
+            {
+                "declaration_range": {"start": ..., "end": ...},  # 变量声明范围（要删除）
+                "value": str,                                     # 变量值（用于替换使用处）
+                "usage_ranges": [{"start": ..., "end": ...}],     # 变量使用位置
+            }
+            或 None（不支持内联变量重构）
+        """
+        return None
+
     # ---- 关键字（推荐覆盖）----
 
     @property
@@ -385,6 +463,7 @@ class SubprocessAdapter(LanguageAdapter):
     """子进程适配器 — 通过命令行调用语言后端
 
     最通用的适配器模式，适用于所有语言，零侵入。
+    支持缓存策略：eval 结果可缓存，避免重复执行相同代码。
     """
 
     def __init__(
@@ -400,6 +479,7 @@ class SubprocessAdapter(LanguageAdapter):
         keywords: list[str] | None = None,
         keywords_loader: Callable[[], list[str]] | None = None,
         primary_color: str = "#2C3E50",
+        enable_cache: bool = True,
     ):
         self._name = name
         self._id = lang_id
@@ -412,6 +492,7 @@ class SubprocessAdapter(LanguageAdapter):
         self._keywords = keywords
         self._keywords_loader = keywords_loader
         self._primary_color = primary_color
+        self._enable_cache = enable_cache
 
     @property
     def name(self) -> str:
@@ -488,31 +569,50 @@ class SubprocessAdapter(LanguageAdapter):
         return self._exec(cmd)
 
     def eval(self, code: str) -> ExecutionResult:
+        # 缓存检查
+        if self._enable_cache:
+            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            cache = get_adapter_cache()
+            code_hash = AdapterCache.compute_code_hash(code)
+            cached = cache.get_eval_result(self._id, code_hash)
+            if cached is not None:
+                return cached
+
         if self._eval_command:
             if self._eval_mode == "arg":
                 # 代码作为命令行参数追加（如 python cli.py -e "code"）
-                return self._exec(self._eval_command + [code])
+                result = self._exec(self._eval_command + [code])
             else:
                 # 代码通过 stdin 传入
-                return self._exec(self._eval_command, stdin=code)
-        # fallback: 写临时文件再运行
-        import tempfile
-        # 优先使用 ASCII 扩展名，避免 Windows 上中文文件名编码问题
-        suffix = ".duan" if ".duan" in self._extensions else (
-            self._extensions[-1] if self._extensions else ".txt"
-        )
-        with tempfile.NamedTemporaryFile(
-            suffix=suffix,
-            mode="w",
-            encoding="utf-8",
-            delete=False,
-        ) as f:
-            f.write(code)
-            tmp = f.name
-        try:
-            return self._exec(self._run_command + [tmp])
-        finally:
-            Path(tmp).unlink(missing_ok=True)
+                result = self._exec(self._eval_command, stdin=code)
+        else:
+            # fallback: 写临时文件再运行
+            import tempfile
+            # 优先使用 ASCII 扩展名，避免 Windows 上中文文件名编码问题
+            suffix = ".duan" if ".duan" in self._extensions else (
+                self._extensions[-1] if self._extensions else ".txt"
+            )
+            with tempfile.NamedTemporaryFile(
+                suffix=suffix,
+                mode="w",
+                encoding="utf-8",
+                delete=False,
+            ) as f:
+                f.write(code)
+                tmp = f.name
+            try:
+                result = self._exec(self._run_command + [tmp])
+            finally:
+                Path(tmp).unlink(missing_ok=True)
+
+        # 写入缓存（仅成功结果缓存，失败结果不缓存）
+        if self._enable_cache and result.success:
+            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            cache = get_adapter_cache()
+            code_hash = AdapterCache.compute_code_hash(code)
+            cache.put_eval_result(self._id, code_hash, result)
+
+        return result
 
 
 class InProcessAdapter(LanguageAdapter, ABC):

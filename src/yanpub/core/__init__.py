@@ -11,6 +11,9 @@ from yanpub.core.adapter import (
 )
 from yanpub.core.registry import LanguageRegistry
 from yanpub.core.config import YanPubConfig
+from yanpub.core.cache import LRUCache, AdapterCache, CacheEntry, get_adapter_cache
+from yanpub.core.lazy_loader import LazyAdapter, LazyRegistry
+from yanpub.core.pool import ProcessPool, PooledProcess, get_process_pool
 from yanpub.core.sandbox import (
     SandboxConfig,
     SandboxResult,
@@ -43,6 +46,15 @@ __all__ = [
     "HTTPAdapter",
     "LanguageRegistry",
     "YanPubConfig",
+    "LRUCache",
+    "AdapterCache",
+    "CacheEntry",
+    "get_adapter_cache",
+    "LazyAdapter",
+    "LazyRegistry",
+    "ProcessPool",
+    "PooledProcess",
+    "get_process_pool",
     "SandboxConfig",
     "SandboxResult",
     "SandboxBackend",

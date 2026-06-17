@@ -130,6 +130,50 @@ def playground(host: str, port: int):
         sys.exit(1)
 
 
+@main.command("share")
+@click.argument("lang_id")
+@click.argument("file", type=click.Path(exists=True))
+@click.option("--title", "-t", default="", help="分享标题")
+@click.option("--ttl", default=None, type=int, help="过期时间（小时）")
+def share_code(lang_id: str, file: str, title: str, ttl: int | None):
+    """创建代码分享链接"""
+    from pathlib import Path as P
+    from yanpub.playground.share import get_share_manager
+
+    registry = get_registry()
+    adapter = registry.get(lang_id)
+    if adapter is None:
+        click.echo(f"未知语言: {lang_id}", err=True)
+        sys.exit(1)
+
+    code = P(file).read_text(encoding="utf-8")
+
+    mgr = get_share_manager()
+    record = mgr.create_share(
+        lang=lang_id,
+        code=code,
+        title=title,
+        ttl_hours=ttl,
+    )
+
+    click.echo("[OK] 分享链接已创建")
+    click.echo(f"  ID:     {record.id}")
+    click.echo(f"  语言:   {adapter.name} ({lang_id})")
+    click.echo(f"  标题:   {title or '(无)'}")
+    click.echo(f"  文件:   {file}")
+    click.echo(f"  代码:   {len(code)} 字符")
+    if record.expires_at:
+        import datetime
+        expires = datetime.datetime.fromtimestamp(record.expires_at)
+        click.echo(f"  过期:   {expires.strftime('%Y-%m-%d %H:%M:%S')}")
+    else:
+        click.echo("  过期:   永不过期")
+    click.echo()
+    click.echo(f"  短链接: /s/{record.id}")
+    click.echo(f"  API:    GET /api/share/{record.id}")
+    click.echo(f"  二维码: GET /api/share/{record.id}/qr")
+
+
 @main.command("monitor")
 @click.option("--host", default="127.0.0.1", help="监听地址")
 @click.option("--port", default=8888, type=int, help="监听端口")
@@ -541,6 +585,103 @@ def docs(output: str):
     click.echo(f"打开 {out / 'index.html'} 查看首页")
 
 
+@main.command("seo")
+@click.argument("action", type=click.Choice(["generate", "validate", "sitemap"]))
+@click.option("--output", "-o", type=click.Path(), help="输出目录")
+@click.option("--base-url", default="https://yanpub.dev", help="站点 URL")
+def seo_command(action: str, output: str | None, base_url: str):
+    """SEO 优化 — 生成/验证/sitemap"""
+    from pathlib import Path as P
+    from yanpub.docs.site_builder import SEOConfig, SEOOptimizer, SitemapGenerator, build_site
+
+    config = SEOConfig(site_url=base_url)
+
+    if action == "generate":
+        # 生成带 SEO 优化的文档站
+        out_dir = output or "yandocs_site"
+        click.echo(f"正在生成 SEO 优化文档站（站点 URL: {base_url}）...")
+        out = build_site(out_dir, seo_config=config)
+        click.echo(f"[OK] 文档站已生成: {out}")
+        click.echo(f"  sitemap.xml: {out / 'sitemap.xml'}")
+        click.echo(f"  robots.txt:   {out / 'robots.txt'}")
+        click.echo(f"  首页:         {out / 'index.html'}")
+
+    elif action == "validate":
+        # 验证已生成站点的 SEO 元素
+        out_dir = P(output) if output else P("yandocs_site")
+        optimizer = SEOOptimizer(config)
+
+        if not out_dir.exists():
+            click.echo(f"目录不存在: {out_dir}，请先运行 yanpub seo generate", err=True)
+            sys.exit(1)
+
+        # 收集 HTML 文件
+        html_files = sorted(out_dir.glob("*.html"))
+        if not html_files:
+            click.echo("未找到 HTML 文件", err=True)
+            sys.exit(1)
+
+        click.echo(f"SEO 验证（{len(html_files)} 个页面）:\n")
+        all_passed = True
+        for html_file in html_files:
+            content = html_file.read_text(encoding="utf-8")
+            result = optimizer.validate_html(content)
+            status = "✅" if result["passed"] else "❌"
+            click.echo(f"  {status} {html_file.name}")
+            if not result["passed"]:
+                all_passed = False
+                for issue in result["issues"]:
+                    click.echo(f"     - {issue}")
+
+        # 检查 sitemap 和 robots
+        click.echo()
+        sitemap_path = out_dir / "sitemap.xml"
+        robots_path = out_dir / "robots.txt"
+        click.echo(f"  {'✅' if sitemap_path.exists() else '❌'} sitemap.xml")
+        click.echo(f"  {'✅' if robots_path.exists() else '❌'} robots.txt")
+
+        if all_passed and sitemap_path.exists() and robots_path.exists():
+            click.echo("\n✅ SEO 验证通过")
+        else:
+            click.echo("\n❌ SEO 验证未通过")
+            sys.exit(1)
+
+    elif action == "sitemap":
+        # 单独生成 sitemap.xml
+        out_dir = P(output) if output else P("yandocs_site")
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        optimizer = SEOOptimizer(config)
+        sitemap = SitemapGenerator(base_url)
+
+        # 检查已有 HTML 文件
+        html_files = sorted(out_dir.glob("*.html"))
+        if not html_files:
+            click.echo("未找到 HTML 文件，请先运行 yanpub docs 或 yanpub seo generate", err=True)
+            sys.exit(1)
+
+        from datetime import date
+        today = date.today().isoformat()
+
+        for html_file in html_files:
+            name = html_file.name
+            if name == "index.html":
+                sitemap.add_page(name, lastmod=today, changefreq="daily", priority=1.0)
+            else:
+                sitemap.add_page(name, lastmod=today, changefreq="weekly", priority=0.8)
+
+        sitemap.write(out_dir)
+
+        # 同时生成 robots.txt
+        (out_dir / "robots.txt").write_text(
+            optimizer.generate_robots_txt(), encoding="utf-8",
+        )
+
+        click.echo(f"[OK] sitemap.xml 已生成: {out_dir / 'sitemap.xml'}")
+        click.echo(f"[OK] robots.txt 已生成: {out_dir / 'robots.txt'}")
+        click.echo(f"  包含 {len(html_files)} 个页面")
+
+
 @main.command()
 @click.argument("concept", required=False)
 @click.option("--from", "from_lang", default=None, help="源语言ID")
@@ -726,6 +867,38 @@ def plugin():
 def adapter():
     """适配器管理 — 热重载/监控"""
     pass
+
+
+@main.command("cache")
+@click.argument("action", type=click.Choice(["stats", "clear", "invalidate"]))
+@click.option("--adapter", "-a", default=None, help="适配器 ID（invalidate 时指定）")
+def cache_command(action: str, adapter: str | None):
+    """缓存管理 — 统计/清除/失效"""
+    from yanpub.core.cache import get_adapter_cache
+
+    cache = get_adapter_cache()
+
+    if action == "stats":
+        stats = cache.stats()
+        click.echo("适配器缓存统计：\n")
+        for cache_type, info in stats.items():
+            click.echo(f"  {cache_type}:")
+            click.echo(f"    条目数:  {info['size']}/{info['max_size']}")
+            click.echo(f"    命中:    {info['hits']}")
+            click.echo(f"    未命中:  {info['misses']}")
+            click.echo(f"    命中率:  {info['hit_rate']:.1%}")
+            click.echo()
+
+    elif action == "clear":
+        cache.clear()
+        click.echo("[OK] 所有缓存已清空")
+
+    elif action == "invalidate":
+        if not adapter:
+            click.echo("请指定适配器 ID: --adapter <id> 或 -a <id>", err=True)
+            sys.exit(1)
+        count = cache.invalidate_adapter(adapter)
+        click.echo(f"[OK] 已失效 {adapter} 的 {count} 条缓存")
 
 
 @adapter.command("watch")
@@ -2192,6 +2365,88 @@ def budget_command(action: str, lang_id: str | None, metric: tuple[str, ...]):
 
         if not found:
             click.echo("没有设置任何性能预算。")
+
+
+@main.command("refactor")
+@click.argument("action", type=click.Choice(["extract", "inline", "rename"]))
+@click.argument("lang_id")
+@click.argument("file", type=click.Path(exists=True))
+@click.option("--start-line", type=int, help="起始行（extract，1-based）")
+@click.option("--end-line", type=int, help="结束行（extract，1-based）")
+@click.option("--new-name", "-n", help="新名称")
+@click.option("--line", type=int, help="光标行（inline/rename，1-based）")
+@click.option("--column", type=int, help="光标列（inline/rename，1-based）")
+def refactor_command(action: str, lang_id: str, file: str, start_line: int | None, end_line: int | None, new_name: str | None, line: int | None, column: int | None):
+    """代码重构 — 提取函数/内联变量/安全重命名"""
+    from pathlib import Path as P
+    from yanpub.core.refactor import RefactoringEngine
+
+    registry = get_registry()
+    adapter = registry.get(lang_id)
+    if adapter is None:
+        click.echo(f"未知语言: {lang_id}", err=True)
+        sys.exit(1)
+
+    code = P(file).read_text(encoding="utf-8")
+    engine = RefactoringEngine(adapter)
+
+    if action == "extract":
+        if not start_line or not end_line:
+            click.echo("extract 需要 --start-line 和 --end-line 参数", err=True)
+            sys.exit(1)
+        func_name = new_name or "提取的函数"
+        result = engine.extract_function(code, start_line, end_line, func_name)
+
+        click.echo(f"提取函数: {func_name}")
+        click.echo(f"替换范围: 第 {start_line} 行 ~ 第 {end_line} 行")
+        click.echo()
+        click.echo("新函数代码：")
+        click.echo(result["new_function"])
+        click.echo()
+        click.echo("替换代码：")
+        click.echo(result["replacement"])
+
+    elif action == "inline":
+        if not line or not column:
+            click.echo("inline 需要 --line 和 --column 参数", err=True)
+            sys.exit(1)
+        result = engine.inline_variable(code, line, column)
+
+        if not result["value"]:
+            click.echo("光标位置不是有效的变量声明")
+            sys.exit(1)
+
+        decl = result["declaration_range"]
+        click.echo("内联变量重构：")
+        click.echo(f"  变量值: {result['value']}")
+        click.echo(f"  声明范围: 第 {decl['start']['line'] + 1} 行")
+        click.echo(f"  使用位置: {len(result['usage_ranges'])} 处")
+        if result["usage_ranges"]:
+            for u in result["usage_ranges"]:
+                click.echo(f"    第 {u['start']['line'] + 1} 行, 列 {u['start']['character'] + 1}")
+
+    elif action == "rename":
+        if not line or not column:
+            click.echo("rename 需要 --line 和 --column 参数", err=True)
+            sys.exit(1)
+        if not new_name:
+            click.echo("rename 需要 --new-name 参数", err=True)
+            sys.exit(1)
+        result = engine.safe_rename(code, line, column, new_name)
+
+        if result["safe"]:
+            click.echo(f"安全重命名: 可以安全地将标识符重命名为 '{new_name}'")
+        else:
+            click.echo(f"重命名检查: 发现 {len(result['conflicts'])} 个冲突")
+            for c in result["conflicts"]:
+                click.echo(f"  ⚠ {c}")
+
+        click.echo(f"需要修改的位置: {len(result['changes'])} 处")
+        if result["changes"]:
+            for ch in result["changes"]:
+                r = ch["range"]
+                uri_info = f" ({ch['uri']})" if ch["uri"] else ""
+                click.echo(f"  第 {r['start']['line'] + 1} 行, 列 {r['start']['character'] + 1}{uri_info}")
 
 
 @main.command("i18n")
