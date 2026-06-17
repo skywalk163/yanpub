@@ -583,11 +583,18 @@ yanpub/
 - [x] 多语言文档国际化（I18nManager + RuleBasedTranslator + I18nDocsGenerator + zh/en/ja/ko 四语支持 + i18n/docs-i18n CLI）
 - [x] LSP 代码签名（CodeSigner + TrustStore 信任链 + AuditLog 审计日志 + HMAC-SHA256/Ed25519 + sign/verify/trust/keygen/audit CLI）
 
-## 十四、下一步（v1.0.0 规划）
+## 十四、已完成（v1.0.0）
+
+- [x] Playground 多文件项目（ProjectManager + Project/ProjectFile + 文件树 + 多标签编辑器 + /api/project/* 路由 + project CLI）
+- [x] 适配器测试框架（AdapterTestSuite + AdapterTestCase + AdapterCompatibilityValidator + RegressionTestGenerator + adapter-test/adapter-validate CLI）
+- [x] LSP 增量同步（apply_change 精确增量 + TextDocumentSyncKind.Incremental + 版本追踪 + 文档变更回调）
+- [x] 性能基线管理（BaselineManager + BaselineSnapshot + PerformanceBudget + CI 回归检测 + baseline/budget CLI）
+
+## 十五、下一步（v1.1.0 规划）
 
 - [ ] 桌面 GUI 封装（Electron/Tauri，离线桌面应用）
 - [ ] 包管理器私有注册中心（自建 Git 仓库 + 镜像同步 + 权限管理）
-- [ ] LSP 增量同步（TextDocumentSyncKind.Incremental + 仅传输变更部分）
-- [ ] 适配器测试框架（自动化测试套件 + 适配器兼容性验证 + 回归测试生成）
-- [ ] Playground 多文件项目（多文件编辑器 + 文件树 + 项目级执行）
-- [ ] 性能基线管理（基线快照 + CI 回归检测 + 性能预算）
+- [ ] Playground 代码分享增强（短链接 + 二维码 + 社交分享）
+- [ ] LSP 代码重构增强（Extract Function / Inline Variable / Safe Rename）
+- [ ] 适配器性能优化（缓存策略 + 延迟加载 + 连接池）
+- [ ] 文档站 SEO 优化（静态生成 + Sitemap + Open Graph）

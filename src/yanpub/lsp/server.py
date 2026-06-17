@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional, Union
 
 from lsprotocol import types as lsp
 from pygls.lsp.server import LanguageServer
@@ -31,6 +31,69 @@ from yanpub.core.adapter import LanguageAdapter, CompletionItem, Diagnostic
 from yanpub.core.registry import get_registry, LanguageRegistry
 
 logger = logging.getLogger("yanpub.lsp")
+
+
+# ---- 增量同步辅助函数 ----
+
+
+def apply_change(
+    text: str,
+    change: Union[
+        lsp.TextDocumentContentChangePartial,
+        lsp.TextDocumentContentChangeWholeDocument,
+    ],
+) -> str:
+    """将增量变更应用到文档文本
+
+    Args:
+        text: 原始文档文本
+        change: LSP ContentChangeEvent（含 range 和 text）
+
+    Returns:
+        应用变更后的新文档文本
+
+    算法：
+    1. 将文本按行分割
+    2. 根据 range.start 和 range.end 计算删除范围
+    3. 删除范围内的文本
+    4. 插入 change.text
+    5. 合并回完整文本
+    """
+    rng = getattr(change, "range", None)
+    if rng is None:
+        # 无 range 表示全文替换（TextDocumentContentChangeWholeDocument）
+        return change.text
+
+    lines = text.split("\n")
+    start_line = rng.start.line
+    start_char = rng.start.character
+    end_line = rng.end.line
+    end_char = rng.end.character
+
+    # 边界检查：空文档
+    if not lines:
+        return change.text
+
+    # 确保 start 不超出范围
+    start_line = min(start_line, len(lines) - 1)
+    end_line = min(end_line, len(lines) - 1)
+
+    # 取 start 位置之前的文本
+    prefix = lines[start_line][:start_char] if start_line < len(lines) else ""
+
+    # 取 end 位置之后的文本
+    suffix = lines[end_line][end_char:] if end_line < len(lines) else ""
+
+    # 拼接：前缀 + 新文本 + 后缀
+    new_content = prefix + change.text + suffix
+
+    # 重建行列表
+    new_lines = new_content.split("\n")
+
+    # 保留 start_line 之前的行和 end_line 之后的行
+    result_lines = lines[:start_line] + new_lines + lines[end_line + 1:]
+
+    return "\n".join(result_lines)
 
 
 # ---- 适配器数据 → LSP 类型转换 ----
@@ -122,6 +185,8 @@ class YanLanguageServer:
         self.registry = registry or get_registry()
         self.server = LanguageServer("yanlsp", "v0.1.0")
         self._documents: dict[str, str] = {}  # uri → 文档内容
+        self._document_versions: dict[str, int] = {}  # uri → 版本号
+        self._on_document_change: list[Callable] = []  # 文档变更回调列表
         self._setup_handlers()
 
     def _setup_handlers(self) -> None:
@@ -129,12 +194,25 @@ class YanLanguageServer:
         server = self.server
 
         # ---- 初始化 ----
+        @server.feature(lsp.INITIALIZE)
+        def initialize(params: lsp.InitializeParams) -> lsp.InitializeResult:
+            """LSP 初始化 — 声明服务器能力"""
+            return lsp.InitializeResult(
+                capabilities=lsp.ServerCapabilities(
+                    text_document_sync=lsp.TextDocumentSyncOptions(
+                        open_close=True,
+                        change=lsp.TextDocumentSyncKind.Incremental,
+                    ),
+                ),
+            )
+
         @server.feature(lsp.TEXT_DOCUMENT_DID_OPEN)
         def did_open(params: lsp.DidOpenTextDocumentParams) -> None:
             """文档打开"""
             doc = params.text_document
             self._documents[doc.uri] = doc.text
-            logger.debug("文档打开: %s", doc.uri)
+            self._document_versions[doc.uri] = doc.version or 0
+            logger.debug("文档打开: %s (v%d)", doc.uri, self._document_versions[doc.uri])
 
             # 检查签名伴随文件，发布签名诊断
             sig_diags = self._check_signature_diagnostics(doc.uri)
@@ -143,22 +221,36 @@ class YanLanguageServer:
 
         @server.feature(lsp.TEXT_DOCUMENT_DID_CHANGE)
         def did_change(params: lsp.DidChangeTextDocumentParams) -> None:
-            """文档变更"""
-            # 取最后一个变更作为当前内容
-            if params.content_changes:
-                # 如果是全文更新
-                change = params.content_changes[-1]
+            """文档变更（增量同步）"""
+            uri = params.text_document.uri
+            current = self._documents.get(uri, "")
+            version = params.text_document.version or 0
+
+            for change in params.content_changes:
                 if change.range is None:
-                    self._documents[params.text_document.uri] = change.text
+                    # 全文替换
+                    current = change.text
                 else:
-                    # 增量更新（简化处理：直接用最新全文）
-                    # 实际生产中应该做增量计算
-                    self._documents[params.text_document.uri] = change.text
+                    # 增量变更
+                    current = apply_change(current, change)
+
+            self._documents[uri] = current
+            self._document_versions[uri] = version
+            logger.debug("文档变更: %s (v%d)", uri, version)
+
+            # 触发文档变更回调
+            for callback in self._on_document_change:
+                try:
+                    callback(uri, current, version)
+                except Exception as e:
+                    logger.warning("文档变更回调异常: %s", e)
 
         @server.feature(lsp.TEXT_DOCUMENT_DID_CLOSE)
         def did_close(params: lsp.DidCloseTextDocumentParams) -> None:
             """文档关闭"""
-            self._documents.pop(params.text_document.uri, None)
+            uri = params.text_document.uri
+            self._documents.pop(uri, None)
+            self._document_versions.pop(uri, None)
 
         # ---- 补全 ----
         @server.feature(
@@ -437,6 +529,14 @@ class YanLanguageServer:
 
         # ---- 代码操作 ----
         self._register_code_action(server)
+
+    def on_document_change(self, callback: Callable) -> None:
+        """注册文档变更回调
+
+        回调签名: callback(uri: str, content: str, version: int)
+        用途：触发诊断、签名验证等
+        """
+        self._on_document_change.append(callback)
 
     # ---- 代码折叠逻辑 ----
 

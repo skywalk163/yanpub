@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "yanpub"
-version = "0.9.0"
+version = "1.0.0"
 description = "言埠 — 中文编程语言统一基础设施"
 readme = "README.md"
 requires-python = ">=3.10"

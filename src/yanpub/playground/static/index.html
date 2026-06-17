@@ -462,6 +462,242 @@
             flex-shrink: 0;
         }
 
+        /* Project mode */
+        #project-mode { display: none; }
+        #project-mode.active { display: flex; }
+
+        .project-sidebar {
+            width: 200px;
+            background: var(--header-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .project-sidebar.collapsed { width: 0; border-right: none; }
+        .project-sidebar-header {
+            padding: 6px 10px;
+            font-size: 11px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .project-sidebar-header .title {
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .project-sidebar-actions {
+            display: flex;
+            gap: 4px;
+        }
+        .project-sidebar-actions button {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 16px;
+            padding: 0 4px;
+        }
+        .project-sidebar-actions button:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
+        .project-file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+        .project-file-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+            position: relative;
+        }
+        .project-file-item:hover { background: #333; }
+        .project-file-item.active { background: #3a3a3a; color: var(--primary); }
+        .project-file-item.main-file { font-weight: bold; }
+        .project-file-icon {
+            margin-right: 6px;
+            font-size: 11px;
+            color: var(--text-dim);
+            flex-shrink: 0;
+        }
+        .project-file-item.active .project-file-icon { color: var(--primary); }
+        .project-file-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .project-file-item .file-actions {
+            display: none;
+            gap: 2px;
+        }
+        .project-file-item:hover .file-actions { display: flex; }
+        .file-actions button {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 11px;
+            padding: 0 2px;
+        }
+        .file-actions button:hover { color: var(--error); }
+
+        /* Project editor tabs */
+        .project-editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .project-tabs {
+            display: flex;
+            background: #2d2d2d;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+        .project-tab {
+            display: flex;
+            align-items: center;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: var(--text-dim);
+            cursor: pointer;
+            border-right: 1px solid var(--border);
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+        .project-tab:hover { background: #363636; }
+        .project-tab.active {
+            background: var(--editor-bg);
+            color: var(--text);
+            border-bottom: 2px solid var(--primary);
+        }
+        .project-tab .tab-modified {
+            color: var(--primary);
+            margin-left: 4px;
+            font-size: 10px;
+        }
+        .project-tab .tab-close {
+            margin-left: 8px;
+            color: #666;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .project-tab .tab-close:hover { color: var(--error); }
+        .project-tab.main-tab .tab-name { font-weight: bold; }
+
+        /* Project toolbar */
+        .project-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 4px 12px;
+            background: #2d2d2d;
+            border-bottom: 1px solid var(--border);
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .project-toolbar .project-name {
+            font-size: 13px;
+            color: var(--text);
+            font-weight: bold;
+        }
+        .project-toolbar select {
+            padding: 3px 8px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: #1e1e1e;
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* File context menu */
+        .file-context-menu {
+            display: none;
+            position: fixed;
+            background: #2d2d2d;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            z-index: 2000;
+            min-width: 140px;
+        }
+        .file-context-menu.show { display: block; }
+        .file-context-menu-item {
+            padding: 6px 14px;
+            font-size: 12px;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .file-context-menu-item:hover { background: #3a3a3a; }
+        .file-context-menu-item.danger { color: var(--error); }
+
+        /* Project new file modal */
+        .project-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        .project-modal-overlay.show { display: flex; }
+        .project-modal {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            width: 360px;
+            max-width: 90%;
+            border: 1px solid var(--border);
+        }
+        .project-modal h3 {
+            margin: 0 0 12px 0;
+            color: var(--text);
+            font-size: 15px;
+        }
+        .project-modal-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #1e1e1e;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 12px;
+        }
+        .project-modal-input:focus { border-color: var(--primary); }
+        .project-modal-btns {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        .project-modal-btns button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .project-modal-btns .btn-ok { background: var(--primary); color: white; }
+        .project-modal-btns .btn-cancel { background: #555; color: #ddd; }
+
         /* Responsive */
         @media (max-width: 768px) {
             .main { flex-direction: column; }
@@ -485,6 +721,7 @@
         <span class="shortcut-hint">Ctrl+Enter</span>
         <span id="lang-badge" class="lang-badge"></span>
         <button id="mode-toggle">对比模式</button>
+        <button id="project-toggle" class="header-btn">项目模式</button>
         <button id="wasm-toggle" class="header-btn">WASM模式</button>
         <button id="collab-btn" class="header-btn">协作</button>
         <button id="share-btn" class="share-btn">分享</button>
@@ -563,6 +800,65 @@
                         <span class="placeholder">右侧输出</span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project mode -->
+    <div id="project-mode" class="main">
+        <div id="project-sidebar" class="project-sidebar">
+            <div class="project-sidebar-header">
+                <span class="title">文件</span>
+                <div class="project-sidebar-actions">
+                    <button id="project-add-file-btn" title="新建文件">+</button>
+                </div>
+            </div>
+            <div id="project-file-list" class="project-file-list"></div>
+        </div>
+        <div class="project-editor-area">
+            <div class="project-toolbar">
+                <span id="project-name-display" class="project-name">项目</span>
+                <select id="project-lang-select">
+                    <option value="">选择语言</option>
+                </select>
+                <button id="project-run-btn" class="run-btn" style="padding:3px 14px;">运行项目</button>
+                <span id="project-status" style="font-size:11px;color:var(--text-dim);margin-left:auto;"></span>
+            </div>
+            <div id="project-tabs" class="project-tabs"></div>
+            <div id="project-editor-container" class="editor-container" style="flex:1;">
+                <textarea id="project-editor"></textarea>
+            </div>
+        </div>
+        <div class="output-pane">
+            <div class="pane-header">
+                <span class="title">输出</span>
+                <button id="project-clear-output" style="background:none;border:1px solid #555;color:#888;padding:1px 8px;border-radius:3px;cursor:pointer;font-size:11px;">清空</button>
+            </div>
+            <div id="project-output" class="output">
+                <span class="placeholder">项目模式 — 创建项目并运行</span>
+            </div>
+        </div>
+        <div id="project-collab-userlist" class="collab-userlist">
+            <div class="collab-userlist-header">在线用户</div>
+            <div id="project-collab-userlist-items" class="collab-userlist-items"></div>
+        </div>
+    </div>
+
+    <!-- File context menu -->
+    <div id="file-context-menu" class="file-context-menu">
+        <div class="file-context-menu-item" data-action="rename">重命名</div>
+        <div class="file-context-menu-item" data-action="set-main">设为入口</div>
+        <div class="file-context-menu-item danger" data-action="delete">删除</div>
+    </div>
+
+    <!-- Project new file modal -->
+    <div id="project-modal-overlay" class="project-modal-overlay">
+        <div class="project-modal">
+            <h3 id="project-modal-title">新建文件</h3>
+            <input id="project-modal-input" class="project-modal-input" type="text" placeholder="文件路径（如 lib/helper.duan）">
+            <div class="project-modal-btns">
+                <button id="project-modal-cancel" class="btn-cancel">取消</button>
+                <button id="project-modal-ok" class="btn-ok">确定</button>
             </div>
         </div>
     </div>
@@ -1622,6 +1918,571 @@
                 collabWs.send(JSON.stringify({ type: 'ping' }));
             }
         }, 30000);
+
+        // ================================================================
+        // Project Mode — 多文件项目
+        // ================================================================
+
+        const projectToggle = document.getElementById('project-toggle');
+        const projectModeEl = document.getElementById('project-mode');
+        const projectSidebar = document.getElementById('project-sidebar');
+        const projectFileList = document.getElementById('project-file-list');
+        const projectAddFileBtn = document.getElementById('project-add-file-btn');
+        const projectNameDisplay = document.getElementById('project-name-display');
+        const projectLangSelect = document.getElementById('project-lang-select');
+        const projectRunBtn = document.getElementById('project-run-btn');
+        const projectStatusEl = document.getElementById('project-status');
+        const projectTabs = document.getElementById('project-tabs');
+        const projectEditorContainer = document.getElementById('project-editor-container');
+        const projectOutputEl = document.getElementById('project-output');
+        const projectClearOutputBtn = document.getElementById('project-clear-output');
+        const fileContextMenu = document.getElementById('file-context-menu');
+        const projectModalOverlay = document.getElementById('project-modal-overlay');
+        const projectModalTitle = document.getElementById('project-modal-title');
+        const projectModalInput = document.getElementById('project-modal-input');
+        const projectModalOk = document.getElementById('project-modal-ok');
+        const projectModalCancel = document.getElementById('project-modal-cancel');
+
+        let isProjectMode = false;
+        let projectEditor = null;
+        let currentProject = null;          // { id, name, language, mainFile, files }
+        let openTabs = [];                  // [{ path, modified }]
+        let activeTabPath = null;
+        let projectFileContents = {};       // path → content (local cache)
+        let projectModalAction = null;      // 'add' | 'rename'
+        let projectModalContext = null;     // context for modal (e.g. file path)
+
+        function initProjectEditor() {
+            if (projectEditor) return;
+            projectEditor = CodeMirror.fromTextArea(
+                document.getElementById('project-editor'),
+                {
+                    mode: 'javascript',
+                    theme: 'dracula',
+                    lineNumbers: true,
+                    lineWrapping: true,
+                    indentUnit: 4,
+                    tabSize: 4,
+                    indentWithTabs: false,
+                    autoCloseBrackets: true,
+                    matchBrackets: true,
+                    styleActiveLine: true,
+                    extraKeys: {
+                        'Ctrl-Enter': runProject,
+                        'Cmd-Enter': runProject,
+                    },
+                }
+            );
+            projectEditor.setValue('// 选择一种语言，创建项目开始编写...');
+            projectEditor.on('change', onProjectEditorChange);
+        }
+
+        function onProjectEditorChange(cm, change) {
+            if (!currentProject || !activeTabPath) return;
+            projectFileContents[activeTabPath] = cm.getValue();
+            // Mark as modified
+            var tab = openTabs.find(function(t) { return t.path === activeTabPath; });
+            if (tab && !tab.modified) {
+                tab.modified = true;
+                renderProjectTabs();
+            }
+            // Debounced save to server
+            if (projectSaveTimer) clearTimeout(projectSaveTimer);
+            projectSaveTimer = setTimeout(function() {
+                saveProjectFile(activeTabPath);
+            }, 800);
+        }
+
+        var projectSaveTimer = null;
+
+        function saveProjectFile(path) {
+            if (!currentProject) return;
+            fetch('/api/project/' + currentProject.id + '/files/' + encodeURIComponent(path), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: projectFileContents[path] || '' }),
+            }).catch(function() {});
+        }
+
+        function createProject() {
+            var langId = projectLangSelect.value || (languages.length > 0 ? languages[0].id : 'duan');
+            var name = '我的项目';
+
+            fetch('/api/project/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, language: langId }),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                currentProject = data;
+                projectFileContents = {};
+                // Load file contents
+                (data.files || {}).forEach ? null : null;
+                var files = data.files || {};
+                Object.keys(files).forEach(function(k) {
+                    projectFileContents[k] = files[k].content || '';
+                });
+                projectNameDisplay.textContent = data.name;
+                projectLangSelect.value = data.language;
+                renderProjectFileList();
+                // Open main file
+                if (data.mainFile) {
+                    openProjectTab(data.mainFile);
+                }
+                projectStatusEl.textContent = '项目已创建';
+            })
+            .catch(function(err) {
+                projectStatusEl.textContent = '创建失败: ' + err.message;
+            });
+        }
+
+        function loadProject(projectId) {
+            fetch('/api/project/' + projectId)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    currentProject = data;
+                    projectFileContents = {};
+                    var files = data.files || {};
+                    Object.keys(files).forEach(function(k) {
+                        projectFileContents[k] = files[k].content || '';
+                    });
+                    projectNameDisplay.textContent = data.name;
+                    projectLangSelect.value = data.language;
+                    renderProjectFileList();
+                    // Open main file
+                    if (data.mainFile) {
+                        openProjectTab(data.mainFile);
+                    }
+                    projectStatusEl.textContent = '项目已加载';
+                })
+                .catch(function() {
+                    projectStatusEl.textContent = '加载失败';
+                });
+        }
+
+        function renderProjectFileList() {
+            if (!currentProject) {
+                projectFileList.innerHTML = '<div style="padding:8px 12px;color:var(--text-dim);font-size:11px;">无项目</div>';
+                return;
+            }
+
+            projectFileList.innerHTML = '';
+            var files = currentProject.files || {};
+            var sortedPaths = Object.keys(files).sort();
+
+            sortedPaths.forEach(function(path) {
+                var item = document.createElement('div');
+                item.className = 'project-file-item' +
+                    (path === activeTabPath ? ' active' : '') +
+                    (path === currentProject.mainFile ? ' main-file' : '');
+                item.dataset.path = path;
+
+                var icon = document.createElement('span');
+                icon.className = 'project-file-icon';
+                icon.textContent = path === currentProject.mainFile ? '\u25B6' : '\uD83D\uDCC4';
+
+                var name = document.createElement('span');
+                name.className = 'project-file-name';
+                name.textContent = path;
+
+                var actions = document.createElement('span');
+                actions.className = 'file-actions';
+                actions.innerHTML = '<button data-action="delete" title="删除">\u00D7</button>';
+
+                item.appendChild(icon);
+                item.appendChild(name);
+                item.appendChild(actions);
+
+                item.addEventListener('click', function(e) {
+                    if (e.target.dataset.action === 'delete') {
+                        deleteProjectFile(path);
+                        return;
+                    }
+                    openProjectTab(path);
+                });
+
+                item.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showFileContextMenu(e, path);
+                });
+
+                projectFileList.appendChild(item);
+            });
+        }
+
+        function openProjectTab(path) {
+            // Save current tab content first
+            if (activeTabPath && projectEditor) {
+                projectFileContents[activeTabPath] = projectEditor.getValue();
+            }
+
+            activeTabPath = path;
+
+            // Add tab if not already open
+            var existing = openTabs.find(function(t) { return t.path === path; });
+            if (!existing) {
+                openTabs.push({ path: path, modified: false });
+            }
+
+            // Switch editor content
+            if (projectEditor) {
+                projectEditor.setValue(projectFileContents[path] || '');
+                projectEditor.clearHistory();
+                // Set mode based on language
+                var lang = languages.find(function(l) { return l.id === (currentProject ? currentProject.language : ''); });
+                if (lang) {
+                    updateEditorMode(projectEditor, lang);
+                }
+                projectEditor.focus();
+            }
+
+            renderProjectTabs();
+            renderProjectFileList();
+        }
+
+        function closeProjectTab(path) {
+            if (openTabs.length <= 1) return; // Don't close last tab
+
+            var idx = openTabs.findIndex(function(t) { return t.path === path; });
+            if (idx === -1) return;
+
+            openTabs.splice(idx, 1);
+
+            if (activeTabPath === path) {
+                // Switch to adjacent tab
+                var newIdx = Math.min(idx, openTabs.length - 1);
+                openProjectTab(openTabs[newIdx].path);
+            }
+
+            renderProjectTabs();
+        }
+
+        function renderProjectTabs() {
+            projectTabs.innerHTML = '';
+            openTabs.forEach(function(tab) {
+                var tabEl = document.createElement('div');
+                tabEl.className = 'project-tab' +
+                    (tab.path === activeTabPath ? ' active' : '') +
+                    (currentProject && tab.path === currentProject.mainFile ? ' main-tab' : '');
+
+                var name = document.createElement('span');
+                name.className = 'tab-name';
+                name.textContent = tab.path;
+
+                tabEl.appendChild(name);
+
+                if (tab.modified) {
+                    var mod = document.createElement('span');
+                    mod.className = 'tab-modified';
+                    mod.textContent = '\u25CF';
+                    tabEl.appendChild(mod);
+                }
+
+                var close = document.createElement('span');
+                close.className = 'tab-close';
+                close.textContent = '\u00D7';
+                close.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeProjectTab(tab.path);
+                });
+                tabEl.appendChild(close);
+
+                tabEl.addEventListener('click', function() {
+                    openProjectTab(tab.path);
+                });
+
+                projectTabs.appendChild(tabEl);
+            });
+        }
+
+        function addProjectFile(path) {
+            if (!currentProject) return;
+            fetch('/api/project/' + currentProject.id + '/files', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    path: path,
+                    content: '',
+                    language: currentProject.language,
+                }),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    projectStatusEl.textContent = data.error;
+                    return;
+                }
+                // Update local cache
+                currentProject.files[path] = data;
+                projectFileContents[path] = '';
+                renderProjectFileList();
+                openProjectTab(path);
+                projectStatusEl.textContent = '文件已添加: ' + path;
+            })
+            .catch(function(err) {
+                projectStatusEl.textContent = '添加失败: ' + err.message;
+            });
+        }
+
+        function deleteProjectFile(path) {
+            if (!currentProject) return;
+            if (!confirm('确定删除文件 ' + path + '？')) return;
+
+            fetch('/api/project/' + currentProject.id + '/files/' + encodeURIComponent(path), {
+                method: 'DELETE',
+            })
+            .then(function(r) { return r.json(); })
+            .then(function() {
+                delete currentProject.files[path];
+                delete projectFileContents[path];
+                // Close tab if open
+                openTabs = openTabs.filter(function(t) { return t.path !== path; });
+                if (activeTabPath === path) {
+                    if (openTabs.length > 0) {
+                        openProjectTab(openTabs[0].path);
+                    } else {
+                        activeTabPath = null;
+                        if (projectEditor) projectEditor.setValue('');
+                    }
+                }
+                renderProjectFileList();
+                renderProjectTabs();
+                projectStatusEl.textContent = '文件已删除: ' + path;
+            })
+            .catch(function(err) {
+                projectStatusEl.textContent = '删除失败: ' + err.message;
+            });
+        }
+
+        function renameProjectFile(oldPath, newPath) {
+            if (!currentProject) return;
+            fetch('/api/project/' + currentProject.id + '/files/rename', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPath: oldPath, newPath: newPath }),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    projectStatusEl.textContent = data.error;
+                    return;
+                }
+                // Update local cache
+                var content = projectFileContents[oldPath] || '';
+                delete projectFileContents[oldPath];
+                delete currentProject.files[oldPath];
+                currentProject.files[newPath] = { path: newPath, content: content };
+                projectFileContents[newPath] = content;
+                if (currentProject.mainFile === oldPath) {
+                    currentProject.mainFile = newPath;
+                }
+                // Update tabs
+                openTabs.forEach(function(t) {
+                    if (t.path === oldPath) t.path = newPath;
+                });
+                if (activeTabPath === oldPath) activeTabPath = newPath;
+                renderProjectFileList();
+                renderProjectTabs();
+                projectStatusEl.textContent = '文件已重命名: ' + oldPath + ' → ' + newPath;
+            })
+            .catch(function(err) {
+                projectStatusEl.textContent = '重命名失败: ' + err.message;
+            });
+        }
+
+        function setMainFile(path) {
+            if (!currentProject) return;
+            currentProject.mainFile = path;
+            renderProjectFileList();
+            renderProjectTabs();
+            projectStatusEl.textContent = '入口文件已设置: ' + path;
+            // Save to server by updating project — simple approach: re-save
+            fetch('/api/project/' + currentProject.id, {
+                method: 'GET',
+            }).catch(function() {});
+        }
+
+        function showFileContextMenu(e, path) {
+            fileContextMenu.style.left = e.clientX + 'px';
+            fileContextMenu.style.top = e.clientY + 'px';
+            fileContextMenu.classList.add('show');
+            fileContextMenu._targetPath = path;
+        }
+
+        function hideFileContextMenu() {
+            fileContextMenu.classList.remove('show');
+        }
+
+        function showProjectModal(title, defaultValue, action, context) {
+            projectModalTitle.textContent = title;
+            projectModalInput.value = defaultValue || '';
+            projectModalAction = action;
+            projectModalContext = context;
+            projectModalOverlay.classList.add('show');
+            setTimeout(function() { projectModalInput.focus(); }, 100);
+        }
+
+        function hideProjectModal() {
+            projectModalOverlay.classList.remove('show');
+            projectModalAction = null;
+            projectModalContext = null;
+        }
+
+        function runProject() {
+            if (!currentProject) {
+                alert('请先创建项目');
+                return;
+            }
+            // Save current file first
+            if (activeTabPath && projectEditor) {
+                projectFileContents[activeTabPath] = projectEditor.getValue();
+                saveProjectFile(activeTabPath);
+            }
+
+            projectOutputEl.innerHTML = '';
+            appendToOutput(projectOutputEl, 'info', '执行项目中...');
+            projectStatusEl.textContent = '执行中...';
+
+            fetch('/api/project/' + currentProject.id + '/run', {
+                method: 'POST',
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                projectOutputEl.innerHTML = '';
+                if (data.type === 'error') {
+                    appendToOutput(projectOutputEl, 'stderr', data.message);
+                    projectStatusEl.textContent = '错误';
+                    return;
+                }
+                if (data.stdout) {
+                    data.stdout.split('\n').forEach(function(line) {
+                        if (line) appendToOutput(projectOutputEl, 'stdout', line);
+                    });
+                }
+                if (data.stderr) {
+                    data.stderr.split('\n').forEach(function(line) {
+                        if (line) appendToOutput(projectOutputEl, 'stderr', line);
+                    });
+                }
+                appendToOutput(projectOutputEl, 'meta', '[' + (data.durationMs || 0).toFixed(0) + 'ms]');
+                projectStatusEl.textContent = data.exitCode === 0 ? '完成' : '错误';
+            })
+            .catch(function(err) {
+                projectOutputEl.innerHTML = '';
+                appendToOutput(projectOutputEl, 'stderr', '请求失败: ' + err.message);
+                projectStatusEl.textContent = '失败';
+            });
+        }
+
+        // ---- Project mode toggle ----
+
+        projectToggle.addEventListener('click', function() {
+            isProjectMode = !isProjectMode;
+            projectToggle.classList.toggle('active', isProjectMode);
+
+            // Hide other modes
+            if (isProjectMode) {
+                isCompareMode = false;
+                modeToggle.classList.remove('active');
+                modeToggle.textContent = '对比模式';
+                singleMode.classList.add('hidden');
+                compareMode.classList.remove('active');
+            }
+
+            singleMode.classList.toggle('hidden', isProjectMode);
+            compareMode.classList.remove('active');
+            projectModeEl.classList.toggle('active', isProjectMode);
+
+            if (isProjectMode) {
+                initProjectEditor();
+                if (!currentProject) {
+                    // Populate language select
+                    projectLangSelect.innerHTML = '';
+                    languages.forEach(function(lang) {
+                        var opt = document.createElement('option');
+                        opt.value = lang.id;
+                        opt.textContent = lang.name + ' (' + lang.id + ')';
+                        projectLangSelect.appendChild(opt);
+                    });
+                    createProject();
+                }
+                setTimeout(function() {
+                    if (projectEditor) projectEditor.refresh();
+                }, 50);
+            } else {
+                setTimeout(function() { editor.refresh(); }, 50);
+            }
+        });
+
+        // ---- Project sidebar add file ----
+
+        projectAddFileBtn.addEventListener('click', function() {
+            showProjectModal('新建文件', '', 'add');
+        });
+
+        // ---- Project language change ----
+
+        projectLangSelect.addEventListener('change', function() {
+            if (currentProject) {
+                currentProject.language = projectLangSelect.value;
+            }
+        });
+
+        // ---- Project run ----
+
+        projectRunBtn.addEventListener('click', runProject);
+
+        // ---- Project clear output ----
+
+        projectClearOutputBtn.addEventListener('click', function() {
+            projectOutputEl.innerHTML = '<span class="placeholder">输出已清空</span>';
+        });
+
+        // ---- File context menu ----
+
+        document.addEventListener('click', hideFileContextMenu);
+
+        fileContextMenu.querySelectorAll('.file-context-menu-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                var action = this.dataset.action;
+                var path = fileContextMenu._targetPath;
+                hideFileContextMenu();
+
+                if (action === 'rename') {
+                    showProjectModal('重命名文件', path, 'rename', path);
+                } else if (action === 'set-main') {
+                    setMainFile(path);
+                } else if (action === 'delete') {
+                    deleteProjectFile(path);
+                }
+            });
+        });
+
+        // ---- Project modal ----
+
+        projectModalOk.addEventListener('click', function() {
+            var value = projectModalInput.value.trim();
+            if (!value) return;
+
+            if (projectModalAction === 'add') {
+                addProjectFile(value);
+            } else if (projectModalAction === 'rename' && projectModalContext) {
+                renameProjectFile(projectModalContext, value);
+            }
+            hideProjectModal();
+        });
+
+        projectModalCancel.addEventListener('click', hideProjectModal);
+
+        projectModalInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') projectModalOk.click();
+            if (e.key === 'Escape') hideProjectModal();
+        });
+
+        projectModalOverlay.addEventListener('click', function(e) {
+            if (e.target === projectModalOverlay) hideProjectModal();
+        });
 
         // ---- Events ----
         langSelect.addEventListener('change', () => selectLanguage(langSelect.value));
