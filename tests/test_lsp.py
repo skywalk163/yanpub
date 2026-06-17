@@ -250,3 +250,143 @@ class TestMultiLanguageLSP:
         moyan_adapter = server._get_adapter_for_uri("file:///tmp/hello.moyan")
         assert moyan_adapter is not None
         assert moyan_adapter.id == "moyan"
+
+
+# ---- 导航功能测试 ----
+
+class TestLSPNavigation:
+    """LSP 代码导航测试"""
+
+    def test_symbol_navigator_definition(self):
+        """SymbolNavigator — Go to Definition"""
+        from yanpub.core.navigator import SymbolNavigator
+
+        code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。"
+        nav = SymbolNavigator(keywords=["段落", "返回", "结束"])
+        results = nav.find_definition(code, 1, 4, uri="test://file.duan", documents={"test://file.duan": code})
+
+        assert len(results) >= 1
+        assert results[0]["range"]["start"]["line"] == 0
+
+    def test_symbol_navigator_references(self):
+        """SymbolNavigator — Find All References"""
+        from yanpub.core.navigator import SymbolNavigator
+
+        code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。\n\n设 结果 为 加法(三, 四)。"
+        nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
+        results = nav.find_references(code, 1, 4, uri="test://file.duan", documents={"test://file.duan": code})
+
+        assert len(results) >= 2  # 定义 + 引用
+
+    def test_symbol_navigator_call_hierarchy(self):
+        """SymbolNavigator — Call Hierarchy"""
+        from yanpub.core.navigator import SymbolNavigator
+
+        code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。\n\n段落 计算结果(甲, 乙)。\n  设 合 为 加法(甲, 乙)。\n  返回 合。\n结束。"
+        nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
+
+        results = nav.find_call_hierarchy(code, 1, 4, uri="test://file.duan", documents={"test://file.duan": code})
+        assert results is not None
+        assert "items" in results
+        item = results["items"][0]
+        assert item["name"] == "加法"
+        # 加法 被计算结果调用
+        caller_names = [c["name"] for c in item.get("callers", [])]
+        assert "计算结果" in caller_names
+
+    def test_symbol_navigator_cross_document_definition(self):
+        """SymbolNavigator — 跨文档定义查找"""
+        from yanpub.core.navigator import SymbolNavigator
+
+        code1 = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。"
+        code2 = "设 结果 为 加法(三, 四)。"
+        nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
+        docs = {"file1": code1, "file2": code2}
+
+        results = nav.find_definition(code2, 1, 8, uri="file2", documents=docs)
+        assert len(results) >= 1
+        assert results[0]["uri"] == "file1"
+
+    def test_symbol_navigator_variable_definition(self):
+        """SymbolNavigator — 变量定义查找"""
+        from yanpub.core.navigator import SymbolNavigator
+
+        code = "段落 测试()。\n  设 甲 为 42。\n  设 乙 为 甲 加 1。\n  返回 乙。\n结束。"
+        nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
+        results = nav.find_definition(code, 3, 9, uri="test://file.duan", documents={"test://file.duan": code})
+
+        assert len(results) >= 1
+        assert results[0]["range"]["start"]["line"] == 1  # 变量定义在第2行（0-based: 1）
+
+    def test_symbol_navigator_outgoing_calls(self):
+        """SymbolNavigator — 出调用（callees）"""
+        from yanpub.core.navigator import SymbolNavigator
+
+        code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。\n\n段落 计算结果(甲, 乙)。\n  设 合 为 加法(甲, 乙)。\n  返回 合。\n结束。"
+        nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
+
+        results = nav.find_call_hierarchy(code, 5, 4, uri="test://file.duan", documents={"test://file.duan": code})
+        assert results is not None
+        item = results["items"][0]
+        assert item["name"] == "计算结果"
+        callee_names = [c["name"] for c in item.get("children", [])]
+        assert "加法" in callee_names
+
+    def test_symbol_navigator_no_definition_found(self):
+        """SymbolNavigator — 无匹配定义"""
+        from yanpub.core.navigator import SymbolNavigator
+
+        code = "段落 加法()。结束。"
+        nav = SymbolNavigator(keywords=["段落", "结束"])
+        # 光标在关键字'段落'上，没有名为'段落'的定义
+        results = nav.find_definition(code, 1, 2, uri="test://file.duan", documents={"test://file.duan": code})
+        # 关键字本身不应该有定义
+        assert isinstance(results, list)
+
+    def test_symbol_navigator_references_include_declaration(self):
+        """SymbolNavigator — 引用查找包含/排除定义"""
+        from yanpub.core.navigator import SymbolNavigator
+
+        code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。"
+        nav = SymbolNavigator(keywords=["段落", "返回", "结束"])
+
+        with_decl = nav.find_references(code, 1, 4, uri="test://file.duan", documents={"test://file.duan": code}, include_declaration=True)
+        without_decl = nav.find_references(code, 1, 4, uri="test://file.duan", documents={"test://file.duan": code}, include_declaration=False)
+
+        assert len(with_decl) >= len(without_decl)
+
+    def test_adapter_navigation_defaults(self):
+        """适配器导航方法默认返回 None"""
+        from yanpub.core.adapter import SubprocessAdapter
+
+        adapter = SubprocessAdapter(
+            name="测试", lang_id="test", version="0.1.0",
+            extensions=[".test"], run_command=["echo"],
+        )
+        assert adapter.definition("code", 1, 1) is None
+        assert adapter.references("code", 1, 1) is None
+        assert adapter.call_hierarchy("code", 1, 1) is None
+
+    def test_dict_to_call_hierarchy_item(self):
+        """LSP _dict_to_call_hierarchy_item 转换"""
+        server = YanLanguageServer(registry=LanguageRegistry())
+
+        item_dict = {
+            "name": "加法",
+            "kind": 12,
+            "uri": "test://file.duan",
+            "range": {
+                "start": {"line": 0, "character": 3},
+                "end": {"line": 0, "character": 5},
+            },
+            "selectionRange": {
+                "start": {"line": 0, "character": 3},
+                "end": {"line": 0, "character": 5},
+            },
+        }
+
+        result = server._dict_to_call_hierarchy_item(item_dict)
+        assert result.name == "加法"
+        assert result.uri == "test://file.duan"
+        assert result.range.start.line == 0
+        assert result.range.start.character == 3

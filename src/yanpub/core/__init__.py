@@ -11,6 +11,25 @@ from yanpub.core.adapter import (
 )
 from yanpub.core.registry import LanguageRegistry
 from yanpub.core.config import YanPubConfig
+from yanpub.core.sandbox import (
+    SandboxConfig,
+    SandboxResult,
+    SandboxBackend,
+    DockerSandbox,
+    FreeBSDJailSandbox,
+    ProcessSandbox,
+    SandboxManager,
+)
+from yanpub.core.debugger import (
+    Breakpoint,
+    StackFrame,
+    Variable,
+    DebugEvent,
+    DebugSession,
+    DebugAdapter,
+    LineTracer,
+)
+from yanpub.core.dap_server import DAPServer
 
 __all__ = [
     "LanguageAdapter",
@@ -22,4 +41,19 @@ __all__ = [
     "HTTPAdapter",
     "LanguageRegistry",
     "YanPubConfig",
+    "SandboxConfig",
+    "SandboxResult",
+    "SandboxBackend",
+    "DockerSandbox",
+    "FreeBSDJailSandbox",
+    "ProcessSandbox",
+    "SandboxManager",
+    "Breakpoint",
+    "StackFrame",
+    "Variable",
+    "DebugEvent",
+    "DebugSession",
+    "DebugAdapter",
+    "LineTracer",
+    "DAPServer",
 ]

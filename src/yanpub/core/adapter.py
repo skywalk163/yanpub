@@ -321,6 +321,18 @@ class LanguageAdapter(ABC):
 
         return edits if edits else None
 
+    def definition(self, code: str, line: int, column: int) -> Optional[list[dict]]:
+        """跳转到定义。返回 [{"uri": str, "range": {"start": {"line": int, "character": int}, "end": {...}}}]"""
+        return None
+
+    def references(self, code: str, line: int, column: int) -> Optional[list[dict]]:
+        """查找所有引用。返回 [{"uri": str, "range": {...}}]"""
+        return None
+
+    def call_hierarchy(self, code: str, line: int, column: int) -> Optional[dict]:
+        """调用层次。返回 {"items": [{"name": str, "kind": str, "uri": str, "range": {...}, "children": [...]}]}"""
+        return None
+
     # ---- 关键字（推荐覆盖）----
 
     @property

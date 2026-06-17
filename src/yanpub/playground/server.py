@@ -7,6 +7,9 @@ API:
   GET  /api/share         解析分享链接（query: lang, code）
   POST /api/run           同步执行代码
   WS   /ws/run            WebSocket 执行代码（支持多轮交互）
+  POST /api/ai/complete   AI 智能补全
+  POST /api/ai/nl2code    自然语言转代码
+  POST /api/ai/fix        错误修复建议
 """
 
 from __future__ import annotations
@@ -228,10 +231,137 @@ def create_app() -> FastAPI:
             "executor": "wasm" if executor.is_available else "fallback",
         }
 
+    # ---- 沙箱执行 ----
+
+    @app.post("/api/sandbox/run")
+    async def run_sandbox_code(body: dict):
+        """沙箱执行代码（安全隔离环境）"""
+        lang_id = body.get("lang", "")
+        code = body.get("code", "")
+        backend = body.get("backend", "auto")
+        memory = body.get("memory", "512m")
+        timeout = body.get("timeout", 30.0)
+        network = body.get("network", False)
+
+        registry = get_registry()
+        adapter = registry.get(lang_id)
+        if adapter is None:
+            return JSONResponse({
+                "type": "error",
+                "message": f"未知语言: {lang_id}",
+            }, status_code=400)
+
+        from yanpub.core.sandbox import SandboxManager, SandboxConfig
+
+        config = SandboxConfig(
+            backend=backend,
+            memory_limit=memory,
+            timeout=timeout,
+            network=network,
+        )
+        manager = SandboxManager(config)
+
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, manager.execute_code, adapter, code)
+
+        # 清理
+        try:
+            manager.cleanup()
+        except Exception:
+            pass
+
+        return {
+            "type": "sandbox_result",
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "exitCode": result.exit_code,
+            "durationMs": result.duration_ms,
+            "memoryUsedMb": result.memory_used_mb,
+            "sandboxId": result.sandbox_id,
+            "backend": result.backend,
+        }
+
+    @app.get("/api/sandbox/status")
+    async def sandbox_status():
+        """查询沙箱后端状态"""
+        from yanpub.core.sandbox import SandboxManager
+
+        status = SandboxManager.get_backend_status()
+        available = [name for name, info in status.items() if info["available"]]
+
+        return {
+            "backends": status,
+            "available": available,
+            "recommended": available[0] if available else "process",
+        }
+
+    # ---- AI 辅助 ----
+
+    _register_ai_routes(app)
+
     # ---- 实时协作 ----
     _register_collab(app)
 
     return app
+
+
+def _register_ai_routes(app: FastAPI) -> None:
+    """注册 AI 辅助路由"""
+    from yanpub.core.ai_assist import AIAssistEngine, AIAssistConfig
+
+    _ai_engine = AIAssistEngine(AIAssistConfig())
+
+    @app.post("/api/ai/complete")
+    async def ai_complete(body: dict):
+        """AI 智能补全"""
+        lang_id = body.get("lang", "")
+        code = body.get("code", "")
+        line = body.get("line", 1)
+        column = body.get("column", 1)
+
+        registry = get_registry()
+        adapter = registry.get(lang_id)
+        if adapter is None:
+            return JSONResponse({
+                "error": f"未知语言: {lang_id}",
+            }, status_code=400)
+
+        result = _ai_engine.smart_complete(adapter, code, line, column)
+        return {"items": result}
+
+    @app.post("/api/ai/nl2code")
+    async def ai_nl2code(body: dict):
+        """自然语言转代码"""
+        lang_id = body.get("lang", "")
+        text = body.get("text", "")
+        context = body.get("context", "")
+
+        registry = get_registry()
+        adapter = registry.get(lang_id)
+        if adapter is None:
+            return JSONResponse({
+                "error": f"未知语言: {lang_id}",
+            }, status_code=400)
+
+        result = _ai_engine.nl_to_code(adapter, text, context)
+        return result
+
+    @app.post("/api/ai/fix")
+    async def ai_fix(body: dict):
+        """错误修复建议"""
+        lang_id = body.get("lang", "")
+        code = body.get("code", "")
+        error = body.get("error", "")
+
+        registry = get_registry()
+        adapter = registry.get(lang_id)
+        if adapter is None:
+            return JSONResponse({
+                "error": f"未知语言: {lang_id}",
+            }, status_code=400)
+
+        result = _ai_engine.fix_suggestion(adapter, code, error)
+        return {"suggestions": result}
 
 
 def _register_collab(app: FastAPI) -> None:

@@ -569,11 +569,18 @@ yanpub/
 - [x] 适配器性能分析器（AdapterProfiler + FlameGraph + HotspotDetector + profile CLI）
 - [x] 包管理器版本工作集（VersionConstraint + WorkspaceLock + VersionSetManager + lock/check-lock CLI）
 
-## 十二、下一步（v0.8.0 规划）
+## 十二、已完成（v0.8.0）
 
-- [ ] 云端执行沙箱（远程代码执行服务，容器化/安全隔离）
+- [x] LSP 代码导航（Go to Definition / Find All References / Call Hierarchy + SymbolNavigator 基于文本分析 + adapter navigate CLI）
+- [x] 云端执行沙箱（SandboxManager + DockerSandbox/Podman/FreeBSDJail/ProcessSandbox 多后端 + FreeBSD jail 支持 + sandbox CLI）
+- [x] Playground AI 辅助（AIAssistEngine + 智能补全 + 自然语言转代码 + 错误修复建议 + /api/ai/* 路由 + ai CLI）
+- [x] 适配器调试器集成（DebugSession + LineTracer + DebugAdapter DAP协议 + DAPServer JSON-RPC over TCP + debug/dap-server CLI）
+
+## 十三、下一步（v0.9.0 规划）
+
 - [ ] 桌面 GUI 封装（Electron/Tauri，离线桌面应用）
-- [ ] LSP 代码导航（Go to Definition / Find All References / Call Hierarchy）
-- [ ] 适配器调试器集成（断点调试支持，DAP 协议）
 - [ ] 包管理器私有注册中心（自建 Git 仓库 + 镜像同步 + 权限管理）
-- [ ] Playground AI 辅助（代码补全 + 自然语言转代码 + 错误修复建议）
+- [ ] LSP 代码签名（代码签名验证 + 信任链 + 安全审计）
+- [ ] 多语言文档国际化（i18n 扩展 — 适配器文档自动翻译 + 多语言 API 文档生成）
+- [ ] 性能监控面板（实时性能仪表板 + WebSocket 推送 + 历史趋势图）
+- [ ] VSCode 扩展增强（调试适配器集成 + AI 辅助面板 + 沙箱执行按钮）
