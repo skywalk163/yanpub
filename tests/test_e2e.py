@@ -173,7 +173,19 @@ class TestCLIVersion:
             timeout=10,
         )
         assert result.returncode == 0
-        assert "0.1.0" in result.stdout
+        # 从 pyproject.toml 动态读取版本号
+        try:
+            import tomllib
+        except ImportError:
+            import tomli as tomllib  # type: ignore[no-redef]
+
+        toml_path = (
+            __import__("pathlib").Path(__file__).resolve().parent.parent / "pyproject.toml"
+        )
+        with open(toml_path, "rb") as f:
+            config = tomllib.load(f)
+        expected = config["project"]["version"]
+        assert expected in result.stdout
 
 
 # ---- Playground 端到端 ----

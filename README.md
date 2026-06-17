@@ -137,7 +137,7 @@ class MyLangAdapter(SubprocessAdapter):
 
 - 启动时间 ~0.24s（10个适配器懒加载）
 - 关键字首次访问 ~0.38s（动态从项目加载），缓存后 0s
-- 177 个测试全部通过
+- 932 个测试全部通过
 
 ## License
 

@@ -183,7 +183,7 @@ class YanLanguageServer:
 
     def __init__(self, registry: Optional[LanguageRegistry] = None):
         self.registry = registry or get_registry()
-        self.server = LanguageServer("yanlsp", "v0.1.0")
+        self.server = LanguageServer("yanlsp", "v1.1.0")
         self._documents: dict[str, str] = {}  # uri → 文档内容
         self._document_versions: dict[str, int] = {}  # uri → 版本号
         self._on_document_change: list[Callable] = []  # 文档变更回调列表

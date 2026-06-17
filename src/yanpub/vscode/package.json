@@ -2,7 +2,7 @@
   "name": "yanpub",
   "displayName": "言埠 YanPub — 中文编程语言支持",
   "description": "统一中文编程语言工具链：语法高亮、代码补全、诊断、格式化、调试、AI辅助、沙箱执行。支持段言/言/墨言等多种中文编程语言。",
-  "version": "0.9.0",
+  "version": "1.1.0",
   "publisher": "yanpub",
   "license": "MIT",
   "engines": {
