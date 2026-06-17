@@ -275,7 +275,8 @@ yanpub/
 │   │   ├── plugin.py            # 插件系统（v0.4.0 新增）
 │   │   ├── bench_viz.py         # 性能调优面板（v0.5.0 新增）
 │   │   ├── wasm.py              # WASM 执行器（v0.5.0 新增）
-│   │   └── hotreload.py         # 适配器热重载（v0.6.0 新增）
+│   │   ├── hotreload.py         # 适配器热重载（v0.6.0 新增）
+│   │   └── profiler.py          # 适配器性能分析器（v0.7.0 新增）
 │   │
 │   ├── adapters/                # 10个语言适配器
 │   │   ├── _keywords_cache.py   #   关键字缓存工具
@@ -298,16 +299,17 @@ yanpub/
 │   │   ├── remote.py            #   远程注册中心
 │   │   ├── lockfile.py          #   依赖锁定管理（v0.4.0 新增）
 │   │   ├── semantic_release.py  #   语义发布（v0.5.0 新增）
-│   │   └── workspace.py         #   工作空间管理（v0.6.0 新增）
+│   │   ├── workspace.py         #   工作空间管理（v0.6.0 新增）
+│   │   └── versionset.py        #   版本工作集（v0.7.0 新增）
 │   │
 │   ├── playground/              # 统一 Playground
 │   │   ├── server.py            #   FastAPI + WebSocket 后端（含分享API + WASM + 协作API）
 │   │   ├── collab.py            #   实时协作 CRDT + 房间管理（v0.6.0 新增）
-│   │   ├── static/index.html    #   CodeMirror 5 前端（含对比+分享+WASM模式）
+│   │   ├── static/index.html    #   CodeMirror 5 前端（含对比+分享+WASM+协作模式）
 │   │   └── templates/           #   各语言示例模板
 │   │
 │   ├── lsp/                     # 统一 LSP 服务
-│   │   └── server.py            #   pygls 2.x 服务端（含 hover + 格式化 + rename + codeAction + codeLens + 折叠）
+│   │   └── server.py            #   pygls 2.x 服务端（含 hover + 格式化 + rename + codeAction + codeLens + 折叠 + 语义高亮）
 │   │
 │   ├── repl/                    # 统一 REPL
 │   │   ├── core.py              #   prompt_toolkit REPL + 高亮 + 补全 + 多行续行
@@ -326,7 +328,7 @@ yanpub/
 │       ├── snippets/duan.json   #   段言代码片段
 │       └── package.json         #   contributes 10种语言 + 10个语法
 │
-├── tests/                       # 463 个测试
+├── tests/                       # 494 个测试
 │   ├── test_adapter.py          #   16 个
 │   ├── test_integration.py      #   16 个
 │   ├── test_pkg.py              #   25 个
@@ -340,7 +342,8 @@ yanpub/
 │   ├── test_v030.py             #   56 个（v0.3.0 新增）
 │   ├── test_v040.py             #   40 个（v0.4.0 新增）
 │   ├── test_v050.py             #   68 个（v0.5.0 新增）
-│   └── test_v060.py             #   38 个（v0.6.0 新增）
+│   ├── test_v060.py             #   38 个（v0.6.0 新增）
+│   └── test_v070.py             #   31 个（v0.7.0 新增）
 │
 ├── scripts/                     # 工具脚本
 │   ├── cache_keywords.py        #   关键字预缓存
@@ -409,6 +412,9 @@ yanpub/
 | 适配器热重载 | watchdog + 轮询回退 | 手动重启 | 开发时实时反馈，零停机更新 |
 | 工作空间 | workspace.toml + glob 发现 | 单包管理 | monorepo 多包统一管理 |
 | 实时协作 | CRDT (RGA) + WebSocket | OT | 无中心服务器冲突解决，最终一致性 |
+| 语义高亮 | LSP Semantic Tokens + delta 编码 | TextMate 语法 | 更精细的语义分类，支持适配器自定义 token |
+| 性能分析器 | AdapterProfiler + FlameGraph + HotspotDetector | 纯计时 | 多维度统计 + 可视化 + 热点检测 |
+| 版本工作集 | VersionConstraint + WorkspaceLock + TOML | 单包锁定 | 工作空间级别统一版本管理 |
 | 构建打包 | Hatch | 现代 Python 打包工具 |
 | CI/CD | GitHub Actions | 多平台（Ubuntu/Windows/macOS）多版本（3.10/3.11/3.12） |
 
@@ -516,6 +522,14 @@ yanpub/
 - [x] Playground 实时协作：CollabDocument 基于 RGA（Replicated Growable Array）的 CRDT 文档模型，CharId 全局唯一标识 + Lamport 时间戳排序，CollabRoom 协作房间管理 + 用户颜色分配 + 光标广播，CollabManager 房间管理器 + WebSocket 协作路由，/api/collab/create + /ws/collab/{id} API
 - [x] 463个测试全部通过（425原有 + 38新增），ruff lint 零错误
 
+### Phase 12：v0.7.0 功能增强 ✅
+
+- [x] Playground 协作前端集成：index.html 新增"协作"按钮 + 协作模态框（创建/加入房间）+ WebSocket 连接(collabWs) + 远程光标(CodeMirror bookmark + widgetNode) + 远程选区(TextMarker markText) + 用户列表面板 + 编辑同步(change→ops发送，接收ops→应用编辑器)
+- [x] LSP 语义高亮：`TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL` 处理器 + 17种 tokenTypes + 10种 tokenModifiers + `_compute_semantic_tokens` 方法（基于 adapter.tokenize + fallback 关键字/正则分析）+ delta 编码 [deltaLine, deltaStartChar, length, tokenType, tokenMod]
+- [x] 适配器性能分析器：AdapterProfiler（profile_eval/run/tokenize/complete/all）+ ProfileReport（统计 avg/min/max/median/p95 + to_table）+ FlameGraphGenerator（generate_html/generate_svg）+ HotspotDetector（critical > 1000ms / warning > 500ms）+ adapter profile CLI 命令
+- [x] 包管理器版本工作集：VersionConstraint（parse >=/^/~/*/范围，matches）+ ResolvedVersion + WorkspaceLock（to_toml/from_toml）+ VersionSetManager（resolve/save_lock/load_lock/check_freshness/upgrade/apply）+ workspace lock/check-lock CLI 命令
+- [x] 494个测试全部通过（463原有 + 31新增），ruff lint 零错误
+
 ## 九、关键设计决策记录
 
 | 决策 | 选择 | 备选 | 理由 |
@@ -544,18 +558,22 @@ yanpub/
 - 如果某个语言项目后来自己开发了更好的 Playground，可以不再使用 yanplay
 - 适配器协议是松耦合的，随时可以脱离
 
-## 十一、已完成（v0.6.0）
+## 十一、已完成（v0.7.0）
 
 - [x] LSP 代码折叠（块关键字栈追踪 + 缩进推断 + FoldingRangeKind.Region）
 - [x] 适配器热重载（HotReloader + AdapterWatcher watchdog/轮询 + adapter watch/reload CLI）
 - [x] 包管理器工作空间（Workspace + workspace.toml + 依赖图 + 拓扑排序 + workspace CLI）
 - [x] Playground 实时协作（CRDT RGA 文档 + CollabRoom + CollabManager + WebSocket 协作）
+- [x] Playground 协作前端集成（CodeMirror 5 协作插件 + 光标/选区显示 + 用户列表 + 编辑同步）
+- [x] LSP 语义高亮（Semantic Tokens + 17种 tokenTypes + delta 编码）
+- [x] 适配器性能分析器（AdapterProfiler + FlameGraph + HotspotDetector + profile CLI）
+- [x] 包管理器版本工作集（VersionConstraint + WorkspaceLock + VersionSetManager + lock/check-lock CLI）
 
-## 十二、下一步（v0.7.0 规划）
+## 十二、下一步（v0.8.0 规划）
 
-- [ ] Playground 实时协作前端集成（CodeMirror 5 协作插件 + 光标/选区显示）
 - [ ] 云端执行沙箱（远程代码执行服务，容器化/安全隔离）
 - [ ] 桌面 GUI 封装（Electron/Tauri，离线桌面应用）
-- [ ] LSP 语义高亮（Semantic Tokens，基于适配器 tokenize 结果）
-- [ ] 适配器性能分析器（火焰图生成 + 热点函数定位）
-- [ ] 包管理器版本工作集（锁定整个工作空间的依赖版本）
+- [ ] LSP 代码导航（Go to Definition / Find All References / Call Hierarchy）
+- [ ] 适配器调试器集成（断点调试支持，DAP 协议）
+- [ ] 包管理器私有注册中心（自建 Git 仓库 + 镜像同步 + 权限管理）
+- [ ] Playground AI 辅助（代码补全 + 自然语言转代码 + 错误修复建议）

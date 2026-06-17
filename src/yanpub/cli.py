@@ -734,6 +734,76 @@ def adapter_reload(lang_id: str | None):
             click.echo(f"     错误: {event.error}")
 
 
+@adapter.command("profile")
+@click.argument("lang_id")
+@click.option("--iterations", "-n", default=5, type=int, help="迭代次数")
+@click.option("--code", "-c", default=None, help="分析代码（默认用适配器示例代码）")
+@click.option("--output", "-o", default=None, help="输出报告路径（默认控制台输出）")
+@click.option("--format", "fmt", type=click.Choice(["text", "html", "svg"]), default="text", help="输出格式")
+@click.option("--hotspots", is_flag=True, help="是否显示热点分析")
+def adapter_profile(lang_id: str, iterations: int, code: str | None, output: str | None, fmt: str, hotspots: bool):
+    """性能分析适配器"""
+    from yanpub.core.profiler import AdapterProfiler, FlameGraphGenerator, HotspotDetector, _default_code
+
+    registry = get_registry()
+    adapter = registry.get(lang_id)
+    if adapter is None:
+        click.echo(f"未知适配器: {lang_id}", err=True)
+        sys.exit(1)
+
+    # 确定分析代码
+    sample_code = code or _default_code(adapter)
+
+    click.echo(f"性能分析: {adapter.name} ({adapter.id})")
+    click.echo(f"迭代次数: {iterations}")
+    click.echo()
+
+    profiler = AdapterProfiler(adapter)
+    reports = profiler.profile_all(sample_code, iterations=iterations)
+
+    if fmt == "text":
+        # 控制台输出文本报告
+        for op_name, report in reports.items():
+            click.echo(report.to_table())
+            click.echo()
+
+        if hotspots:
+            detector = HotspotDetector()
+            hotspot_list = detector.analyze(reports)
+            click.echo("热点分析:")
+            click.echo("─" * 60)
+            for h in hotspot_list:
+                icon = {"critical": "🔴", "warning": "🟡", "normal": "🟢"}.get(h.severity, "⚪")
+                click.echo(f"  {icon} {h.operation}: {h.avg_ms:.2f}ms [{h.severity}]")
+                if h.severity != "normal":
+                    click.echo(f"     💡 {h.suggestion}")
+            click.echo()
+
+    elif fmt == "html":
+        from pathlib import Path as P
+
+        report_dict = {name: r.to_dict() for name, r in reports.items()}
+        html = FlameGraphGenerator.generate_html(report_dict)
+        if output:
+            path = P(output)
+            path.write_text(html, encoding="utf-8")
+            click.echo(f"HTML 报告已保存: {path}")
+        else:
+            click.echo(html)
+
+    elif fmt == "svg":
+        from pathlib import Path as P
+
+        report_dict = {name: r.to_dict() for name, r in reports.items()}
+        svg = FlameGraphGenerator.generate_svg(report_dict)
+        if output:
+            path = P(output)
+            path.write_text(svg, encoding="utf-8")
+            click.echo(f"SVG 报告已保存: {path}")
+        else:
+            click.echo(svg)
+
+
 @main.group()
 def workspace():
     """工作空间 — monorepo 多包统一管理"""
@@ -840,6 +910,68 @@ def workspace_add(member_path: str):
         sys.exit(1)
 
     click.echo(f"[OK] 已添加成员: {member.full_name} v{member.version}")
+
+
+@workspace.command("lock")
+@click.option("--upgrade", "-u", is_flag=True, help="升级所有依赖到最新兼容版本")
+@click.option("--upgrade-package", default=None, help="升级指定依赖")
+def workspace_lock(upgrade: bool, upgrade_package: str | None):
+    """生成/更新版本锁定文件"""
+    from yanpub.pkg.workspace import load_workspace
+    from yanpub.pkg.versionset import VersionSetManager
+
+    ws = load_workspace()
+    if ws is None:
+        click.echo("当前目录不在工作空间中（未找到 workspace.toml）", err=True)
+        sys.exit(1)
+
+    mgr = VersionSetManager(ws)
+
+    if upgrade_package:
+        click.echo(f"升级锁定: {upgrade_package}...")
+        lock = mgr.upgrade(package_name=upgrade_package)
+    elif upgrade:
+        click.echo("升级所有依赖到最新兼容版本...")
+        lock = mgr.upgrade()
+    else:
+        click.echo("生成版本锁定文件...")
+        lock = mgr.resolve()
+        mgr.save_lock(lock)
+
+    path = mgr.save_lock(lock)
+    click.echo(f"[OK] 已锁定 {len(lock.members)} 个成员、{len(lock.dependencies)} 个外部依赖 → {path}")
+
+
+@workspace.command("check-lock")
+def workspace_check_lock():
+    """检查锁定是否过时"""
+    from yanpub.pkg.workspace import load_workspace
+    from yanpub.pkg.versionset import VersionSetManager
+
+    ws = load_workspace()
+    if ws is None:
+        click.echo("当前目录不在工作空间中（未找到 workspace.toml）", err=True)
+        sys.exit(1)
+
+    mgr = VersionSetManager(ws)
+    result = mgr.check_freshness()
+
+    if result["fresh"]:
+        click.echo("✅ 锁定文件是最新的")
+    else:
+        click.echo("⚠ 锁定文件已过时")
+
+        if result["outdated"]:
+            click.echo(f"\n  过时的依赖 ({len(result['outdated'])}):")
+            for item in result["outdated"]:
+                click.echo(f"    {item['name']}: 锁定 {item['locked']} → 最新 {item['latest']}")
+
+        if result["missing"]:
+            click.echo(f"\n  缺失的依赖 ({len(result['missing'])}):")
+            for name in result["missing"]:
+                click.echo(f"    {name}")
+
+        sys.exit(1)
 
 
 @main.group()
