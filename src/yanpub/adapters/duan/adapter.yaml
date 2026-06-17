@@ -1,0 +1,29 @@
+# 段言 (Duan) 适配器配置
+name: 段言
+id: duan
+version: "1.3.8"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".段", ".duan"]
+  comment_syntax: "注释"
+
+execution:
+  run: "python -m duan.cli run {file}"
+  eval: "python -m duan.cli eval {code}"
+  repl: "python -m duan.cli repl"
+
+capabilities:
+  repl: true
+  lsp: false
+  package_manager: false
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#E85D3A"
+  secondary: "#FFB347"
+  accent: "#2C3E50"

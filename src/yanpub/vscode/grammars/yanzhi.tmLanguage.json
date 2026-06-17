@@ -1,0 +1,81 @@
+{
+    "scopeName": "source.yanzhi",
+    "name": "言知 Yanzhi",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-define" },
+        { "include": "#keywords-function" },
+        { "include": "#keywords-exception" },
+        { "include": "#keywords-module" },
+        { "include": "#keywords-pattern" },
+        { "include": "#keywords-dsl" },
+        { "include": "#keywords-special" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#operators" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [{ "name": "comment.line.number-sign.yanzhi", "match": "#.*$" }]
+        },
+        "keywords-control": {
+            "patterns": [
+                { "name": "keyword.control.conditional.yanzhi", "match": "如果|那么|否则|要是|就|不然|是" },
+                { "name": "keyword.control.loop.yanzhi", "match": "遍历|循环当|对于|每次|算|从|到|每隔" },
+                { "name": "keyword.control.flow.yanzhi", "match": "返回|结束|完毕|抛出" }
+            ]
+        },
+        "keywords-define": {
+            "patterns": [
+                { "name": "keyword.declaration.yanzhi", "match": "定义|赋值" }
+            ]
+        },
+        "keywords-function": {
+            "patterns": [
+                { "name": "keyword.function.yanzhi", "match": "函数|结构|方法|宏|模块" }
+            ]
+        },
+        "keywords-exception": {
+            "patterns": [
+                { "name": "keyword.control.exception.yanzhi", "match": "尝试|捕获" }
+            ]
+        },
+        "keywords-module": {
+            "patterns": [
+                { "name": "keyword.control.import.yanzhi", "match": "导入|导出|于" }
+            ]
+        },
+        "keywords-pattern": {
+            "patterns": [
+                { "name": "keyword.control.match.yanzhi", "match": "匹配|情况" }
+            ]
+        },
+        "keywords-dsl": {
+            "patterns": [
+                { "name": "keyword.other.dsl.yanzhi", "match": "启用|策略|引用|模板|嵌入|展开嵌入|执行" }
+            ]
+        },
+        "keywords-special": {
+            "patterns": [
+                { "name": "constant.language.yanzhi", "match": "真|假|空" }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                { "name": "string.quoted.double.yanzhi", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.yanzhi", "match": "\\\\." }] },
+                { "name": "string.quoted.single.yanzhi", "begin": "'", "end": "'", "patterns": [{ "name": "constant.character.escape.yanzhi", "match": "\\\\." }] }
+            ]
+        },
+        "numbers": {
+            "patterns": [{ "name": "constant.numeric.yanzhi", "match": "\\b\\d+(\\.\\d+)?\\b" }]
+        },
+        "operators": {
+            "patterns": [
+                { "name": "keyword.operator.arithmetic.yanzhi", "match": "相加|相减|相乘|相除|大于|小于|等于" },
+                { "name": "keyword.operator.comparison.yanzhi", "match": "(==|!=|<=|>=|<|>)" },
+                { "name": "keyword.operator.assignment.yanzhi", "match": "=" }
+            ]
+        }
+    }
+}

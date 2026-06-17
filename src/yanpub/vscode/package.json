@@ -1,0 +1,197 @@
+{
+  "name": "yanpub",
+  "displayName": "言埠 YanPub — 中文编程语言支持",
+  "description": "统一中文编程语言工具链：语法高亮、代码补全、诊断、格式化。支持段言/言/墨言等多种中文编程语言。",
+  "version": "0.2.0",
+  "publisher": "yanpub",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Programming Languages", "Language Packs"],
+  "keywords": ["chinese", "programming-language", "duan", "yan", "moyan", "xinyu", "yanlv", "yanzhi", "zhixing", "mingdao", "hanyu", "traeyan", "中文编程"],
+  "icon": "icon.png",
+  "activationEvents": [
+    "onLanguage:duan",
+    "onLanguage:yan",
+    "onLanguage:moyan",
+    "onLanguage:xinyu",
+    "onLanguage:yanlv",
+    "onLanguage:yanzhi",
+    "onLanguage:zhixing",
+    "onLanguage:mingdao",
+    "onLanguage:hanyu",
+    "onLanguage:traeyan"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "duan",
+        "extensions": [".段", ".duan"],
+        "aliases": ["段言 Duan", "Duan"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "yan",
+        "extensions": [".言", ".yan"],
+        "aliases": ["言 Yan", "Yan"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "moyan",
+        "extensions": [".墨", ".moyan"],
+        "aliases": ["墨言 Moyan", "Moyan"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "xinyu",
+        "extensions": [".心", ".xinyu"],
+        "aliases": ["心语 Xinyu", "Xinyu"]
+      },
+      {
+        "id": "zhixing",
+        "extensions": [".行", ".zhixing"],
+        "aliases": ["知行 Zhixing", "Zhixing"]
+      },
+      {
+        "id": "yanlv",
+        "extensions": [".律", ".yanlv"],
+        "aliases": ["言律 Yanlv", "Yanlv"]
+      },
+      {
+        "id": "yanzhi",
+        "extensions": [".知", ".yanzhi"],
+        "aliases": ["言知 Yanzhi", "Yanzhi"]
+      },
+      {
+        "id": "mingdao",
+        "extensions": [".道", ".mingdao"],
+        "aliases": ["明道 Mingdao", "Mingdao"]
+      },
+      {
+        "id": "hanyu",
+        "extensions": [".翰", ".hanyu"],
+        "aliases": ["翰语 Hanyu", "Hanyu"]
+      },
+      {
+        "id": "traeyan",
+        "extensions": [".trae", ".traeyan"],
+        "aliases": ["知行语言 Traeyan", "Traeyan"]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "duan",
+        "scopeName": "source.duan",
+        "path": "./grammars/duan.tmLanguage.json"
+      },
+      {
+        "language": "yan",
+        "scopeName": "source.yan",
+        "path": "./grammars/yan.tmLanguage.json"
+      },
+      {
+        "language": "moyan",
+        "scopeName": "source.moyan",
+        "path": "./grammars/moyan.tmLanguage.json"
+      },
+      {
+        "language": "xinyu",
+        "scopeName": "source.xinyu",
+        "path": "./grammars/xinyu.tmLanguage.json"
+      },
+      {
+        "language": "yanlv",
+        "scopeName": "source.yanlv",
+        "path": "./grammars/yanlv.tmLanguage.json"
+      },
+      {
+        "language": "yanzhi",
+        "scopeName": "source.yanzhi",
+        "path": "./grammars/yanzhi.tmLanguage.json"
+      },
+      {
+        "language": "zhixing",
+        "scopeName": "source.zhixing",
+        "path": "./grammars/zhixing.tmLanguage.json"
+      },
+      {
+        "language": "mingdao",
+        "scopeName": "source.mingdao",
+        "path": "./grammars/mingdao.tmLanguage.json"
+      },
+      {
+        "language": "hanyu",
+        "scopeName": "source.hanyu",
+        "path": "./grammars/hanyu.tmLanguage.json"
+      },
+      {
+        "language": "traeyan",
+        "scopeName": "source.traeyan",
+        "path": "./grammars/traeyan.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "duan",
+        "path": "./snippets/duan.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "yanpub.runFile",
+        "title": "言埠：运行当前文件",
+        "icon": "$(play)"
+      },
+      {
+        "command": "yanpub.startREPL",
+        "title": "言埠：启动 REPL"
+      },
+      {
+        "command": "yanpub.selectLanguage",
+        "title": "言埠：选择语言"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "yanpub.runFile",
+          "when": "resourceLangId =~ /^duan|yan|moyan|xinyu|zhixing|yanlv|yanzhi|mingdao|hanyu|traeyan$/",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "言埠 YanPub",
+      "properties": {
+        "yanpub.lsp.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用 LSP 语言服务（补全/诊断/悬停）"
+        },
+        "yanpub.lsp.path": {
+          "type": "string",
+          "default": "yanpub",
+          "description": "yanpub 可执行文件路径"
+        },
+        "yanpub.lsp.port": {
+          "type": "number",
+          "default": 2087,
+          "description": "LSP 服务端口"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint src/",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js",
+    "vsce": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@types/node": "18.x",
+    "eslint": "^8.x"
+  }
+}

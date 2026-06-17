@@ -1,0 +1,81 @@
+{
+    "scopeName": "source.xinyu",
+    "name": "心语 XinYu",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-define" },
+        { "include": "#keywords-function" },
+        { "include": "#keywords-exception" },
+        { "include": "#keywords-module" },
+        { "include": "#keywords-logic" },
+        { "include": "#keywords-functional" },
+        { "include": "#keywords-special" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#operators" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [{ "name": "comment.line.number-sign.xinyu", "match": "#.*$" }]
+        },
+        "keywords-control": {
+            "patterns": [
+                { "name": "keyword.control.conditional.xinyu", "match": "如果|那么|否则|可选|若" },
+                { "name": "keyword.control.loop.xinyu", "match": "循环|当满足|遍历|重复|对于" },
+                { "name": "keyword.control.flow.xinyu", "match": "返回|继续|跳出|结束" }
+            ]
+        },
+        "keywords-define": {
+            "patterns": [
+                { "name": "keyword.declaration.xinyu", "match": "定|定义|设|设置|赋值|变量|常量" }
+            ]
+        },
+        "keywords-function": {
+            "patterns": [
+                { "name": "keyword.function.xinyu", "match": "函数|函" }
+            ]
+        },
+        "keywords-exception": {
+            "patterns": [
+                { "name": "keyword.control.exception.xinyu", "match": "尝试|捕获|抛出|最终|试" }
+            ]
+        },
+        "keywords-module": {
+            "patterns": [
+                { "name": "keyword.control.import.xinyu", "match": "导入|从" }
+            ]
+        },
+        "keywords-logic": {
+            "patterns": [
+                { "name": "keyword.operator.logical.xinyu", "match": "且|或|非" }
+            ]
+        },
+        "keywords-functional": {
+            "patterns": [
+                { "name": "keyword.functional.xinyu", "match": "皆|只|归" }
+            ]
+        },
+        "keywords-special": {
+            "patterns": [
+                { "name": "constant.language.xinyu", "match": "真|假|空|真值|假值" }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                { "name": "string.quoted.double.xinyu", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.xinyu", "match": "\\\\." }] },
+                { "name": "string.quoted.single.xinyu", "begin": "'", "end": "'", "patterns": [{ "name": "constant.character.escape.xinyu", "match": "\\\\." }] }
+            ]
+        },
+        "numbers": {
+            "patterns": [{ "name": "constant.numeric.xinyu", "match": "\\b\\d+(\\.\\d+)?\\b" }]
+        },
+        "operators": {
+            "patterns": [
+                { "name": "keyword.operator.arithmetic.xinyu", "match": "相加|相减|相乘|相除|加|减|乘|除|余|等于|等|大于|大|小于|小|取" },
+                { "name": "keyword.operator.comparison.xinyu", "match": "(==|!=|<=|>=|<|>)" },
+                { "name": "keyword.operator.assignment.xinyu", "match": "=" }
+            ]
+        }
+    }
+}

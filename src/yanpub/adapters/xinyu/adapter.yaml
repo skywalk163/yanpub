@@ -1,0 +1,29 @@
+# 心语 (XinYu) 适配器配置
+name: 心语
+id: xinyu
+version: "0.1.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".心", ".xinyu"]
+  comment_syntax: "#"
+
+execution:
+  run: "python src/main.py {file}"
+  eval: "python src/main.py -c {code}"
+  repl: "python src/main.py"
+
+capabilities:
+  repl: true
+  lsp: true
+  package_manager: false
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#27AE60"
+  secondary: "#2ECC71"
+  accent: "#1E8449"

@@ -1,0 +1,28 @@
+# 翰语 (Hanyu) 适配器配置
+name: 翰语
+id: hanyu
+version: "0.1.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".翰", ".hanyu"]
+  comment_syntax: "#"
+
+execution:
+  run: "python -m hanyu.compiler {file}"
+  repl: ""
+
+capabilities:
+  repl: false
+  lsp: true
+  package_manager: false
+  wasm: true
+  debug: false
+
+colors:
+  primary: "#D35400"
+  secondary: "#E67E22"
+  accent: "#A04000"

@@ -1,0 +1,69 @@
+{
+    "scopeName": "source.hanyu",
+    "name": "翰语 Hanyu",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-define" },
+        { "include": "#keywords-type" },
+        { "include": "#keywords-module" },
+        { "include": "#keywords-logic" },
+        { "include": "#keywords-special" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#operators" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [{ "name": "comment.line.number-sign.hanyu", "match": "#.*$" }]
+        },
+        "keywords-control": {
+            "patterns": [
+                { "name": "keyword.control.conditional.hanyu", "match": "如果|那么|否则" },
+                { "name": "keyword.control.loop.hanyu", "match": "循环|当满|对于|跳出|继续" },
+                { "name": "keyword.control.flow.hanyu", "match": "返回|导入" }
+            ]
+        },
+        "keywords-define": {
+            "patterns": [
+                { "name": "keyword.declaration.hanyu", "match": "定义|函数|宏用|结构|为" }
+            ]
+        },
+        "keywords-type": {
+            "patterns": [
+                { "name": "support.type.primitive.hanyu", "match": "空值|整数|实数|字符串|布尔|产出" }
+            ]
+        },
+        "keywords-module": {
+            "patterns": [
+                { "name": "keyword.control.import.hanyu", "match": "导入" }
+            ]
+        },
+        "keywords-logic": {
+            "patterns": [
+                { "name": "keyword.operator.logical.hanyu", "match": "并且|或者|负" }
+            ]
+        },
+        "keywords-special": {
+            "patterns": [
+                { "name": "constant.language.hanyu", "match": "在|真|假" }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                { "name": "string.quoted.double.hanyu", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.hanyu", "match": "\\\\." }] },
+                { "name": "string.quoted.single.hanyu", "begin": "'", "end": "'", "patterns": [{ "name": "constant.character.escape.hanyu", "match": "\\\\." }] }
+            ]
+        },
+        "numbers": {
+            "patterns": [{ "name": "constant.numeric.hanyu", "match": "\\b\\d+(\\.\\d+)?\\b" }]
+        },
+        "operators": {
+            "patterns": [
+                { "name": "keyword.operator.arithmetic.hanyu", "match": "加|减|乘|除|余|取|等|小于等于|大于等于|等于|不等|大于|小于|大于等|小于等|右移|左移" },
+                { "name": "keyword.operator.comparison.hanyu", "match": "(==|!=|<=|>=|<|>)" },
+                { "name": "keyword.operator.assignment.hanyu", "match": "=" }
+            ]
+        }
+    }
+}

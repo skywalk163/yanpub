@@ -1,0 +1,75 @@
+{
+    "scopeName": "source.mingdao",
+    "name": "明道 Mingdao",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-define" },
+        { "include": "#keywords-data" },
+        { "include": "#keywords-module" },
+        { "include": "#keywords-exception" },
+        { "include": "#keywords-logic" },
+        { "include": "#keywords-special" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#operators" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [{ "name": "comment.line.semicolon.mingdao", "match": ";.*$" }]
+        },
+        "keywords-control": {
+            "patterns": [
+                { "name": "keyword.control.conditional.mingdao", "match": "如果|那么|否则|否则若" },
+                { "name": "keyword.control.loop.mingdao", "match": "对于|从|到|对于每个|当满足" },
+                { "name": "keyword.control.flow.mingdao", "match": "跳出|继续|返回" }
+            ]
+        },
+        "keywords-define": {
+            "patterns": [
+                { "name": "keyword.declaration.mingdao", "match": "定义|常量|就是|定义宏|就是宏|就是函|赋值" }
+            ]
+        },
+        "keywords-data": {
+            "patterns": [
+                { "name": "keyword.data.mingdao", "match": "列表|元组|字典|索引|长度" }
+            ]
+        },
+        "keywords-module": {
+            "patterns": [
+                { "name": "keyword.control.import.mingdao", "match": "导入|导出|模块" }
+            ]
+        },
+        "keywords-exception": {
+            "patterns": [
+                { "name": "keyword.control.exception.mingdao", "match": "捕获" }
+            ]
+        },
+        "keywords-logic": {
+            "patterns": [
+                { "name": "keyword.operator.logical.mingdao", "match": "非|与|或" }
+            ]
+        },
+        "keywords-special": {
+            "patterns": [
+                { "name": "constant.language.mingdao", "match": "匿名函数|做当满足" }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                { "name": "string.quoted.double.mingdao", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.mingdao", "match": "\\\\." }] },
+                { "name": "string.quoted.single.mingdao", "begin": "'", "end": "'", "patterns": [{ "name": "constant.character.escape.mingdao", "match": "\\\\." }] }
+            ]
+        },
+        "numbers": {
+            "patterns": [{ "name": "constant.numeric.mingdao", "match": "\\b\\d+(\\.\\d+)?\\b" }]
+        },
+        "operators": {
+            "patterns": [
+                { "name": "keyword.operator.arithmetic.mingdao", "match": "加|减|乘|除|模|幂|等于|不等|大于|小于|大于等于|小于等于" },
+                { "name": "keyword.operator.comparison.mingdao", "match": "(==|!=|<=|>=|<|>)" },
+                { "name": "keyword.operator.assignment.mingdao", "match": "=" }
+            ]
+        }
+    }
+}

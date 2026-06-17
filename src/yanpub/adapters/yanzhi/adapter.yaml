@@ -1,0 +1,29 @@
+# 言知 (Yanzhi) 适配器配置
+name: 言知
+id: yanzhi
+version: "0.1.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".知", ".yan"]
+  comment_syntax: "#"
+
+execution:
+  run: "python -m yanzhi.cli {file}"
+  eval: "python -m yanzhi.cli -c {code}"
+  repl: "python -m yanzhi.cli"
+
+capabilities:
+  repl: true
+  lsp: true
+  package_manager: false
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#16A085"
+  secondary: "#1ABC9C"
+  accent: "#0E6655"

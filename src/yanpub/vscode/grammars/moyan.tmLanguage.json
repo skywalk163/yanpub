@@ -1,0 +1,222 @@
+{
+    "scopeName": "source.moyan",
+    "name": "墨言 Moyan",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords-define" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-function" },
+        { "include": "#keywords-module" },
+        { "include": "#keywords-exception" },
+        { "include": "#keywords-literal" },
+        { "include": "#keywords-flow" },
+        { "include": "#keywords-concurrency" },
+        { "include": "#keywords-debug" },
+        { "include": "#strings" },
+        { "include": "#fstrings" },
+        { "include": "#quotes" },
+        { "include": "#numbers" },
+        { "include": "#math-expr" },
+        { "include": "#py-code" },
+        { "include": "#operators" },
+        { "include": "#punctuation" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-dash.moyan",
+                    "match": "--.*$"
+                }
+            ]
+        },
+        "keywords-define": {
+            "patterns": [
+                {
+                    "name": "keyword.declaration.moyan",
+                    "match": "定义|赋值"
+                }
+            ]
+        },
+        "keywords-control": {
+            "patterns": [
+                {
+                    "name": "keyword.control.conditional.moyan",
+                    "match": "如果|那么|否则"
+                },
+                {
+                    "name": "keyword.control.loop.moyan",
+                    "match": "每当|时候|遍历|于中"
+                }
+            ]
+        },
+        "keywords-function": {
+            "patterns": [
+                {
+                    "name": "keyword.function.moyan",
+                    "match": "函数|宏定"
+                }
+            ]
+        },
+        "keywords-module": {
+            "patterns": [
+                {
+                    "name": "keyword.control.import.moyan",
+                    "match": "导入|来自|导出"
+                }
+            ]
+        },
+        "keywords-exception": {
+            "patterns": [
+                {
+                    "name": "keyword.control.exception.moyan",
+                    "match": "试|捕获|则"
+                }
+            ]
+        },
+        "keywords-literal": {
+            "patterns": [
+                {
+                    "name": "constant.language.moyan",
+                    "match": "真值|假值|空值"
+                }
+            ]
+        },
+        "keywords-flow": {
+            "patterns": [
+                {
+                    "name": "keyword.control.flow.moyan",
+                    "match": "返回|跳出|继续"
+                }
+            ]
+        },
+        "keywords-concurrency": {
+            "patterns": [
+                {
+                    "name": "keyword.control.concurrent.moyan",
+                    "match": "产生"
+                }
+            ]
+        },
+        "keywords-debug": {
+            "patterns": [
+                {
+                    "name": "keyword.other.debug.moyan",
+                    "match": "断点"
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.moyan",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.moyan",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        },
+        "fstrings": {
+            "patterns": [
+                {
+                    "name": "string.interpolated.moyan",
+                    "begin": "\\$\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "meta.interpolation.moyan",
+                            "begin": "\\{",
+                            "end": "\\}"
+                        },
+                        {
+                            "name": "constant.character.escape.moyan",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        },
+        "quotes": {
+            "patterns": [
+                {
+                    "name": "string.quoted.other.moyan",
+                    "begin": "'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.moyan",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.moyan",
+                    "match": "\\b\\d+(\\.\\d+)?\\b"
+                }
+            ]
+        },
+        "math-expr": {
+            "patterns": [
+                {
+                    "name": "meta.math-expression.moyan",
+                    "begin": "\\$\\(",
+                    "end": "\\)"
+                }
+            ]
+        },
+        "py-code": {
+            "patterns": [
+                {
+                    "name": "meta.embedded.python.moyan",
+                    "begin": "\\{\\{",
+                    "end": "\\}\\}"
+                }
+            ]
+        },
+        "operators": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.arithmetic.moyan",
+                    "match": "[+\\-*/%]"
+                },
+                {
+                    "name": "keyword.operator.comparison.moyan",
+                    "match": "(==|!=|<=|>=|<|>)"
+                },
+                {
+                    "name": "keyword.operator.assignment.moyan",
+                    "match": "="
+                },
+                {
+                    "name": "keyword.operator.pipeline.moyan",
+                    "match": "，"
+                }
+            ]
+        },
+        "punctuation": {
+            "patterns": [
+                {
+                    "name": "punctuation.terminator.moyan",
+                    "match": "。|；"
+                },
+                {
+                    "name": "punctuation.separator.moyan",
+                    "match": "、|："
+                },
+                {
+                    "name": "punctuation.section.parens.moyan",
+                    "match": "[（）]"
+                }
+            ]
+        }
+    }
+}

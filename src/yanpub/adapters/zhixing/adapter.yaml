@@ -1,0 +1,29 @@
+# 知行 (Zhixing) 适配器配置
+name: 知行
+id: zhixing
+version: "0.1.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".行", ".yan"]
+  comment_syntax: "#"
+
+execution:
+  run: "python -m yan.cli {file}"
+  eval: "python -m yan.cli -c {code}"
+  repl: "python -m yan.cli -i"
+
+capabilities:
+  repl: true
+  lsp: true
+  package_manager: false
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#E67E22"
+  secondary: "#F39C12"
+  accent: "#D35400"

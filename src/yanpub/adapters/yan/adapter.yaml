@@ -1,0 +1,29 @@
+# 言 (Yan) 适配器配置
+name: 言
+id: yan
+version: "1.0.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".言", ".yan"]
+  comment_syntax: "#"
+
+execution:
+  run: "python -m yan run {file}"
+  eval: "python -m yan eval {code}"
+  repl: "python -m yan repl"
+
+capabilities:
+  repl: true
+  lsp: true
+  package_manager: true
+  wasm: true
+  debug: false
+
+colors:
+  primary: "#2980B9"
+  secondary: "#3498DB"
+  accent: "#1A5276"

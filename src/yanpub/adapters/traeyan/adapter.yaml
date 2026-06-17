@@ -1,0 +1,28 @@
+# 知行语言 (Traeyan) 适配器配置
+name: 知行语言
+id: traeyan
+version: "0.1.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".行", ".yan"]
+  comment_syntax: "#"
+
+execution:
+  run: "python -m zhixing.main {file}"
+  repl: "python -m zhixing.main"
+
+capabilities:
+  repl: true
+  lsp: true
+  package_manager: false
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#2C3E50"
+  secondary: "#34495E"
+  accent: "#1C2833"

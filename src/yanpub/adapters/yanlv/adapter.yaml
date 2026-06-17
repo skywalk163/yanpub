@@ -1,0 +1,28 @@
+# 言律 (YanLv) 适配器配置
+name: 言律
+id: yanlv
+version: "2.0.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".律", ".yan"]
+  comment_syntax: "#"
+
+execution:
+  run: "python -m yanlv 运行 {file}"
+  repl: "python -m yanlv 交互"
+
+capabilities:
+  repl: true
+  lsp: true
+  package_manager: false
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#C0392B"
+  secondary: "#E74C3C"
+  accent: "#922B21"

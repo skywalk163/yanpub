@@ -1,0 +1,28 @@
+# 明道 (Mingdao) 适配器配置
+name: 明道
+id: mingdao
+version: "0.1.0"
+
+backend:
+  type: subprocess
+  command: "racket"
+
+syntax:
+  file_extensions: [".道", ".mingdao", ".rkt"]
+  comment_syntax: "#"
+
+execution:
+  run: "racket {file}"
+  repl: "racket mingdao/repl.rkt"
+
+capabilities:
+  repl: true
+  lsp: true
+  package_manager: false
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#8E44AD"
+  secondary: "#9B59B6"
+  accent: "#6C3483"

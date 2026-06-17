@@ -1,0 +1,81 @@
+{
+    "scopeName": "source.zhixing",
+    "name": "知行 Zhixing",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-define" },
+        { "include": "#keywords-function" },
+        { "include": "#keywords-exception" },
+        { "include": "#keywords-module" },
+        { "include": "#keywords-logic" },
+        { "include": "#keywords-functional" },
+        { "include": "#keywords-special" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#operators" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [{ "name": "comment.line.number-sign.zhixing", "match": "#.*$" }]
+        },
+        "keywords-control": {
+            "patterns": [
+                { "name": "keyword.control.conditional.zhixing", "match": "若|则|否则" },
+                { "name": "keyword.control.loop.zhixing", "match": "当|遍历" },
+                { "name": "keyword.control.flow.zhixing", "match": "返回|结束|完毕" }
+            ]
+        },
+        "keywords-define": {
+            "patterns": [
+                { "name": "keyword.declaration.zhixing", "match": "定|设" }
+            ]
+        },
+        "keywords-function": {
+            "patterns": [
+                { "name": "keyword.function.zhixing", "match": "函" }
+            ]
+        },
+        "keywords-exception": {
+            "patterns": [
+                { "name": "keyword.control.exception.zhixing", "match": "尝试|捕获" }
+            ]
+        },
+        "keywords-module": {
+            "patterns": [
+                { "name": "keyword.control.import.zhixing", "match": "导入|导出|模块|从|为" }
+            ]
+        },
+        "keywords-logic": {
+            "patterns": [
+                { "name": "keyword.operator.logical.zhixing", "match": "且|或|非" }
+            ]
+        },
+        "keywords-functional": {
+            "patterns": [
+                { "name": "keyword.functional.zhixing", "match": "皆|只|归|并" }
+            ]
+        },
+        "keywords-special": {
+            "patterns": [
+                { "name": "constant.language.zhixing", "match": "真|假|空" }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                { "name": "string.quoted.double.zhixing", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.zhixing", "match": "\\\\." }] },
+                { "name": "string.quoted.single.zhixing", "begin": "'", "end": "'", "patterns": [{ "name": "constant.character.escape.zhixing", "match": "\\\\." }] }
+            ]
+        },
+        "numbers": {
+            "patterns": [{ "name": "constant.numeric.zhixing", "match": "\\b\\d+(\\.\\d+)?\\b" }]
+        },
+        "operators": {
+            "patterns": [
+                { "name": "keyword.operator.arithmetic.zhixing", "match": "加|减|乘|除|模|幂|大|小|等|不等" },
+                { "name": "keyword.operator.comparison.zhixing", "match": "(==|!=|<=|>=|<|>)" },
+                { "name": "keyword.operator.assignment.zhixing", "match": "=" }
+            ]
+        }
+    }
+}

@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>言埠 YanPlay — 中文编程语言 Playground</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css">
+    <style>
+        :root {
+            --primary: #E85D3A;
+            --primary-dark: #C44A2A;
+            --bg: #1e1e1e;
+            --header-bg: #181818;
+            --editor-bg: #282a36;
+            --output-bg: #1a1a2e;
+            --text: #d4d4d4;
+            --text-dim: #888;
+            --border: #3e3e42;
+            --success: #608b4e;
+            --error: #f44747;
+            --info: #569cd6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            height: 44px;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .logo .yan { color: var(--text); }
+        .logo .bu { color: var(--primary); }
+        .logo .sub { font-size: 12px; color: var(--text-dim); font-weight: normal; margin-left: 4px; }
+        select.lang-select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: #2d2d2d;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+        }
+        select.lang-select:hover { border-color: var(--primary); }
+        .run-btn {
+            padding: 5px 18px;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary);
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .run-btn:hover { background: var(--primary-dark); }
+        .run-btn:active { transform: scale(0.97); }
+        .shortcut-hint { font-size: 11px; color: var(--text-dim); }
+        #status {
+            margin-left: auto;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+        .lang-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            color: white;
+            background: var(--primary);
+        }
+        #mode-toggle {
+            padding: 5px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #2d2d2d;
+            color: var(--text-dim);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #mode-toggle:hover { border-color: var(--primary); color: var(--text); }
+        #mode-toggle.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .share-btn {
+            padding: 5px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #2d2d2d;
+            color: var(--text-dim);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .share-btn:hover { border-color: var(--primary); color: var(--text); }
+        .share-toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 20px;
+            background: var(--success);
+            color: white;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .share-toast.show { opacity: 1; }
+
+        /* Main */
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Single mode */
+        .single-mode .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            min-width: 0;
+        }
+
+        /* Compare mode */
+        .compare-mode { display: none; }
+        .compare-mode.active { display: flex; }
+        .single-mode.hidden { display: none; }
+
+        .compare-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            border-right: 1px solid var(--border);
+        }
+        .compare-panel:last-child { border-right: none; }
+        .compare-divider {
+            width: 3px;
+            background: var(--border);
+            flex-shrink: 0;
+            cursor: col-resize;
+        }
+
+        /* Shared pane styles */
+        .pane-header {
+            padding: 4px 12px;
+            background: #2d2d2d;
+            font-size: 11px;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .pane-header .title { font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .editor-pane, .compare-panel .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .editor-container {
+            flex: 1;
+            overflow: hidden;
+        }
+        /* CodeMirror override */
+        .editor-container .CodeMirror {
+            height: 100%;
+            font-size: 14px;
+            line-height: 1.6;
+            font-family: 'Consolas', 'Source Code Pro', 'Noto Sans Mono CJK SC', monospace;
+        }
+
+        /* Output pane */
+        .output-pane, .compare-panel .output-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .output {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--output-bg);
+            font-family: 'Consolas', 'Source Code Pro', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .output .out-line { margin: 1px 0; }
+        .output .out-stdout { color: var(--text); }
+        .output .out-stderr { color: var(--error); }
+        .output .out-info { color: var(--success); }
+        .output .out-meta { color: var(--text-dim); font-size: 12px; }
+        .output .placeholder { color: var(--text-dim); font-style: italic; }
+
+        /* Compare panel inner split */
+        .compare-panel .inner-split {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3px 16px;
+            background: var(--header-bg);
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main { flex-direction: column; }
+            .compare-mode.active { flex-direction: column; }
+            .compare-panel { border-right: none; border-bottom: 1px solid var(--border); }
+            .shortcut-hint { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span class="yan">言</span><span class="bu">埠</span>
+            <span class="sub">YanPlay</span>
+        </div>
+        <select id="lang-select" class="lang-select">
+            <option value="">加载中...</option>
+        </select>
+        <button id="run-btn" class="run-btn">运行</button>
+        <span class="shortcut-hint">Ctrl+Enter</span>
+        <span id="lang-badge" class="lang-badge"></span>
+        <button id="mode-toggle">对比模式</button>
+        <button id="wasm-toggle" style="padding:5px 12px;border:1px solid var(--border);border-radius:4px;background:#2d2d2d;color:var(--text-dim);font-size:12px;cursor:pointer;transition:all 0.2s;">WASM模式</button>
+        <button id="share-btn" class="share-btn">分享</button>
+        <span id="status"></span>
+    </header>
+
+    <!-- Single mode -->
+    <div id="single-mode" class="main single-mode">
+        <div class="editor-pane">
+            <div class="pane-header">
+                <span class="title">编辑器</span>
+                <span id="editor-lang"></span>
+            </div>
+            <div id="editor-container" class="editor-container">
+                <textarea id="code-editor"></textarea>
+            </div>
+        </div>
+        <div class="output-pane">
+            <div class="pane-header">
+                <span class="title">输出</span>
+                <button id="clear-output" style="background:none;border:1px solid #555;color:#888;padding:1px 8px;border-radius:3px;cursor:pointer;font-size:11px;">清空</button>
+            </div>
+            <div id="output" class="output">
+                <span class="placeholder">选择一种语言，编写代码并运行 (Ctrl+Enter)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare mode -->
+    <div id="compare-mode" class="main compare-mode">
+        <div class="compare-panel" id="panel-left">
+            <div class="pane-header">
+                <select id="lang-left" class="lang-select" style="font-size:11px;padding:2px 6px;"></select>
+                <span id="badge-left" class="lang-badge" style="font-size:10px;"></span>
+            </div>
+            <div class="inner-split">
+                <div class="editor-area" style="flex:1.2;">
+                    <div id="editor-left-container" class="editor-container">
+                        <textarea id="editor-left"></textarea>
+                    </div>
+                </div>
+                <div class="output-area" style="flex:0.8;">
+                    <div class="pane-header">
+                        <span class="title">输出</span>
+                        <button class="clear-btn" data-target="output-left" style="background:none;border:1px solid #555;color:#888;padding:1px 8px;border-radius:3px;cursor:pointer;font-size:11px;">清空</button>
+                    </div>
+                    <div id="output-left" class="output">
+                        <span class="placeholder">左侧输出</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="compare-divider"></div>
+        <div class="compare-panel" id="panel-right">
+            <div class="pane-header">
+                <select id="lang-right" class="lang-select" style="font-size:11px;padding:2px 6px;"></select>
+                <span id="badge-right" class="lang-badge" style="font-size:10px;"></span>
+            </div>
+            <div class="inner-split">
+                <div class="editor-area" style="flex:1.2;">
+                    <div id="editor-right-container" class="editor-container">
+                        <textarea id="editor-right"></textarea>
+                    </div>
+                </div>
+                <div class="output-area" style="flex:0.8;">
+                    <div class="pane-header">
+                        <span class="title">输出</span>
+                        <button class="clear-btn" data-target="output-right" style="background:none;border:1px solid #555;color:#888;padding:1px 8px;border-radius:3px;cursor:pointer;font-size:11px;">清空</button>
+                    </div>
+                    <div id="output-right" class="output">
+                        <span class="placeholder">右侧输出</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <span id="lang-info">言埠 YanPub</span>
+        <span>yanpub v0.5.0</span>
+    </footer>
+
+    <div id="share-toast" class="share-toast">分享链接已复制到剪贴板</div>
+
+    <!-- CodeMirror 5 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/javascript/javascript.min.js"></script>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ---- DOM ----
+        const langSelect = document.getElementById('lang-select');
+        const runBtn = document.getElementById('run-btn');
+        const outputEl = document.getElementById('output');
+        const statusEl = document.getElementById('status');
+        const langInfo = document.getElementById('lang-info');
+        const langBadge = document.getElementById('lang-badge');
+        const editorLang = document.getElementById('editor-lang');
+        const clearBtn = document.getElementById('clear-output');
+        const modeToggle = document.getElementById('mode-toggle');
+        const singleMode = document.getElementById('single-mode');
+        const compareMode = document.getElementById('compare-mode');
+        const langLeft = document.getElementById('lang-left');
+        const langRight = document.getElementById('lang-right');
+        const badgeLeft = document.getElementById('badge-left');
+        const badgeRight = document.getElementById('badge-right');
+        const outputLeft = document.getElementById('output-left');
+        const outputRight = document.getElementById('output-right');
+        const shareBtn = document.getElementById('share-btn');
+        const shareToast = document.getElementById('share-toast');
+        const wasmToggle = document.getElementById('wasm-toggle');
+
+        // ---- State ----
+        let languages = [];
+        let currentLang = null;
+        let editor = null;        // single mode
+        let editorLeft = null;    // compare mode left
+        let editorRight = null;   // compare mode right
+        let ws = null;
+        let requestId = 0;
+        let isCompareMode = false;
+        let isWasmMode = false;
+
+        // ---- CodeMirror init ----
+        function createCM(textareaId, extraOpts) {
+            return CodeMirror.fromTextArea(document.getElementById(textareaId), Object.assign({
+                mode: 'javascript',
+                theme: 'dracula',
+                lineNumbers: true,
+                lineWrapping: true,
+                indentUnit: 4,
+                tabSize: 4,
+                indentWithTabs: false,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                styleActiveLine: true,
+                extraKeys: {
+                    'Ctrl-Enter': runCurrentMode,
+                    'Cmd-Enter': runCurrentMode,
+                    'Ctrl-/': toggleCommentForActive,
+                },
+            }, extraOpts || {}));
+        }
+
+        function initEditors() {
+            editor = createCM('code-editor');
+            editor.setValue('# 选择一种语言开始编写代码...');
+            editor.focus();
+
+            editorLeft = createCM('editor-left');
+            editorLeft.setValue('# 左侧语言代码');
+            editorRight = createCM('editor-right');
+            editorRight.setValue('# 右侧语言代码');
+        }
+
+        // ---- Language Management ----
+        function loadLanguages() {
+            fetch('/api/languages')
+                .then(r => r.json())
+                .then(data => {
+                    languages = data;
+                    populateSelect(langSelect, data);
+                    populateSelect(langLeft, data);
+                    populateSelect(langRight, data);
+                    // Check for shared code in URL hash first
+                    if (!loadFromShare() && data.length > 0) {
+                        selectLanguage(data[0].id);
+                    }
+                    // Default: first two languages for compare
+                    if (data.length > 0) {
+                        langLeft.value = data[0].id;
+                        selectCompareLang('left', data[0].id);
+                    }
+                    if (data.length > 1) {
+                        langRight.value = data[1].id;
+                        selectCompareLang('right', data[1].id);
+                    }
+                })
+                .catch(() => {
+                    langSelect.innerHTML = '<option>加载失败</option>';
+                });
+        }
+
+        function populateSelect(select, data) {
+            select.innerHTML = '';
+            data.forEach(lang => {
+                const opt = document.createElement('option');
+                opt.value = lang.id;
+                opt.textContent = lang.name + ' (' + lang.id + ')';
+                select.appendChild(opt);
+            });
+        }
+
+        function selectLanguage(langId) {
+            const lang = languages.find(l => l.id === langId);
+            if (!lang) return;
+            currentLang = lang;
+            langInfo.textContent = lang.name + ' v' + lang.version;
+            langBadge.textContent = lang.name;
+            langBadge.style.background = lang.primaryColor || '#2C3E50';
+            editorLang.textContent = lang.name;
+            document.documentElement.style.setProperty('--primary', lang.primaryColor || '#2C3E50');
+            updateEditorMode(editor, lang);
+            loadTemplate(langId, function(code) { editor.setValue(code); editor.clearHistory(); });
+        }
+
+        function selectCompareLang(side, langId) {
+            const lang = languages.find(l => l.id === langId);
+            if (!lang) return;
+            const badge = side === 'left' ? badgeLeft : badgeRight;
+            badge.textContent = lang.name;
+            badge.style.background = lang.primaryColor || '#2C3E50';
+            const cm = side === 'left' ? editorLeft : editorRight;
+            updateEditorMode(cm, lang);
+            loadTemplate(langId, function(code) { cm.setValue(code); cm.clearHistory(); });
+        }
+
+        function updateEditorMode(cm, lang) {
+            if (lang.keywords && lang.keywords.length > 0) {
+                const modeName = 'yanpub-' + lang.id;
+                if (!CodeMirror.modes[modeName]) {
+                    CodeMirror.defineMode(modeName, function(config) {
+                        return createChineseLangMode(config, lang.keywords, lang.commentSyntax);
+                    });
+                }
+                cm.setOption('mode', modeName);
+            } else {
+                cm.setOption('mode', 'javascript');
+            }
+        }
+
+        // ---- 自定义中文语言高亮模式 ----
+        function createChineseLangMode(config, keywords, commentSyntax) {
+            const keywordSet = new Set(keywords);
+            const isCommentChar = commentSyntax === '#' ? /^#/ : /^\/\//;
+
+            return {
+                token: function(stream) {
+                    if (isCommentChar.test(stream.peek()) && (commentSyntax === '#' || stream.string.slice(stream.pos).startsWith('//'))) {
+                        stream.skipToEnd();
+                        return 'comment';
+                    }
+                    if (stream.match(/[\u4e00-\u9fff]+/)) {
+                        const word = stream.current();
+                        if (keywordSet.has(word)) return 'keyword';
+                        return 'variable-2';
+                    }
+                    if (stream.match(/"[^"]*"/) || stream.match(/'[^']*'/)) {
+                        return 'string';
+                    }
+                    if (stream.match(/\d+(\.\d+)?/)) {
+                        return 'number';
+                    }
+                    if (stream.match(/[+\-*/%=<>!&|^~]+/)) {
+                        return 'operator';
+                    }
+                    if (stream.match(/[a-zA-Z_]\w*/)) {
+                        const word = stream.current();
+                        if (keywordSet.has(word)) return 'keyword';
+                        return 'variable';
+                    }
+                    stream.next();
+                    return null;
+                },
+                startState: function() { return {}; },
+                indent: function() { return 0; }
+            };
+        }
+
+        // ---- Template Loading ----
+        function loadTemplate(langId, callback) {
+            fetch('/api/templates/' + langId)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.code && callback) callback(data.code);
+                })
+                .catch(() => {});
+        }
+
+        // ---- Code Execution ----
+        function runCode(lang, code, outputTarget) {
+            if (!lang || !code.trim()) return;
+            const id = String(++requestId);
+            outputTarget.innerHTML = '';
+            appendToOutput(outputTarget, 'info', '执行中...');
+            statusEl.textContent = '执行中...';
+
+            const payload = { lang: lang.id, code: code, id: id };
+
+            function handleResult(data) {
+                outputTarget.innerHTML = '';
+                if (data.type === 'error') {
+                    appendToOutput(outputTarget, 'stderr', data.message);
+                    statusEl.textContent = '错误';
+                    return;
+                }
+                if (data.stdout) {
+                    data.stdout.split('\n').forEach(line => { if (line) appendToOutput(outputTarget, 'stdout', line); });
+                }
+                if (data.stderr) {
+                    data.stderr.split('\n').forEach(line => { if (line) appendToOutput(outputTarget, 'stderr', line); });
+                }
+                if (data.exitCode !== 0 && !data.stderr) {
+                    appendToOutput(outputTarget, 'stderr', '退出码: ' + data.exitCode);
+                }
+                appendToOutput(outputTarget, 'meta', '[' + (data.durationMs || 0).toFixed(0) + 'ms]');
+                statusEl.textContent = data.exitCode === 0 ? '完成' : '错误';
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(payload));
+                // Store handler for this request
+                pendingRequests[id] = { outputTarget, handler: handleResult };
+            } else {
+                // Choose endpoint based on WASM mode
+                let endpoint, fetchPayload;
+                if (isWasmMode && lang) {
+                    endpoint = '/api/wasm/' + lang.id + '/run';
+                    fetchPayload = { code: code, id: id };
+                } else {
+                    endpoint = '/api/run';
+                    fetchPayload = payload;
+                }
+
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(fetchPayload),
+                })
+                .then(r => r.json())
+                .then(data => handleResult(data))
+                .catch(err => {
+                    outputTarget.innerHTML = '';
+                    appendToOutput(outputTarget, 'stderr', '请求失败: ' + err.message);
+                    statusEl.textContent = '失败';
+                });
+            }
+        }
+
+        let pendingRequests = {};
+
+        function runCurrentMode() {
+            if (isCompareMode) {
+                // Run both sides
+                const leftLang = languages.find(l => l.id === langLeft.value);
+                const rightLang = languages.find(l => l.id === langRight.value);
+                if (leftLang) runCode(leftLang, editorLeft.getValue(), outputLeft);
+                if (rightLang) runCode(rightLang, editorRight.getValue(), outputRight);
+            } else {
+                if (!currentLang) { alert('请先选择语言'); return; }
+                runCode(currentLang, editor.getValue(), outputEl);
+            }
+        }
+
+        function appendToOutput(target, type, text) {
+            const line = document.createElement('div');
+            line.className = 'out-line out-' + type;
+            line.textContent = text;
+            target.appendChild(line);
+            target.scrollTop = target.scrollHeight;
+        }
+
+        // ---- Comment Toggle ----
+        function toggleCommentForActive(cm) {
+            const lang = isCompareMode
+                ? (cm === editorLeft ? languages.find(l => l.id === langLeft.value) : languages.find(l => l.id === langRight.value))
+                : currentLang;
+            if (!lang) return;
+            const cs = lang.commentSyntax || '#';
+            const cursor = cm.getCursor('from');
+            const line = cm.getLine(cursor.line);
+            if (line.trimStart().startsWith(cs)) {
+                const idx = line.indexOf(cs);
+                cm.replaceRange(line.slice(0, idx) + line.slice(idx + cs.length), {line: cursor.line, ch: 0}, {line: cursor.line, ch: line.length});
+            } else {
+                const indent = line.match(/^(\s*)/)[1];
+                cm.replaceRange(indent + cs + line.slice(indent.length), {line: cursor.line, ch: 0}, {line: cursor.line, ch: line.length});
+            }
+        }
+
+        // ---- Mode Toggle ----
+        modeToggle.addEventListener('click', function() {
+            isCompareMode = !isCompareMode;
+            modeToggle.classList.toggle('active', isCompareMode);
+            modeToggle.textContent = isCompareMode ? '单语言模式' : '对比模式';
+            singleMode.classList.toggle('hidden', isCompareMode);
+            compareMode.classList.toggle('active', isCompareMode);
+
+            if (isCompareMode) {
+                // Refresh editors after display change
+                setTimeout(function() {
+                    editorLeft.refresh();
+                    editorRight.refresh();
+                }, 50);
+            } else {
+                setTimeout(function() { editor.refresh(); }, 50);
+            }
+        });
+
+        // ---- WebSocket ----
+        function connectWS() {
+            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(protocol + '//' + location.host + '/ws/run');
+            ws.onopen = () => { statusEl.textContent = '已连接'; };
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const id = data.id;
+                if (id && pendingRequests[id]) {
+                    pendingRequests[id].handler(data);
+                    delete pendingRequests[id];
+                } else {
+                    // Single mode fallback
+                    handleResultSingle(data);
+                }
+            };
+            ws.onclose = () => {
+                statusEl.textContent = 'WebSocket 断开';
+                setTimeout(connectWS, 3000);
+            };
+            ws.onerror = () => {};
+        }
+
+        function handleResultSingle(data) {
+            outputEl.innerHTML = '';
+            if (data.type === 'error') {
+                appendToOutput(outputEl, 'stderr', data.message);
+                statusEl.textContent = '错误';
+                return;
+            }
+            if (data.stdout) data.stdout.split('\n').forEach(l => { if (l) appendToOutput(outputEl, 'stdout', l); });
+            if (data.stderr) data.stderr.split('\n').forEach(l => { if (l) appendToOutput(outputEl, 'stderr', l); });
+            appendToOutput(outputEl, 'meta', '[' + (data.durationMs || 0).toFixed(0) + 'ms]');
+            statusEl.textContent = data.exitCode === 0 ? '完成' : '错误';
+        }
+
+        // ---- Clear Output ----
+        clearBtn.addEventListener('click', () => {
+            outputEl.innerHTML = '<span class="placeholder">输出已清空</span>';
+        });
+        document.querySelectorAll('.clear-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const target = document.getElementById(this.dataset.target);
+                if (target) target.innerHTML = '<span class="placeholder">输出已清空</span>';
+            });
+        });
+
+        // ---- Share (URL hash encoding) ----
+        function encodeShareData(langId, code) {
+            // Format: #lang=<id>&code=<base64url-encoded-code>
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(code)));
+                return '#lang=' + encodeURIComponent(langId) + '&code=' + encoded;
+            } catch(e) { return ''; }
+        }
+
+        function decodeShareData() {
+            const hash = location.hash.slice(1);
+            if (!hash) return null;
+            const params = new URLSearchParams(hash);
+            const langId = params.get('lang');
+            const codeB64 = params.get('code');
+            if (!langId || !codeB64) return null;
+            try {
+                const code = decodeURIComponent(escape(atob(codeB64)));
+                return { langId, code };
+            } catch(e) { return null; }
+        }
+
+        function shareCurrentCode() {
+            if (isCompareMode) {
+                // Share left panel in compare mode
+                const langId = langLeft.value;
+                const code = editorLeft.getValue();
+                location.hash = encodeShareData(langId, code);
+            } else {
+                if (!currentLang) { alert('请先选择语言'); return; }
+                const code = editor.getValue();
+                location.hash = encodeShareData(currentLang.id, code);
+            }
+            // Copy URL to clipboard
+            try {
+                navigator.clipboard.writeText(location.href).then(function() {
+                    showToast('分享链接已复制到剪贴板');
+                }).catch(function() {
+                    showToast('分享链接已生成（请手动复制地址栏）');
+                });
+            } catch(e) {
+                showToast('分享链接已生成（请手动复制地址栏）');
+            }
+        }
+
+        function showToast(msg) {
+            shareToast.textContent = msg;
+            shareToast.classList.add('show');
+            setTimeout(function() { shareToast.classList.remove('show'); }, 2000);
+        }
+
+        function loadFromShare() {
+            const shared = decodeShareData();
+            if (!shared) return false;
+            const lang = languages.find(l => l.id === shared.langId);
+            if (!lang) return false;
+            selectLanguage(shared.langId);
+            editor.setValue(shared.code);
+            editor.clearHistory();
+            return true;
+        }
+
+        shareBtn.addEventListener('click', shareCurrentCode);
+
+        // ---- WASM Mode Toggle ----
+        wasmToggle.addEventListener('click', function() {
+            isWasmMode = !isWasmMode;
+            wasmToggle.classList.toggle('active', isWasmMode);
+            wasmToggle.style.background = isWasmMode ? 'var(--primary)' : '#2d2d2d';
+            wasmToggle.style.color = isWasmMode ? 'white' : 'var(--text-dim)';
+            wasmToggle.style.borderColor = isWasmMode ? 'var(--primary)' : 'var(--border)';
+            statusEl.textContent = isWasmMode ? 'WASM 模式' : '';
+        });
+
+        // ---- Events ----
+        langSelect.addEventListener('change', () => selectLanguage(langSelect.value));
+        langLeft.addEventListener('change', () => selectCompareLang('left', langLeft.value));
+        langRight.addEventListener('change', () => selectCompareLang('right', langRight.value));
+        runBtn.addEventListener('click', runCurrentMode);
+
+        // ---- Init ----
+        initEditors();
+        loadLanguages();
+        connectWS();
+
+    })();
+    </script>
+</body>
+</html>

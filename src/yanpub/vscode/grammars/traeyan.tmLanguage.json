@@ -1,0 +1,87 @@
+{
+    "scopeName": "source.traeyan",
+    "name": "知行语言 TraeYan",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-define" },
+        { "include": "#keywords-exception" },
+        { "include": "#keywords-module" },
+        { "include": "#keywords-pattern" },
+        { "include": "#keywords-type" },
+        { "include": "#keywords-logic" },
+        { "include": "#keywords-special" },
+        { "include": "#keywords-compound-assign" },
+        { "include": "#strings" },
+        { "include": "#numbers" },
+        { "include": "#operators" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [{ "name": "comment.line.number-sign.traeyan", "match": "#.*$" }]
+        },
+        "keywords-control": {
+            "patterns": [
+                { "name": "keyword.control.conditional.traeyan", "match": "若|则|否则|否则若" },
+                { "name": "keyword.control.loop.traeyan", "match": "当|每|遍历|重复|从|到" },
+                { "name": "keyword.control.flow.traeyan", "match": "返回|断|继|结束|完" }
+            ]
+        },
+        "keywords-define": {
+            "patterns": [
+                { "name": "keyword.declaration.traeyan", "match": "定|设|函" }
+            ]
+        },
+        "keywords-exception": {
+            "patterns": [
+                { "name": "keyword.control.exception.traeyan", "match": "尝试|捕获|最终|抛出|异常" }
+            ]
+        },
+        "keywords-module": {
+            "patterns": [
+                { "name": "keyword.control.import.traeyan", "match": "导入" }
+            ]
+        },
+        "keywords-pattern": {
+            "patterns": [
+                { "name": "keyword.control.match.traeyan", "match": "匹配|例|其他" }
+            ]
+        },
+        "keywords-type": {
+            "patterns": [
+                { "name": "support.type.primitive.traeyan", "match": "数|符|串|布|列|集|结构体" }
+            ]
+        },
+        "keywords-logic": {
+            "patterns": [
+                { "name": "keyword.operator.logical.traeyan", "match": "且|或|非|负" }
+            ]
+        },
+        "keywords-compound-assign": {
+            "patterns": [
+                { "name": "keyword.operator.assignment.compound.traeyan", "match": "加等于|减等于|乘等于|除等于|模等于|幂等于" }
+            ]
+        },
+        "keywords-special": {
+            "patterns": [
+                { "name": "constant.language.traeyan", "match": "真|假|空" }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                { "name": "string.quoted.double.traeyan", "begin": "\"", "end": "\"", "patterns": [{ "name": "constant.character.escape.traeyan", "match": "\\\\." }] },
+                { "name": "string.quoted.single.traeyan", "begin": "'", "end": "'", "patterns": [{ "name": "constant.character.escape.traeyan", "match": "\\\\." }] }
+            ]
+        },
+        "numbers": {
+            "patterns": [{ "name": "constant.numeric.traeyan", "match": "\\b\\d+(\\.\\d+)?\\b" }]
+        },
+        "operators": {
+            "patterns": [
+                { "name": "keyword.operator.arithmetic.traeyan", "match": "加|减|乘|除|模|幂|大|小|等|不等于" },
+                { "name": "keyword.operator.comparison.traeyan", "match": "(==|!=|<=|>=|<|>)" },
+                { "name": "keyword.operator.assignment.traeyan", "match": "=" }
+            ]
+        }
+    }
+}
