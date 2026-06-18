@@ -17,7 +17,7 @@ const SUPPORTED_LANGUAGES = [
 const LANG_NAMES = {
     duan: '段言', yan: '言', moyan: '墨言', xinyu: '心语',
     zhixing: '知行', yanlv: '言律', yanzhi: '言知', mingdao: '明道',
-    hanyu: '翰语', traeyan: '知行语言',
+    hanyu: '翰语', traeyan: '趣言',
 };
 
 class SandboxFeature {

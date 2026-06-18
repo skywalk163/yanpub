@@ -82,7 +82,7 @@
       {
         "id": "traeyan",
         "extensions": [".trae", ".traeyan"],
-        "aliases": ["知行语言 Traeyan", "Traeyan"]
+        "aliases": ["趣言 traeyan", "traeyan"]
       }
     ],
     "grammars": [

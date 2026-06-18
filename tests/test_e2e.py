@@ -306,7 +306,7 @@ class TestRegistryIntegration:
             for ext in adapter.file_extensions:
                 ext_map.setdefault(ext, []).append(lang_id)
 
-        # .yan 是多语言共用的扩展名（言/知行/言律/言知），.行 也是共享的（知行/知行语言）
+        # .yan 是多语言共用的扩展名（言/趣言/言律/言知），.行 也是共享的（趣言/趣言）
         shared_extensions = {".yan", ".行"}
         for ext, lang_ids in ext_map.items():
             if ext in shared_extensions:

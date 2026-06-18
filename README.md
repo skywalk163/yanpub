@@ -67,7 +67,7 @@ yanpub compare --from duan --to yan
 | 言知 Yanzhi | yanzhi | 0.1.0 | 52 | 子进程 |
 | 明道 Mingdao | mingdao | 0.1.0 | 47 | 子进程(Racket) |
 | 翰语 Hanyu | hanyu | 0.1.0 | 48 | 子进程(LLVM) |
-| 知行语言 Traeyan | traeyan | 0.1.0 | 119 | 子进程 |
+| 趣言 traeyan | traeyan | 0.1.0 | 119 | 子进程 |
 
 ## 架构
 

@@ -24,7 +24,7 @@ const LANGUAGES = [
     { id: 'yanzhi', name: '言知', extensions: ['.知', '.yanzhi'] },
     { id: 'mingdao', name: '明道', extensions: ['.道', '.mingdao'] },
     { id: 'hanyu', name: '翰语', extensions: ['.翰', '.hanyu'] },
-    { id: 'traeyan', name: '知行语言', extensions: ['.trae', '.traeyan'] },
+    { id: 'traeyan', name: '趣言', extensions: ['.trae', '.traeyan'] },
 ];
 
 // ---- LSP 客户端 ----

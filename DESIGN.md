@@ -369,7 +369,7 @@ yanpub/
 | 言知 Yanzhi | yanzhi | 0.1.0 | 52 | 子进程 | arg(-c) | 字节码 VM、模式匹配、宏系统 |
 | 明道 Mingdao | mingdao | 0.1.0 | 47 | 子进程(Racket) | fallback(#lang) | SVO 调用语法、卫生宏 |
 | 翰语 Hanyu | hanyu | 0.1.0 | 47 | 子进程(LLVM) | fallback | LLVM IR、Tree-sitter、WASM |
-| 知行语言 Traeyan | traeyan | 0.1.0 | 119 | 子进程 | fallback | THULAC 分词、动词吞噬、百家姓标识符 |
+| 趣言 traeyan | traeyan | 0.1.0 | 119 | 子进程 | fallback | THULAC 分词、动词吞噬、百家姓标识符 |
 
 **语言相似度 TOP 5**：
 

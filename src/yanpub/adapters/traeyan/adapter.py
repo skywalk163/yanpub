@@ -1,8 +1,8 @@
-"""知行语言 (Traeyan) 适配器
+"""趣言 (traeyan) 适配器
 
-知行语言项目位于 G:\traework\traeyan
-CLI 入口: python -m zhixing.main <file>
-REPL: python -m zhixing.main
+趣言项目位于 G:\traework\traeyan
+CLI 入口: python -m traeyan.main <file>
+REPL: python -m traeyan.main
 特色: THULAC分词、动词吞噬解析、复合赋值、百家姓标识符
 """
 
@@ -18,17 +18,17 @@ _TRAEYAN_PROJECT_DIR = r"G:\traework\traeyan"
 
 
 class TraeyanAdapter(SubprocessAdapter):
-    """知行语言适配器 — 通过子进程调用知行语言后端"""
+    """趣言适配器 — 通过子进程调用趣言后端"""
 
     def __init__(self):
         super().__init__(
-            name="知行语言",
+            name="趣言",
             lang_id="traeyan",
             version="0.1.0",
             extensions=[".行", ".yan"],
-            run_command=["python", "-m", "zhixing.main"],
+            run_command=["python", "-m", "traeyan.main"],
             eval_command=None,  # 无 -c 选项，使用临时文件 fallback
-            repl_command=["python", "-m", "zhixing.main"],
+            repl_command=["python", "-m", "traeyan.main"],
             keywords_loader=_load_traeyan_keywords,
             primary_color="#2C3E50",
         )
@@ -44,21 +44,21 @@ class TraeyanAdapter(SubprocessAdapter):
     @property
     def repl_welcome(self) -> str:
         return (
-            f"知行语言 v{self.version} — THULAC 分词驱动的中文编程语言\n"
+            f"趣言 v{self.version} — THULAC 分词驱动的中文编程语言\n"
             "支持动词吞噬解析、复合赋值、渐近类型系统\n"
             "输入代码并回车执行，输入 :help 查看帮助"
         )
 
 
 def _load_traeyan_keywords() -> list[str]:
-    """加载知行语言关键字（优先从缓存）"""
+    """加载趣言关键字（优先从缓存）"""
     return load_cached_keywords("traeyan", _load_traeyan_keywords_dynamic, _fallback_keywords())
 
 
 def _load_traeyan_keywords_dynamic() -> list[str]:
-    """从知行语言项目的 parser.py 和 lexer.py 动态加载关键字列表"""
-    parser_file = Path(_TRAEYAN_PROJECT_DIR) / "zhixing" / "parser.py"
-    lexer_file = Path(_TRAEYAN_PROJECT_DIR) / "zhixing" / "lexer.py"
+    """从趣言项目的 parser.py 和 lexer.py 动态加载关键字列表"""
+    parser_file = Path(_TRAEYAN_PROJECT_DIR) / "traeyan" / "parser.py"
+    lexer_file = Path(_TRAEYAN_PROJECT_DIR) / "traeyan" / "lexer.py"
 
     result = set()
 

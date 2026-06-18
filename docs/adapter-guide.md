@@ -129,7 +129,7 @@ def _load_keywords() -> list[str]:
 | 知行 | `src/yan/compiler/pre_tokenizer.py` 的 `KEYWORDS` + `VERBS` | `exec` + set |
 | 言律 | `src/yanlv/lexer/constants.py` 的 `KEYWORDS` + `VERB_CATEGORIES` | `exec` + dict keys |
 | 言知 | `src/yanzhi/compiler/pre_tokenizer.py` 的 `KEYWORDS` + `VERBS` | `exec` + set |
-| 知行语言 | `zhixing/parser.py` 的 `TokenType` + `zhixing/lexer.py` 的 `VERB_ARITY` | `exec` + 多文件 |
+| 趣言 | `traeyan/parser.py` 的 `TokenType` + `traeyan/lexer.py` 的 `VERB_ARITY` | `exec` + 多文件 |
 | 翰语 | `src/hanyu/lexer.py` 的 `KEYWORDS` + `SINGLE_CJK_KEYWORDS` + `BUILTIN_FUNCTIONS` | `exec` + dict keys |
 | 明道 | Racket tokenizer 无法 `exec` | 硬编码 fallback 列表 |
 | 言 / 墨言 | 关键字少且稳定 | 内联列表 |

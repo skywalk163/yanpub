@@ -1,5 +1,5 @@
-# 知行语言 (Traeyan) 适配器配置
-name: 知行语言
+# 趣言 (traeyan) 适配器配置
+name: 趣言
 id: traeyan
 version: "0.1.0"
 
@@ -12,8 +12,8 @@ syntax:
   comment_syntax: "#"
 
 execution:
-  run: "python -m zhixing.main {file}"
-  repl: "python -m zhixing.main"
+  run: "python -m traeyan.main {file}"
+  repl: "python -m traeyan.main"
 
 capabilities:
   repl: true

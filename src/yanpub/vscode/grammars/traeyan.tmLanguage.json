@@ -1,6 +1,6 @@
 {
     "scopeName": "source.traeyan",
-    "name": "知行语言 TraeYan",
+    "name": "趣言 traeyan",
     "patterns": [
         { "include": "#comments" },
         { "include": "#keywords-control" },

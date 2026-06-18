@@ -17,7 +17,7 @@
 | yanzhi    | 言知       | `.知` `.yanzhi`     |
 | mingdao   | 明道       | `.道` `.mingdao`    |
 | hanyu     | 翰语       | `.翰` `.hanyu`      |
-| traeyan   | 知行语言   | `.trae` `.traeyan`  |
+| traeyan   | 趣言   | `.trae` `.traeyan`  |
 
 ## 功能
 
