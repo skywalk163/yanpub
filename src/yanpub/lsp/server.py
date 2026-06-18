@@ -183,7 +183,7 @@ class YanLanguageServer:
 
     def __init__(self, registry: Optional[LanguageRegistry] = None):
         self.registry = registry or get_registry()
-        self.server = LanguageServer("yanlsp", "v1.1.0")
+        self.server = LanguageServer("yanlsp", "v1.2.0")
         self._documents: dict[str, str] = {}  # uri → 文档内容
         self._document_versions: dict[str, int] = {}  # uri → 版本号
         self._on_document_change: list[Callable] = []  # 文档变更回调列表
@@ -216,8 +216,11 @@ class YanLanguageServer:
 
             # 检查签名伴随文件，发布签名诊断
             sig_diags = self._check_signature_diagnostics(doc.uri)
-            if sig_diags:
-                self.server.publish_diagnostics(doc.uri, sig_diags)
+            # Lint 代码风格检查
+            lint_diags = self._run_lint_diagnostics(doc.uri, doc.text)
+            all_diags = sig_diags + lint_diags
+            if all_diags:
+                self.server.publish_diagnostics(doc.uri, all_diags)
 
         @server.feature(lsp.TEXT_DOCUMENT_DID_CHANGE)
         def did_change(params: lsp.DidChangeTextDocumentParams) -> None:
@@ -1418,6 +1421,20 @@ class YanLanguageServer:
                 message=f"签名检查错误: {e}",
                 source="yanlsp-sign",
             )]
+
+    def _run_lint_diagnostics(self, uri: str, code: str) -> list[lsp.Diagnostic]:
+        """运行 Lint 规则引擎，返回代码风格诊断"""
+        try:
+            from yanpub.core.linter import LintRuleEngine
+
+            engine = LintRuleEngine()
+            adapter = self._get_adapter_for_uri(uri)
+            lang_id = adapter.id if adapter else ""
+            results = engine.lint(code, lang_id)
+            return [_diagnostic_to_lsp(r.to_diagnostic()) for r in results]
+        except Exception as e:
+            logger.debug("Lint 检查失败: %s", e)
+            return []
 
     def _is_block_definition(self, adapter: LanguageAdapter, line: str) -> bool:
         """判断行是否是块定义（如段落、函数、类）"""

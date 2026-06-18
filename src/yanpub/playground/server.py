@@ -64,9 +64,40 @@ def create_app() -> FastAPI:
             })
         return result
 
+    # 示例元数据：文件名 -> 显示名
+    _EXAMPLE_META = {
+        "hello": "Hello World",
+        "fibonacci": "斐波那契数列",
+        "hanoi": "汉诺塔",
+        "turing": "图灵机原型机",
+        "bubble": "冒泡排序",
+    }
+
+    @app.get("/api/examples/{lang_id}")
+    async def list_examples(lang_id: str):
+        """获取语言的示例列表"""
+        lang_dir = _TEMPLATES_DIR / lang_id
+        if not lang_dir.exists():
+            return JSONResponse([])
+        examples = []
+        for txt in sorted(lang_dir.glob("*.txt")):
+            name = txt.stem
+            if name == "default":
+                continue
+            display = _EXAMPLE_META.get(name, name)
+            examples.append({"id": name, "name": display})
+        return JSONResponse(examples)
+
     @app.get("/api/templates/{lang_id}")
-    async def get_template(lang_id: str):
+    async def get_template(lang_id: str, example: str = ""):
         """获取语言示例代码"""
+        # 指定示例名
+        if example:
+            template_file = _TEMPLATES_DIR / lang_id / f"{example}.txt"
+            if template_file.exists():
+                return JSONResponse({"code": template_file.read_text(encoding="utf-8")})
+            return JSONResponse({"code": "", "error": f"示例不存在: {example}"}, status_code=404)
+
         # 先查自定义模板文件
         template_file = _TEMPLATES_DIR / lang_id / "default.txt"
         if template_file.exists():
@@ -747,12 +778,123 @@ def _register_share_routes(app: FastAPI) -> None:
         # 重定向到主页，用 #share= 参数
         return RedirectResponse(url=f"/#share={share_id}")
 
+    # ---- v1.2.0: 协作增强 API ----
+
+    @app.get("/api/collab/{room_id}/history")
+    async def get_collab_history(room_id: str, limit: int = 20):
+        """获取协作房间的文档历史"""
+        from yanpub.playground.collab_history import get_collab_enhancer
+
+        enhancer = get_collab_enhancer()
+        versions = enhancer.list_versions(room_id, limit)
+        return {"room_id": room_id, "versions": versions}
+
+    @app.get("/api/collab/{room_id}/history/{version}")
+    async def get_collab_version(room_id: str, version: int):
+        """获取协作房间的指定版本"""
+        from yanpub.playground.collab_history import get_collab_enhancer
+
+        enhancer = get_collab_enhancer()
+        snap = enhancer.get_version(room_id, version)
+        if snap is None:
+            return JSONResponse({"error": "版本不存在"}, status_code=404)
+        return snap.to_dict()
+
+    @app.get("/api/collab/{room_id}/diff")
+    async def diff_collab_versions(room_id: str, v1: int, v2: int):
+        """比较协作房间的两个版本"""
+        from yanpub.playground.collab_history import get_collab_enhancer
+
+        enhancer = get_collab_enhancer()
+        return enhancer.diff_versions(room_id, v1, v2)
+
+    @app.post("/api/collab/{room_id}/restore/{version}")
+    async def restore_collab_version(room_id: str, version: int):
+        """恢复协作房间到指定版本"""
+        from yanpub.playground.collab_history import get_collab_enhancer
+
+        enhancer = get_collab_enhancer()
+        content = enhancer.restore_version(room_id, version)
+        if content is None:
+            return JSONResponse({"error": "版本不存在"}, status_code=404)
+        return {"ok": True, "version": version, "content": content}
+
+    @app.post("/api/collab/{room_id}/resolve-conflict")
+    async def resolve_collab_conflict(room_id: str, strategy: str = "merge"):
+        """解决协作冲突"""
+        from yanpub.playground.collab_history import ResolutionStrategy
+
+        try:
+            strat = ResolutionStrategy(strategy)
+        except ValueError:
+            return JSONResponse({"error": f"无效策略: {strategy}"}, status_code=400)
+        return {"ok": True, "strategy": strat.value}
+
+    @app.get("/api/collab/{room_id}/offline/{user_id}")
+    async def get_offline_status(room_id: str, user_id: str):
+        """获取用户离线编辑状态"""
+        from yanpub.playground.collab_history import get_collab_enhancer
+
+        enhancer = get_collab_enhancer()
+        buf = enhancer.get_offline_buffer(room_id, user_id)
+        return buf.to_dict()
+
+    @app.post("/api/collab/{room_id}/offline/{user_id}/go-offline")
+    async def go_offline(room_id: str, user_id: str):
+        """用户进入离线模式"""
+        from yanpub.playground.collab_history import get_collab_enhancer
+
+        enhancer = get_collab_enhancer()
+        enhancer.go_offline(room_id, user_id)
+        return {"ok": True, "status": "offline"}
+
+    @app.post("/api/collab/{room_id}/offline/{user_id}/go-online")
+    async def go_online(room_id: str, user_id: str):
+        """用户恢复在线，返回待同步操作"""
+        from yanpub.playground.collab_history import get_collab_enhancer
+
+        enhancer = get_collab_enhancer()
+        ops = enhancer.go_online(room_id, user_id)
+        return {"ok": True, "status": "online", "pending_ops": len(ops), "ops": [o.to_dict() for o in ops]}
+
+    # ---- v1.2.0: 文档搜索 API ----
+
+    @app.get("/api/search")
+    async def search_docs(q: str = "", category: str = "", lang: str = "", limit: int = 20):
+        """全文搜索"""
+        from yanpub.docs.search import get_search_engine
+
+        if not q:
+            return JSONResponse({"error": "缺少 q 参数"}, status_code=400)
+
+        engine = get_search_engine()
+        engine.build_index()
+
+        if category == "example":
+            results = engine.search_examples(q, lang_id=lang, limit=limit)
+        else:
+            results = engine.search(q, limit=limit, category=category)
+
+        return {"query": q, "results": [r.to_dict() for r in results]}
+
+    @app.get("/api/search/suggest")
+    async def search_suggest(prefix: str = "", limit: int = 8):
+        """关键字联想"""
+        from yanpub.docs.search import get_search_engine
+
+        if not prefix:
+            return {"prefix": "", "suggestions": []}
+
+        engine = get_search_engine()
+        engine.build_index()
+
+        suggestions = engine.suggest(prefix, limit)
+        return {"prefix": prefix, "suggestions": suggestions}
+
 
 def _generate_default_template(adapter) -> str:
-    """根据语言生成默认示例代码"""
-    templates = {
-        "duan": '# 段言 (Duan) 示例\n打印("你好，世界！")。\n\n设甲为四十二。\n设乙为甲乘二。\n打印(乙)。',
-        "yan": '# 言 (Yan) 示例\n打印("你好，世界！")',
-        "moyan": '# 墨言 (Moyan) 示例\n打印("你好，世界！")',
-    }
-    return templates.get(adapter.id, f'# {adapter.name} 示例\n打印("你好，世界！")')
+    """根据语言生成默认示例代码（优先从文件读取）"""
+    template_file = _TEMPLATES_DIR / adapter.id / "default.txt"
+    if template_file.exists():
+        return template_file.read_text(encoding="utf-8")
+    return f'# {adapter.name} 示例\n打印("你好，世界！")'

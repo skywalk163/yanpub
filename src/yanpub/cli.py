@@ -21,7 +21,7 @@ from yanpub.core.registry import get_registry
 
 
 @click.group()
-@click.version_option(package_name="yanpub")
+@click.version_option(version="1.2.0")
 @click.option("--lang", "-L", "cli_lang", default=None, help="语言设置（zh/en）")
 def main(cli_lang: str | None):
     """言埠 YanPub -- 中文编程语言统一基础设施"""
@@ -2542,6 +2542,174 @@ def docs_i18n(lang_id: str, target_lang: str, output: str | None):
     click.echo(f"[OK] {lang_id} 的 {target_lang} 文档已生成: {out_dir}")
     click.echo(f"  API 参考: {api_file}")
     click.echo(f"  语言概览: {overview_file}")
+
+
+# ---- v1.2.0: Lint 代码风格检查 ----
+
+
+@main.command("lint")
+@click.argument("path", type=click.Path(exists=True))
+@click.option("--lang", "-L", "lang_id", default=None, help="语言 ID")
+@click.option("--fix", is_flag=True, help="自动修复可修复的问题")
+@click.option("--rule", "-r", multiple=True, help="仅运行指定规则 (可多次使用)")
+@click.option("--json", "as_json", is_flag=True, help="输出 JSON 格式")
+def lint_command(path, lang_id, fix, rule, as_json):
+    """代码风格检查 — Lint 规则引擎"""
+    import json as json_mod
+    from pathlib import Path as PathLib
+
+    from yanpub.core.linter import LintRuleEngine
+
+    file_path = PathLib(path)
+    if not file_path.is_file():
+        click.echo(f"错误: {path} 不是文件", err=True)
+        sys.exit(1)
+
+    code = file_path.read_text(encoding="utf-8")
+
+    # 推断语言
+    if not lang_id:
+        registry = get_registry()
+        ext = file_path.suffix.lower()
+        for adapter in registry:
+            if ext in adapter.file_extensions:
+                lang_id = adapter.id
+                break
+    if not lang_id:
+        lang_id = "unknown"
+
+    engine = LintRuleEngine()
+
+    if fix:
+        fixed_code, fixed_results = engine.fix(code, lang_id)
+        if fixed_results:
+            file_path.write_text(fixed_code, encoding="utf-8")
+            click.echo(f"已修复 {len(fixed_results)} 个问题")
+        else:
+            click.echo("无需修复")
+
+    if rule:
+        results = engine.lint_with_rule(code, lang_id, list(rule))
+    else:
+        results = engine.lint(code, lang_id)
+
+    if as_json:
+        summary = engine.summary(results)
+        click.echo(json_mod.dumps({
+            "file": str(file_path),
+            "lang_id": lang_id,
+            "results": [r.to_dict() for r in results],
+            "summary": summary,
+        }, ensure_ascii=False, indent=2))
+    else:
+        if not results:
+            click.echo(f"[OK] {file_path.name}: 无风格问题")
+        else:
+            for r in results:
+                icon = {"error": "✗", "warning": "⚠", "info": "ℹ", "hint": "💡"}.get(r.severity.value, "?")
+                click.echo(f"  {icon} {file_path.name}:{r.line}:{r.column} [{r.rule_id}] {r.message}")
+            click.echo(f"\n共 {len(results)} 个问题")
+            summary = engine.summary(results)
+            for sev, count in summary["by_severity"].items():
+                click.echo(f"  {sev}: {count}")
+
+
+# ---- v1.2.0: 适配器热更新 ----
+
+
+@main.command("hot-update")
+@click.argument("lang_id")
+@click.option("--rollback", "-R", "target_version", type=int, default=None, help="回退到指定版本")
+@click.option("--list-versions", is_flag=True, help="列出版本历史")
+@click.option("--check", is_flag=True, help="检查是否有代码变更")
+def hot_update_command(lang_id, target_version, list_versions, check):
+    """适配器热更新 — 运行时代码替换 + 版本回退"""
+    from yanpub.core.hotupdate import HotUpdateManager
+
+    manager = HotUpdateManager()
+
+    if list_versions:
+        versions = manager.list_versions(lang_id)
+        if not versions:
+            click.echo(f"适配器 {lang_id} 暂无版本历史")
+        else:
+            click.echo(f"适配器 {lang_id} 版本历史:")
+            for v in versions:
+                status = "✓" if v["success"] else "✗"
+                click.echo(f"  v{v['version']} {status} {v['adapter_name']} ({time.strftime('%Y-%m-%d %H:%M', time.localtime(v['timestamp']))})")
+                if v["error"]:
+                    click.echo(f"    错误: {v['error']}")
+        return
+
+    if check:
+        updates = manager.check_for_updates()
+        if not updates:
+            click.echo("所有适配器代码无变更")
+        else:
+            for u in updates:
+                click.echo(f"  {u['adapter_id']}: {u['event_type']} {'成功' if u['success'] else '失败: ' + u['error']}")
+        return
+
+    if target_version is not None:
+        click.echo(f"回退适配器 {lang_id} 到版本 {target_version}...")
+        result = manager.rollback(lang_id, target_version)
+    else:
+        click.echo(f"热更新适配器 {lang_id}...")
+        result = manager.update(lang_id)
+
+    if result.success:
+        click.echo(f"[OK] 版本 v{result.version} {result.adapter_name}")
+    else:
+        click.echo(f"[FAIL] 更新失败: {result.error}", err=True)
+        sys.exit(1)
+
+
+# ---- v1.2.0: 文档搜索 ----
+
+
+@main.command("search")
+@click.argument("query")
+@click.option("--category", "-c", type=click.Choice(["keyword", "doc", "example"]), default=None, help="搜索类别")
+@click.option("--lang", "-L", "lang_id", default=None, help="限定语言")
+@click.option("--suggest", is_flag=True, help="关键字联想模式")
+@click.option("--json", "as_json", is_flag=True, help="输出 JSON 格式")
+def search_command(query, category, lang_id, suggest, as_json):
+    """文档搜索 — 全文搜索 + 关键字联想 + 代码搜索"""
+    import json as json_mod
+
+    from yanpub.docs.search import get_search_engine
+
+    engine = get_search_engine()
+    engine.build_index()
+
+    if suggest:
+        suggestions = engine.suggest(query)
+        if as_json:
+            click.echo(json_mod.dumps({"prefix": query, "suggestions": suggestions}, ensure_ascii=False))
+        else:
+            for s in suggestions:
+                click.echo(f"  {s}")
+        return
+
+    if category == "example":
+        results = engine.search_examples(query, lang_id=lang_id or "")
+    else:
+        results = engine.search(query, category=category or "")
+
+    if as_json:
+        click.echo(json_mod.dumps([r.to_dict() for r in results], ensure_ascii=False, indent=2))
+    else:
+        if not results:
+            click.echo(f"未找到与 '{query}' 相关的结果")
+        else:
+            click.echo(f"搜索 '{query}' — 找到 {len(results)} 个结果:")
+            for r in results:
+                cat_icon = {"keyword": "🔑", "doc": "📄", "example": "💻"}.get(r.category, "📝")
+                click.echo(f"  {cat_icon} [{r.category}] {r.title} (score: {r.score:.2f})")
+                if r.lang_name:
+                    click.echo(f"    语言: {r.lang_name}")
+                for hl in r.highlights[:2]:
+                    click.echo(f"    {hl}")
 
 
 if __name__ == "__main__":

@@ -905,10 +905,10 @@ def _build_tip_data(operations: list[dict]) -> str:
 # ---- 默认示例代码生成 ----
 
 def _default_code(adapter: LanguageAdapter) -> str:
-    """根据适配器生成默认分析代码"""
-    templates = {
-        "duan": '打印("你好，世界！")。\n设甲为四十二。\n设乙为甲乘二。\n打印(乙)。',
-        "yan": '打印("你好，世界！")',
-        "moyan": '打印("你好，世界！")',
-    }
-    return templates.get(adapter.id, '打印("你好，世界！")')
+    """根据适配器生成默认分析代码（优先从模板文件读取）"""
+    from yanpub.playground.server import _TEMPLATES_DIR
+
+    template_file = _TEMPLATES_DIR / adapter.id / "default.txt"
+    if template_file.exists():
+        return template_file.read_text(encoding="utf-8")
+    return '打印("你好，世界！")'

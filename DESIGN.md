@@ -599,9 +599,9 @@ yanpub/
 
 ## 十六、下一步（v1.2.0 规划）
 
+- [x] LSP 代码风格检查（LintRuleEngine + 10 条内置规则 + 自动修复 + LSP 集成 + lint CLI）
+- [x] Playground 协作增强（DocumentHistory + ConflictResolution + OfflineEditBuffer + API 路由）
+- [x] 适配器热更新（HotUpdateManager + 状态保存/恢复 + 版本链 + 回退 + hot-update CLI）
+- [x] 文档站搜索增强（SearchIndex 倒排索引 + 前缀树联想 + DocsSearchEngine + search CLI + API）
 - [ ] 桌面 GUI 封装（Electron/Tauri，离线桌面应用）
 - [ ] 包管理器私有注册中心（自建 Git 仓库 + 镜像同步 + 权限管理）
-- [ ] Playground 协作增强（文档历史 + 冲突解决 + 离线编辑）
-- [ ] LSP 代码风格检查（Lint 规则引擎 + 自定义规则 + 自动修复）
-- [ ] 适配器热更新（运行时代码替换 + 状态保持 + 版本回退）
-- [ ] 文档站搜索增强（全文搜索 + 关键字联想 + 代码示例搜索）

@@ -852,6 +852,9 @@
         <select id="lang-select" class="lang-select">
             <option value="">加载中...</option>
         </select>
+        <select id="example-select" class="lang-select" style="display:none;">
+            <option value="">选择示例</option>
+        </select>
         <button id="run-btn" class="run-btn">运行</button>
         <span class="shortcut-hint">Ctrl+Enter</span>
         <span id="lang-badge" class="lang-badge"></span>
@@ -1080,6 +1083,7 @@
 
         // ---- DOM ----
         const langSelect = document.getElementById('lang-select');
+        const exampleSelect = document.getElementById('example-select');
         const runBtn = document.getElementById('run-btn');
         const outputEl = document.getElementById('output');
         const statusEl = document.getElementById('status');
@@ -1224,7 +1228,8 @@
             editorLang.textContent = lang.name;
             document.documentElement.style.setProperty('--primary', lang.primaryColor || '#2C3E50');
             updateEditorMode(editor, lang);
-            loadTemplate(langId, function(code) { editor.setValue(code); editor.clearHistory(); });
+            loadExamples(langId);
+            loadTemplate(langId, '', function(code) { editor.setValue(code); editor.clearHistory(); });
         }
 
         function selectCompareLang(side, langId) {
@@ -1235,7 +1240,7 @@
             badge.style.background = lang.primaryColor || '#2C3E50';
             const cm = side === 'left' ? editorLeft : editorRight;
             updateEditorMode(cm, lang);
-            loadTemplate(langId, function(code) { cm.setValue(code); cm.clearHistory(); });
+            loadTemplate(langId, '', function(code) { cm.setValue(code); cm.clearHistory(); });
         }
 
         function updateEditorMode(cm, lang) {
@@ -1291,13 +1296,35 @@
         }
 
         // ---- Template Loading ----
-        function loadTemplate(langId, callback) {
-            fetch('/api/templates/' + langId)
+        function loadTemplate(langId, exampleName, callback) {
+            let url = '/api/templates/' + langId;
+            if (exampleName) url += '?example=' + encodeURIComponent(exampleName);
+            fetch(url)
                 .then(r => r.json())
                 .then(data => {
                     if (data.code && callback) callback(data.code);
                 })
                 .catch(() => {});
+        }
+
+        function loadExamples(langId) {
+            fetch('/api/examples/' + langId)
+                .then(r => r.json())
+                .then(data => {
+                    exampleSelect.innerHTML = '<option value="">选择示例</option>';
+                    if (data && data.length > 0) {
+                        data.forEach(function(ex) {
+                            const opt = document.createElement('option');
+                            opt.value = ex.id;
+                            opt.textContent = ex.name;
+                            exampleSelect.appendChild(opt);
+                        });
+                        exampleSelect.style.display = '';
+                    } else {
+                        exampleSelect.style.display = 'none';
+                    }
+                })
+                .catch(() => { exampleSelect.style.display = 'none'; });
         }
 
         // ---- Code Execution ----
@@ -2781,6 +2808,12 @@
 
         // ---- Events ----
         langSelect.addEventListener('change', () => selectLanguage(langSelect.value));
+        exampleSelect.addEventListener('change', function() {
+            if (!currentLang || !exampleSelect.value) return;
+            loadTemplate(currentLang.id, exampleSelect.value, function(code) {
+                editor.setValue(code); editor.clearHistory();
+            });
+        });
         langLeft.addEventListener('change', () => selectCompareLang('left', langLeft.value));
         langRight.addEventListener('change', () => selectCompareLang('right', langRight.value));
         runBtn.addEventListener('click', runCurrentMode);
