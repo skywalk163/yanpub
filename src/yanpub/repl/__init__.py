@@ -8,6 +8,14 @@
 - 多行输入检测
 """
 
-from yanpub.repl.core import YanREPL
+
+def __getattr__(name):
+    if name == "YanREPL":
+        from yanpub.repl.core import YanREPL
+
+        globals()["YanREPL"] = YanREPL
+        return YanREPL
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = ["YanREPL"]
