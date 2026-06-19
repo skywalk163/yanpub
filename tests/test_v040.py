@@ -244,7 +244,7 @@ class TestLSPRename:
 
     def test_lsp_rename_integration(self):
         """测试 LSP rename 集成"""
-        pytest.importorskip("lsprotocol")
+        pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
         from yanpub.core.adapter import SubprocessAdapter

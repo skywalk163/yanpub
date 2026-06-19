@@ -17,7 +17,7 @@ class TestLSPCodeLens:
 
     def test_codelens_types_available(self):
         """CodeLens 相关 LSP 类型应可用"""
-        pytest.importorskip("lsprotocol")
+        pytest.importorskip("pygls")
         from lsprotocol import types as lsp
         assert hasattr(lsp, "TEXT_DOCUMENT_CODE_LENS")
         assert hasattr(lsp, "CodeLens")
@@ -26,7 +26,7 @@ class TestLSPCodeLens:
 
     def test_codelens_creation(self):
         """应能创建 CodeLens 对象"""
-        pytest.importorskip("lsprotocol")
+        pytest.importorskip("pygls")
         from lsprotocol import types as lsp
 
         lens = lsp.CodeLens(

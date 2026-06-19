@@ -5,6 +5,8 @@ from fastapi.testclient import TestClient
 
 from yanpub.playground.server import create_app
 
+from conftest import skip_if_no_backend
+
 
 @pytest.fixture
 def client():
@@ -47,6 +49,7 @@ class TestPlaygroundAPI:
         assert resp.status_code == 404
 
     def test_run_code_duan(self, client):
+        skip_if_no_backend("duan")
         resp = client.post("/api/run", json={
             "lang": "duan",
             "code": '打印("Playground test")。',
@@ -65,6 +68,7 @@ class TestPlaygroundAPI:
         assert resp.status_code == 400
 
     def test_run_code_with_error(self, client):
+        skip_if_no_backend("duan")
         resp = client.post("/api/run", json={
             "lang": "duan",
             "code": "这段代码有语法错误",
@@ -74,6 +78,7 @@ class TestPlaygroundAPI:
         assert data["exitCode"] != 0
 
     def test_websocket_run(self, client):
+        skip_if_no_backend("duan")
         with client.websocket_connect("/ws/run") as ws:
             ws.send_json({"lang": "duan", "code": '打印("WS test")。'})
             data = ws.receive_json()

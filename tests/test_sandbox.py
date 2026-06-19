@@ -20,6 +20,8 @@ from pathlib import Path
 
 import pytest
 
+from conftest import skip_if_no_backend
+
 
 # ============================================================
 # 1. 数据结构测试
@@ -406,6 +408,7 @@ class TestSandboxAdapterIntegration:
 
     def test_duan_adapter_sandbox_execute(self):
         """段言适配器沙箱执行"""
+        skip_if_no_backend("duan")
         from yanpub.core.sandbox import SandboxManager, SandboxConfig
         from yanpub.core.registry import LanguageRegistry
 
@@ -428,6 +431,7 @@ class TestSandboxAdapterIntegration:
 
     def test_duan_adapter_sandbox_file(self):
         """段言适配器沙箱文件执行"""
+        skip_if_no_backend("duan")
         from yanpub.core.sandbox import SandboxManager, SandboxConfig
         from yanpub.core.registry import LanguageRegistry
 
@@ -494,6 +498,7 @@ class TestPlaygroundSandboxRoutes:
 
     def test_sandbox_run_endpoint(self):
         """沙箱执行端点"""
+        skip_if_no_backend("duan")
         pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
         from yanpub.playground.server import create_app
