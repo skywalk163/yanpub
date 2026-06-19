@@ -40,6 +40,7 @@ dependencies = [
     "pyyaml>=6.0",
     "prompt-toolkit>=3.0",
     "httpx>=0.24",
+    "fastapi",
 ]
 
 [project.optional-dependencies]
@@ -63,8 +64,8 @@ all = [
 yanpub = "yanpub.cli:main"
 
 [project.urls]
-Repository = "https://github.com/yanpub/yanpub"
-Changelog = "https://github.com/yanpub/yanpub/blob/main/CHANGELOG.md"
+Repository = "https://github.com/skywalk163/yanpub"
+Changelog = "https://github.com/skywalk163/yanpub/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/yanpub"]
