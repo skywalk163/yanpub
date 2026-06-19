@@ -10,6 +10,15 @@
 - textDocument/didChange     文档变更追踪
 """
 
-from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+
+def __getattr__(name):
+    if name in ("create_lsp_server", "YanLanguageServer"):
+        from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+
+        globals()["create_lsp_server"] = create_lsp_server
+        globals()["YanLanguageServer"] = YanLanguageServer
+        return globals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = ["create_lsp_server", "YanLanguageServer"]
