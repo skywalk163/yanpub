@@ -206,6 +206,7 @@ class TestPlaygroundE2E:
         """Playground 首页可访问"""
         try:
             from yanpub.playground.server import create_app
+            pytest.importorskip("fastapi")
             from fastapi.testclient import TestClient
             app = create_app()
             client = TestClient(app)
@@ -219,6 +220,7 @@ class TestPlaygroundE2E:
         """Playground 语言列表 API"""
         try:
             from yanpub.playground.server import create_app
+            pytest.importorskip("fastapi")
             from fastapi.testclient import TestClient
             app = create_app()
             client = TestClient(app)

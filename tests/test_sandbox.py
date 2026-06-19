@@ -476,6 +476,7 @@ class TestPlaygroundSandboxRoutes:
 
     def test_sandbox_status_endpoint(self):
         """沙箱状态端点"""
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
         from yanpub.playground.server import create_app
 
@@ -493,6 +494,7 @@ class TestPlaygroundSandboxRoutes:
 
     def test_sandbox_run_endpoint(self):
         """沙箱执行端点"""
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
         from yanpub.playground.server import create_app
 
@@ -514,6 +516,7 @@ class TestPlaygroundSandboxRoutes:
 
     def test_sandbox_run_unknown_language(self):
         """沙箱执行未知语言"""
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
         from yanpub.playground.server import create_app
 

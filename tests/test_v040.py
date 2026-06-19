@@ -3,11 +3,11 @@
 测试项：
 1. 包管理器依赖锁定（LockManager + LockFile + lock/verify/unlock）
 2. LSP 代码重构（adapter.rename + LSP rename/codeAction）
-3. 适配器兼容性矩阵（check_compatibility + compat 命令）
-4. 插件系统（PluginManager + plugin 命令）
 """
 
 import json
+
+import pytest
 
 
 # ---- 1. 包管理器依赖锁定 ----
@@ -244,6 +244,7 @@ class TestLSPRename:
 
     def test_lsp_rename_integration(self):
         """测试 LSP rename 集成"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
         from yanpub.core.adapter import SubprocessAdapter

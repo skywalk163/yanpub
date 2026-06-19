@@ -260,6 +260,7 @@ class TestShareAPIServer:
 
     @pytest.fixture
     def client(self):
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
         from yanpub.playground.server import create_app
 

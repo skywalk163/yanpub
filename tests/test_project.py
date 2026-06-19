@@ -361,6 +361,7 @@ class TestProjectAPI:
     @pytest.fixture
     def client(self):
         from yanpub.playground.server import create_app
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
         app = create_app()
         return TestClient(app)

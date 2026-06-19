@@ -22,6 +22,7 @@ class TestPlaygroundShare:
     def test_share_api_endpoint(self):
         """测试 /api/share 端点"""
         from yanpub.playground.server import create_app
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
 
         app = create_app()
@@ -34,6 +35,7 @@ class TestPlaygroundShare:
     def test_share_api_with_lang(self):
         """测试 /api/share 指定语言"""
         from yanpub.playground.server import create_app
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
 
         app = create_app()
@@ -49,6 +51,7 @@ class TestPlaygroundShare:
         """测试 /api/share 带代码参数"""
         import base64
         from yanpub.playground.server import create_app
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
 
         app = create_app()
@@ -65,6 +68,7 @@ class TestPlaygroundShare:
     def test_share_api_unknown_lang(self):
         """测试 /api/share 未知语言"""
         from yanpub.playground.server import create_app
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
 
         app = create_app()

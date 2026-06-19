@@ -6,6 +6,8 @@ import tempfile
 import time
 from pathlib import Path
 
+import pytest
+
 
 # ============================================================
 # 1. LSP 代码折叠测试
@@ -16,6 +18,7 @@ class TestLSPFoldingRange:
 
     def test_folding_range_basic_block(self):
         """基本块折叠 — 段落/函数定义"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -37,6 +40,7 @@ class TestLSPFoldingRange:
 
     def test_folding_range_nested_blocks(self):
         """嵌套块折叠 — 当/如果内嵌在段落中"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -55,6 +59,7 @@ class TestLSPFoldingRange:
 
     def test_folding_range_indent_based(self):
         """缩进推断折叠 — 无显式结束关键字的代码"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -74,6 +79,7 @@ class TestLSPFoldingRange:
 
     def test_folding_range_empty_code(self):
         """空代码无折叠范围"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -89,6 +95,7 @@ class TestLSPFoldingRange:
 
     def test_folding_range_comment_skip(self):
         """注释行不影响折叠"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -107,6 +114,7 @@ class TestLSPFoldingRange:
 
     def test_folding_range_colon_ending(self):
         """冒号结尾的行视为块开始"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 

@@ -375,6 +375,7 @@ class TestPlaygroundAIRoutes:
 
     @pytest.fixture
     def client(self, app):
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
         return TestClient(app)
 

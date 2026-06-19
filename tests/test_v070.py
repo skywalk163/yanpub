@@ -18,6 +18,7 @@ class TestLSPSemanticTokens:
 
     def test_semantic_tokens_basic(self):
         """基本语义 token 生成"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -37,6 +38,7 @@ class TestLSPSemanticTokens:
 
     def test_semantic_tokens_empty_code(self):
         """空代码无语义 token"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -52,6 +54,7 @@ class TestLSPSemanticTokens:
 
     def test_semantic_tokens_keyword_detection(self):
         """关键字检测"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -71,6 +74,7 @@ class TestLSPSemanticTokens:
 
     def test_semantic_tokens_string_detection(self):
         """字符串字面量检测"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -87,6 +91,7 @@ class TestLSPSemanticTokens:
 
     def test_semantic_tokens_number_detection(self):
         """数字字面量检测"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -103,6 +108,7 @@ class TestLSPSemanticTokens:
 
     def test_semantic_tokens_comment_detection(self):
         """注释检测"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -119,6 +125,7 @@ class TestLSPSemanticTokens:
 
     def test_semantic_tokens_delta_encoding(self):
         """Delta 编码验证"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 

@@ -62,12 +62,6 @@ jobs:
           pytest tests/ -q --tb=short
           --ignore=tests/test_lsp.py
           --ignore=tests/test_playground.py
-          --ignore=tests/test_project.py
-          --ignore=tests/test_sandbox.py
-          --ignore=tests/test_share.py
-          --ignore=tests/test_v030.py
-          --ignore=tests/test_v050.py
-          --ignore=tests/test_v080.py
           -k "not e2e"
 
   # ── Test (full, with all optional deps) ──────────────

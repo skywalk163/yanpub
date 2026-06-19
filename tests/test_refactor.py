@@ -1,5 +1,6 @@
 """LSP 代码重构增强功能测试 — RefactoringEngine + LSP Code Actions + CLI"""
 
+import pytest
 
 from yanpub.core.refactor import (
     RefactoringEngine,
@@ -415,6 +416,7 @@ class TestAdapterRefactorMethods:
 class TestLSPRefactorIntegration:
     def test_server_creation_with_refactor(self):
         """LSP 服务器创建包含重构功能"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 
@@ -426,6 +428,7 @@ class TestLSPRefactorIntegration:
 
     def test_code_action_includes_extract_function(self):
         """Code Action 包含 Extract Function"""
+        pytest.importorskip("lsprotocol")
         from yanpub.lsp.server import YanLanguageServer
         from yanpub.core.registry import LanguageRegistry
 

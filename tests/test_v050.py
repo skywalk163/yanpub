@@ -17,6 +17,7 @@ class TestLSPCodeLens:
 
     def test_codelens_types_available(self):
         """CodeLens 相关 LSP 类型应可用"""
+        pytest.importorskip("lsprotocol")
         from lsprotocol import types as lsp
         assert hasattr(lsp, "TEXT_DOCUMENT_CODE_LENS")
         assert hasattr(lsp, "CodeLens")
@@ -25,6 +26,7 @@ class TestLSPCodeLens:
 
     def test_codelens_creation(self):
         """应能创建 CodeLens 对象"""
+        pytest.importorskip("lsprotocol")
         from lsprotocol import types as lsp
 
         lens = lsp.CodeLens(
@@ -719,6 +721,7 @@ class TestPlaygroundWasmAPI:
     def test_wasm_config_endpoint(self):
         """WASM 配置端点应返回正确数据"""
         from yanpub.playground.server import create_app
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
 
         app = create_app()
@@ -731,6 +734,7 @@ class TestPlaygroundWasmAPI:
     def test_wasm_runner_endpoint(self):
         """WASM runner 端点应返回 HTML"""
         from yanpub.playground.server import create_app
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
 
         app = create_app()
@@ -742,6 +746,7 @@ class TestPlaygroundWasmAPI:
     def test_wasm_run_endpoint(self):
         """WASM 执行端点应返回执行结果"""
         from yanpub.playground.server import create_app
+        pytest.importorskip("fastapi")
         from fastapi.testclient import TestClient
 
         app = create_app()
