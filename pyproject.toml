@@ -41,6 +41,8 @@ dependencies = [
     "prompt-toolkit>=3.0",
     "httpx>=0.24",
     "fastapi",
+    "lsprotocol",
+    "httpx2"
 ]
 
 [project.optional-dependencies]
