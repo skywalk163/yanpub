@@ -21,6 +21,8 @@ import pytest
 
 from yanpub.core.debugger import Breakpoint, DebugEvent, DebugSession, StackFrame, Variable
 
+from conftest import skip_if_no_backend
+
 
 # ============================================================
 # 1. 调试数据模型测试
@@ -76,8 +78,12 @@ class TestStackFrame:
         """带源文件路径的栈帧"""
 
         frame = StackFrame(
-            id=1, name="add", line=10, column=4,
-            source="test.duan", module="duan",
+            id=1,
+            name="add",
+            line=10,
+            column=4,
+            source="test.duan",
+            module="duan",
         )
         assert frame.source == "test.duan"
         assert frame.module == "duan"
@@ -165,6 +171,7 @@ class TestDebugSession:
     def _get_adapter(self):
         """获取测试适配器"""
         from yanpub.core.registry import get_registry
+
         registry = get_registry()
         adapter = registry.get("duan")
         if adapter is None:
@@ -208,10 +215,13 @@ class TestDebugSession:
             pytest.skip("段言适配器不可用")
 
         session = DebugSession(adapter)
-        breakpoints = session.set_breakpoints("test.duan", [
-            {"line": 5},
-            {"line": 10, "condition": "x > 5"},
-        ])
+        breakpoints = session.set_breakpoints(
+            "test.duan",
+            [
+                {"line": 5},
+                {"line": 10, "condition": "x > 5"},
+            ],
+        )
 
         assert len(breakpoints) == 2
         assert breakpoints[0].line == 5
@@ -241,6 +251,8 @@ class TestDebugSession:
 
     def test_session_launch_stop_on_entry(self):
         """启动调试 — 在入口处暂停"""
+        skip_if_no_backend("duan")
+
         from yanpub.core.registry import get_registry
 
         registry = get_registry()
@@ -260,6 +272,8 @@ class TestDebugSession:
 
     def test_session_launch_run(self):
         """启动调试 — 直接运行"""
+        skip_if_no_backend("duan")
+
         from yanpub.core.registry import get_registry
 
         registry = get_registry()
@@ -575,13 +589,15 @@ class TestDebugAdapter:
     def test_set_breakpoints(self):
         """DAP 设置断点"""
         da = self._create_adapter()
-        result = da.set_breakpoints({
-            "source": {"path": "test.duan"},
-            "breakpoints": [
-                {"line": 5},
-                {"line": 10, "condition": "x > 0"},
-            ],
-        })
+        result = da.set_breakpoints(
+            {
+                "source": {"path": "test.duan"},
+                "breakpoints": [
+                    {"line": 5},
+                    {"line": 10, "condition": "x > 0"},
+                ],
+            }
+        )
 
         assert "breakpoints" in result
         assert len(result["breakpoints"]) == 2
@@ -642,7 +658,10 @@ class TestDebugAdapter:
         da = self._create_adapter()
 
         with tempfile.NamedTemporaryFile(
-            suffix=".py", mode="w", encoding="utf-8", delete=False,
+            suffix=".py",
+            mode="w",
+            encoding="utf-8",
+            delete=False,
         ) as f:
             f.write("print('hello')\n")
             tmp = f.name
@@ -1053,26 +1072,36 @@ class TestDAPServer:
                 return json.loads(body.decode("utf-8"))
 
             # 1. Initialize
-            send_dap({
-                "seq": 1, "type": "request",
-                "command": "initialize", "arguments": {},
-            })
+            send_dap(
+                {
+                    "seq": 1,
+                    "type": "request",
+                    "command": "initialize",
+                    "arguments": {},
+                }
+            )
             resp = read_dap()
             assert resp["success"] is True
 
             # 2. Launch
             with tempfile.NamedTemporaryFile(
-                suffix=".py", mode="w", encoding="utf-8", delete=False,
+                suffix=".py",
+                mode="w",
+                encoding="utf-8",
+                delete=False,
             ) as f:
                 f.write("print('hello from debug')\n")
                 tmp = f.name
 
             try:
-                send_dap({
-                    "seq": 2, "type": "request",
-                    "command": "launch",
-                    "arguments": {"program": tmp},
-                })
+                send_dap(
+                    {
+                        "seq": 2,
+                        "type": "request",
+                        "command": "launch",
+                        "arguments": {"program": tmp},
+                    }
+                )
                 resp = read_dap()
                 assert resp["success"] is True
 
@@ -1094,31 +1123,42 @@ class TestDAPServer:
                 client.settimeout(5.0)
 
                 # 3. Set breakpoints
-                send_dap({
-                    "seq": 3, "type": "request",
-                    "command": "setBreakpoints",
-                    "arguments": {
-                        "source": {"path": tmp},
-                        "breakpoints": [{"line": 1}],
-                    },
-                })
+                send_dap(
+                    {
+                        "seq": 3,
+                        "type": "request",
+                        "command": "setBreakpoints",
+                        "arguments": {
+                            "source": {"path": tmp},
+                            "breakpoints": [{"line": 1}],
+                        },
+                    }
+                )
                 resp = read_dap()
                 assert resp["success"] is True
 
                 # 4. Threads
-                send_dap({
-                    "seq": 4, "type": "request",
-                    "command": "threads", "arguments": {},
-                })
+                send_dap(
+                    {
+                        "seq": 4,
+                        "type": "request",
+                        "command": "threads",
+                        "arguments": {},
+                    }
+                )
                 resp = read_dap()
                 assert resp["success"] is True
                 assert len(resp["body"]["threads"]) == 1
 
                 # 5. Disconnect
-                send_dap({
-                    "seq": 5, "type": "request",
-                    "command": "disconnect", "arguments": {},
-                })
+                send_dap(
+                    {
+                        "seq": 5,
+                        "type": "request",
+                        "command": "disconnect",
+                        "arguments": {},
+                    }
+                )
                 resp = read_dap()
                 assert resp["success"] is True
             finally:
@@ -1144,14 +1184,23 @@ class TestInProcessDebugging:
 
         class TestInProcessAdapter(InProcessAdapter):
             @property
-            def name(self): return "测试进程内"
+            def name(self):
+                return "测试进程内"
+
             @property
-            def id(self): return lang_id
+            def id(self):
+                return lang_id
+
             @property
-            def version(self): return "0.1"
+            def version(self):
+                return "0.1"
+
             @property
-            def file_extensions(self): return [".txt"]
-            def _get_interpreter(self): return None
+            def file_extensions(self):
+                return [".txt"]
+
+            def _get_interpreter(self):
+                return None
 
         return TestInProcessAdapter()
 
