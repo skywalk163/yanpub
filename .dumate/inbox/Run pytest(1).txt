@@ -1,0 +1,255 @@
+Run pytest tests/ -q --tb=short --ignore=tests/test_lsp.py --ignore=tests/test_playground.py -k "not e2e"
+........................................................................ [  8%]
+........................................................................ [ 17%]
+...........ssss.........s............................................... [ 26%]
+.....................................................................EEE [ 35%]
+EEEEEEEEEE..............................................ss.............. [ 44%]
+........................................................FFFsss.......... [ 53%]
+..............sssssssssss..........................FFFF................. [ 62%]
+..................................................s..................... [ 71%]
+...ssFFF............................................................FFFs [ 80%]
+sssss................................sssssss....s....................... [ 89%]
+.............................EEEEEE..................................... [ 98%]
+..............                                                           [100%]
+==================================== ERRORS ====================================
+_____________ ERROR at setup of TestProjectAPI.test_create_project _____________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+______________ ERROR at setup of TestProjectAPI.test_get_project _______________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+________ ERROR at setup of TestProjectAPI.test_get_nonexistent_project _________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+___________ ERROR at setup of TestProjectAPI.test_list_project_files ___________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+____________ ERROR at setup of TestProjectAPI.test_add_project_file ____________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_______ ERROR at setup of TestProjectAPI.test_add_file_rejects_bad_path ________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+__________ ERROR at setup of TestProjectAPI.test_update_project_file ___________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+__________ ERROR at setup of TestProjectAPI.test_delete_project_file ___________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+__________ ERROR at setup of TestProjectAPI.test_rename_project_file ___________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+______________ ERROR at setup of TestProjectAPI.test_run_project _______________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_________ ERROR at setup of TestProjectAPI.test_get_project_templates __________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_____________ ERROR at setup of TestProjectAPI.test_list_projects ______________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_____________ ERROR at setup of TestProjectAPI.test_delete_project _____________
+tests/test_project.py:363: in client
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+______ ERROR at setup of TestPlaygroundAIRoutes.test_ai_complete_endpoint ______
+tests/test_v080.py:373: in app
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+______ ERROR at setup of TestPlaygroundAIRoutes.test_ai_nl2code_endpoint _______
+tests/test_v080.py:373: in app
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+________ ERROR at setup of TestPlaygroundAIRoutes.test_ai_fix_endpoint _________
+tests/test_v080.py:373: in app
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+____ ERROR at setup of TestPlaygroundAIRoutes.test_ai_complete_unknown_lang ____
+tests/test_v080.py:373: in app
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+____ ERROR at setup of TestPlaygroundAIRoutes.test_ai_nl2code_unknown_lang _____
+tests/test_v080.py:373: in app
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+______ ERROR at setup of TestPlaygroundAIRoutes.test_ai_fix_unknown_lang _______
+tests/test_v080.py:373: in app
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+=================================== FAILURES ===================================
+_______ TestSandboxAdapterIntegration.test_duan_adapter_sandbox_execute ________
+tests/test_sandbox.py:425: in test_duan_adapter_sandbox_execute
+    assert result.exit_code == 0
+E   assert 2 == 0
+E    +  where 2 = SandboxResult(stdout='', stderr="/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacO...e=2, duration_ms=18.370125000004123, memory_used_mb=12.84375, sandbox_id='yanpub-proc-547533d15519', backend='process').exit_code
+_________ TestSandboxAdapterIntegration.test_duan_adapter_sandbox_file _________
+tests/test_sandbox.py:454: in test_duan_adapter_sandbox_file
+    assert result.exit_code == 0
+E   assert 2 == 0
+E    +  where 2 = SandboxResult(stdout='', stderr="/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacO...de=2, duration_ms=17.40529200000651, memory_used_mb=12.84375, sandbox_id='yanpub-proc-0ed21c9471cb', backend='process').exit_code
+__________ TestPlaygroundSandboxRoutes.test_sandbox_routes_registered __________
+tests/test_sandbox.py:470: in test_sandbox_routes_registered
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_________________ TestPlaygroundShare.test_share_api_endpoint __________________
+tests/test_v030.py:24: in test_share_api_endpoint
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_________________ TestPlaygroundShare.test_share_api_with_lang _________________
+tests/test_v030.py:37: in test_share_api_with_lang
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_________________ TestPlaygroundShare.test_share_api_with_code _________________
+tests/test_v030.py:53: in test_share_api_with_code
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_______________ TestPlaygroundShare.test_share_api_unknown_lang ________________
+tests/test_v030.py:70: in test_share_api_unknown_lang
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+____________ TestLSPCodeLens.test_yan_language_server_has_codelens _____________
+tests/test_v050.py:48: in test_yan_language_server_has_codelens
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+___________________ TestLSPCodeLens.test_is_block_definition ___________________
+tests/test_v050.py:55: in test_is_block_definition
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+____________________ TestLSPCodeLens.test_codelens_run_file ____________________
+tests/test_v050.py:70: in test_codelens_run_file
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_______________ TestPlaygroundWasmAPI.test_wasm_config_endpoint ________________
+tests/test_v050.py:723: in test_wasm_config_endpoint
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_______________ TestPlaygroundWasmAPI.test_wasm_runner_endpoint ________________
+tests/test_v050.py:736: in test_wasm_runner_endpoint
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+_________________ TestPlaygroundWasmAPI.test_wasm_run_endpoint _________________
+tests/test_v050.py:748: in test_wasm_run_endpoint
+    from yanpub.playground.server import create_app
+src/yanpub/playground/server.py:22: in <module>
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+E   ModuleNotFoundError: No module named 'fastapi'
+=============================== warnings summary ===============================
+../../../../../Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/config/__init__.py:1464
+  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_sandbox.py::TestSandboxAdapterIntegration::test_duan_adapter_sandbox_execute - assert 2 == 0
+ +  where 2 = SandboxResult(stdout='', stderr="/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacO...e=2, duration_ms=18.370125000004123, memory_used_mb=12.84375, sandbox_id='yanpub-proc-547533d15519', backend='process').exit_code
+FAILED tests/test_sandbox.py::TestSandboxAdapterIntegration::test_duan_adapter_sandbox_file - assert 2 == 0
+ +  where 2 = SandboxResult(stdout='', stderr="/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacO...de=2, duration_ms=17.40529200000651, memory_used_mb=12.84375, sandbox_id='yanpub-proc-0ed21c9471cb', backend='process').exit_code
+FAILED tests/test_sandbox.py::TestPlaygroundSandboxRoutes::test_sandbox_routes_registered - ModuleNotFoundError: No module named 'fastapi'
+FAILED tests/test_v030.py::TestPlaygroundShare::test_share_api_endpoint - ModuleNotFoundError: No module named 'fastapi'
+FAILED tests/test_v030.py::TestPlaygroundShare::test_share_api_with_lang - ModuleNotFoundError: No module named 'fastapi'
+FAILED tests/test_v030.py::TestPlaygroundShare::test_share_api_with_code - ModuleNotFoundError: No module named 'fastapi'
+FAILED tests/test_v030.py::TestPlaygroundShare::test_share_api_unknown_lang - ModuleNotFoundError: No module named 'fastapi'
+FAILED tests/test_v050.py::TestLSPCodeLens::test_yan_language_server_has_codelens - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v050.py::TestLSPCodeLens::test_is_block_definition - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v050.py::TestLSPCodeLens::test_codelens_run_file - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v050.py::TestPlaygroundWasmAPI::test_wasm_config_endpoint - ModuleNotFoundError: No module named 'fastapi'
+FAILED tests/test_v050.py::TestPlaygroundWasmAPI::test_wasm_runner_endpoint - ModuleNotFoundError: No module named 'fastapi'
+FAILED tests/test_v050.py::TestPlaygroundWasmAPI::test_wasm_run_endpoint - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_create_project - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_get_project - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_get_nonexistent_project - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_list_project_files - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_add_project_file - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_add_file_rejects_bad_path - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_update_project_file - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_delete_project_file - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_rename_project_file - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_run_project - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_get_project_templates - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_list_projects - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_project.py::TestProjectAPI::test_delete_project - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_v080.py::TestPlaygroundAIRoutes::test_ai_complete_endpoint - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_v080.py::TestPlaygroundAIRoutes::test_ai_nl2code_endpoint - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_v080.py::TestPlaygroundAIRoutes::test_ai_fix_endpoint - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_v080.py::TestPlaygroundAIRoutes::test_ai_complete_unknown_lang - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_v080.py::TestPlaygroundAIRoutes::test_ai_nl2code_unknown_lang - ModuleNotFoundError: No module named 'fastapi'
+ERROR tests/test_v080.py::TestPlaygroundAIRoutes::test_ai_fix_unknown_lang - ModuleNotFoundError: No module named 'fastapi'
+13 failed, 736 passed, 38 skipped, 85 deselected, 1 warning, 19 errors in 6.70s
+Error: Process completed with exit code 1.

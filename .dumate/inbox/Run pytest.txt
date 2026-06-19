@@ -1,0 +1,178 @@
+Run pytest tests/ -q --tb=short --ignore=tests/test_lsp.py --ignore=tests/test_playground.py --ignore=tests/test_project.py --ignore=tests/test_sandbox.py --ignore=tests/test_share.py --ignore=tests/test_v030.py --ignore=tests/test_v050.py --ignore=tests/test_v080.py -k "not e2e"
+........................................................................ [ 14%]
+........................................................................ [ 28%]
+...........sFF..........s............................................... [ 42%]
+........................................................................ [ 56%]
+FF...................................................................... [ 71%]
+........F........................FFFFFF................................F [ 85%]
+FFFFFF....s............................................................. [ 99%]
+...                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ TestDuanAdapterIntegration.test_eval_simple __________________
+tests/test_integration.py:53: in test_eval_simple
+    assert result.exit_code == 0
+E   assert 2 == 0
+E    +  where 2 = ExecutionResult(stdout='', stderr="/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/Ma...dumategithub\\\\duan/cli/duan.py': [Errno 2] No such file or directory\n", exit_code=2, duration_ms=14.915582999947219).exit_code
+_______________ TestDuanAdapterIntegration.test_eval_arithmetic ________________
+tests/test_integration.py:59: in test_eval_arithmetic
+    assert result.exit_code == 0
+E   assert 2 == 0
+E    +  where 2 = ExecutionResult(stdout='', stderr="/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/Ma...dumategithub\\\\duan/cli/duan.py': [Errno 2] No such file or directory\n", exit_code=2, duration_ms=14.588749999916217).exit_code
+________ TestLSPRefactorIntegration.test_server_creation_with_refactor _________
+tests/test_refactor.py:418: in test_server_creation_with_refactor
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+____ TestLSPRefactorIntegration.test_code_action_includes_extract_function _____
+tests/test_refactor.py:429: in test_code_action_includes_extract_function
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+__________________ TestLSPRename.test_lsp_rename_integration ___________________
+tests/test_v040.py:247: in test_lsp_rename_integration
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+______________ TestLSPFoldingRange.test_folding_range_basic_block ______________
+tests/test_v060.py:19: in test_folding_range_basic_block
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_____________ TestLSPFoldingRange.test_folding_range_nested_blocks _____________
+tests/test_v060.py:40: in test_folding_range_nested_blocks
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_____________ TestLSPFoldingRange.test_folding_range_indent_based ______________
+tests/test_v060.py:58: in test_folding_range_indent_based
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+______________ TestLSPFoldingRange.test_folding_range_empty_code _______________
+tests/test_v060.py:77: in test_folding_range_empty_code
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_____________ TestLSPFoldingRange.test_folding_range_comment_skip ______________
+tests/test_v060.py:92: in test_folding_range_comment_skip
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_____________ TestLSPFoldingRange.test_folding_range_colon_ending ______________
+tests/test_v060.py:110: in test_folding_range_colon_ending
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_______________ TestLSPSemanticTokens.test_semantic_tokens_basic _______________
+tests/test_v070.py:21: in test_semantic_tokens_basic
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+____________ TestLSPSemanticTokens.test_semantic_tokens_empty_code _____________
+tests/test_v070.py:40: in test_semantic_tokens_empty_code
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_________ TestLSPSemanticTokens.test_semantic_tokens_keyword_detection _________
+tests/test_v070.py:55: in test_semantic_tokens_keyword_detection
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_________ TestLSPSemanticTokens.test_semantic_tokens_string_detection __________
+tests/test_v070.py:74: in test_semantic_tokens_string_detection
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_________ TestLSPSemanticTokens.test_semantic_tokens_number_detection __________
+tests/test_v070.py:90: in test_semantic_tokens_number_detection
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+_________ TestLSPSemanticTokens.test_semantic_tokens_comment_detection _________
+tests/test_v070.py:106: in test_semantic_tokens_comment_detection
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+__________ TestLSPSemanticTokens.test_semantic_tokens_delta_encoding ___________
+tests/test_v070.py:122: in test_semantic_tokens_delta_encoding
+    from yanpub.lsp.server import YanLanguageServer
+src/yanpub/lsp/__init__.py:13: in <module>
+    from yanpub.lsp.server import create_lsp_server, YanLanguageServer
+src/yanpub/lsp/server.py:27: in <module>
+    from lsprotocol import types as lsp
+E   ModuleNotFoundError: No module named 'lsprotocol'
+=============================== warnings summary ===============================
+../../../../../Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/config/__init__.py:1464
+  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_integration.py::TestDuanAdapterIntegration::test_eval_simple - assert 2 == 0
+ +  where 2 = ExecutionResult(stdout='', stderr="/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/Ma...dumategithub\\\\duan/cli/duan.py': [Errno 2] No such file or directory\n", exit_code=2, duration_ms=14.915582999947219).exit_code
+FAILED tests/test_integration.py::TestDuanAdapterIntegration::test_eval_arithmetic - assert 2 == 0
+ +  where 2 = ExecutionResult(stdout='', stderr="/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/Ma...dumategithub\\\\duan/cli/duan.py': [Errno 2] No such file or directory\n", exit_code=2, duration_ms=14.588749999916217).exit_code
+FAILED tests/test_refactor.py::TestLSPRefactorIntegration::test_server_creation_with_refactor - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_refactor.py::TestLSPRefactorIntegration::test_code_action_includes_extract_function - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v040.py::TestLSPRename::test_lsp_rename_integration - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v060.py::TestLSPFoldingRange::test_folding_range_basic_block - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v060.py::TestLSPFoldingRange::test_folding_range_nested_blocks - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v060.py::TestLSPFoldingRange::test_folding_range_indent_based - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v060.py::TestLSPFoldingRange::test_folding_range_empty_code - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v060.py::TestLSPFoldingRange::test_folding_range_comment_skip - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v060.py::TestLSPFoldingRange::test_folding_range_colon_ending - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v070.py::TestLSPSemanticTokens::test_semantic_tokens_basic - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v070.py::TestLSPSemanticTokens::test_semantic_tokens_empty_code - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v070.py::TestLSPSemanticTokens::test_semantic_tokens_keyword_detection - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v070.py::TestLSPSemanticTokens::test_semantic_tokens_string_detection - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v070.py::TestLSPSemanticTokens::test_semantic_tokens_number_detection - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v070.py::TestLSPSemanticTokens::test_semantic_tokens_comment_detection - ModuleNotFoundError: No module named 'lsprotocol'
+FAILED tests/test_v070.py::TestLSPSemanticTokens::test_semantic_tokens_delta_encoding - ModuleNotFoundError: No module named 'lsprotocol'
+18 failed, 486 passed, 3 skipped, 85 deselected, 1 warning in 3.88s
+Error: Process completed with exit code 1.
