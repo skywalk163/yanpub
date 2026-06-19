@@ -25,11 +25,12 @@ logger = logging.getLogger("yanpub.monitor")
 
 # ---- 度量样本 ----
 
+
 @dataclass
 class MetricSample:
     """单次度量样本"""
 
-    metric: str              # 度量名称: "eval_duration", "run_duration", "tokenize_duration", "complete_duration", "memory_used", "error_rate"
+    metric: str  # 度量名称: "eval_duration", "run_duration", "tokenize_duration", "complete_duration", "memory_used", "error_rate"
     adapter_id: str
     value: float
     timestamp: float
@@ -40,6 +41,7 @@ class MetricSample:
 
 
 # ---- 度量时间序列 ----
+
 
 class MetricSeries:
     """度量时间序列（滑动窗口）"""
@@ -54,7 +56,7 @@ class MetricSeries:
         """添加样本，超出滑动窗口时移除最旧样本"""
         self.samples.append(sample)
         if len(self.samples) > self.max_samples:
-            self.samples = self.samples[-self.max_samples:]
+            self.samples = self.samples[-self.max_samples :]
 
     def latest(self) -> Optional[MetricSample]:
         """获取最新样本"""
@@ -62,10 +64,7 @@ class MetricSeries:
 
     def query(self, start_time: float, end_time: float) -> list[MetricSample]:
         """按时间范围查询样本"""
-        return [
-            s for s in self.samples
-            if start_time <= s.timestamp <= end_time
-        ]
+        return [s for s in self.samples if start_time <= s.timestamp <= end_time]
 
     def aggregate(self, interval_sec: float) -> list[dict]:
         """按时间窗口聚合数据
@@ -90,13 +89,15 @@ class MetricSeries:
         result = []
         for window_start in sorted(windows.keys()):
             values = windows[window_start]
-            result.append({
-                "window_start": window_start,
-                "avg": round(sum(values) / len(values), 2),
-                "min": round(min(values), 2),
-                "max": round(max(values), 2),
-                "count": len(values),
-            })
+            result.append(
+                {
+                    "window_start": window_start,
+                    "avg": round(sum(values) / len(values), 2),
+                    "min": round(min(values), 2),
+                    "max": round(max(values), 2),
+                    "count": len(values),
+                }
+            )
 
         return result
 
@@ -110,6 +111,7 @@ class MetricSeries:
 
 
 # ---- 性能监控器 ----
+
 
 class PerformanceMonitor:
     """性能监控器 — 实时采集、存储、推送适配器性能指标
@@ -244,7 +246,8 @@ class PerformanceMonitor:
             recent_samples = series.samples[-20:] if series.samples else []
             avg = (
                 sum(s.value for s in recent_samples) / len(recent_samples)
-                if recent_samples else 0.0
+                if recent_samples
+                else 0.0
             )
 
             adapters_data[aid]["metrics"][metric] = {
@@ -312,9 +315,7 @@ class PerformanceMonitor:
             if hasattr(ws, "send_json"):
                 try:
                     # FastAPI WebSocket 是异步的，需要用 asyncio
-                    asyncio.get_event_loop().create_task(
-                        ws.send_json(message)
-                    )
+                    asyncio.get_event_loop().create_task(ws.send_json(message))
                 except RuntimeError:
                     # 事件循环未运行时忽略
                     pass
@@ -351,7 +352,7 @@ class PerformanceMonitor:
         # 最近 window 个样本
         recent = samples[-window:]
         # 之前 window 个样本
-        previous = samples[-(window * 2):-window]
+        previous = samples[-(window * 2) : -window]
 
         recent_avg = sum(s.value for s in recent) / len(recent)
         previous_avg = sum(s.value for s in previous) / len(previous)

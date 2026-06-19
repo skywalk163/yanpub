@@ -251,13 +251,15 @@ class LazyRegistry:
         result = []
         for lazy in self._lazy_adapters.values():
             adapter = lazy._real_adapter
-            result.append({
-                "id": adapter.id,
-                "name": adapter.name,
-                "version": adapter.version,
-                "extensions": adapter.file_extensions,
-                "capabilities": adapter.capabilities,
-            })
+            result.append(
+                {
+                    "id": adapter.id,
+                    "name": adapter.name,
+                    "version": adapter.version,
+                    "extensions": adapter.file_extensions,
+                    "capabilities": adapter.capabilities,
+                }
+            )
         return result
 
     @property

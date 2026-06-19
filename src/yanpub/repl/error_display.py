@@ -17,12 +17,13 @@ from typing import Optional
 @dataclass
 class FriendlyError:
     """友好的错误信息"""
-    error_type: str       # 语法错误 / 运行时错误 / 名称错误 / 类型错误 / 导入错误
-    message: str          # 友好的中文错误描述
+
+    error_type: str  # 语法错误 / 运行时错误 / 名称错误 / 类型错误 / 导入错误
+    message: str  # 友好的中文错误描述
     line: int | None = None
     column: int | None = None
     raw_message: str = ""  # 原始错误信息
-    suggestion: str = ""   # 修复建议
+    suggestion: str = ""  # 修复建议
 
 
 # ---- 错误模式匹配规则 ----
@@ -65,14 +66,23 @@ _SUGGESTION_MAP = {
 # 中文编程语言常见错误模式
 _CHINESE_LANG_PATTERNS = [
     # 未闭合的引号
-    (r"Unclosed string|EOL while scanning string literal|unterminated string",
-     "语法错误", "字符串未闭合，请检查引号是否配对。"),
+    (
+        r"Unclosed string|EOL while scanning string literal|unterminated string",
+        "语法错误",
+        "字符串未闭合，请检查引号是否配对。",
+    ),
     # 未闭合的括号
-    (r"Unexpected indent|unmatched|missing closing|unexpected EOF",
-     "语法错误", "代码结构不完整，请检查括号是否配对、语句块是否闭合。"),
+    (
+        r"Unexpected indent|unmatched|missing closing|unexpected EOF",
+        "语法错误",
+        "代码结构不完整，请检查括号是否配对、语句块是否闭合。",
+    ),
     # 中文标点问题
-    (r"invalid (character|syntax).*[\u3000\uff1b\uff0c\uff08\uff09]",
-     "语法错误", "代码中包含全角标点，请使用半角标点（英文括号、逗号等）。"),
+    (
+        r"invalid (character|syntax).*[\u3000\uff1b\uff0c\uff08\uff09]",
+        "语法错误",
+        "代码中包含全角标点，请使用半角标点（英文括号、逗号等）。",
+    ),
 ]
 
 
@@ -109,12 +119,12 @@ def _parse_python_error(stderr: str) -> Optional[FriendlyError]:
     """解析 Python 格式的错误输出"""
     # Python traceback 格式: "TypeError: ..." 或 "  File ..., line N"
     # 匹配错误类型
-    type_match = re.search(r'^(\w+Error|\w+Warning|\w+Exception):\s*(.+)$', stderr, re.MULTILINE)
+    type_match = re.search(r"^(\w+Error|\w+Warning|\w+Exception):\s*(.+)$", stderr, re.MULTILINE)
     if not type_match:
         # 尝试从最后一行匹配
         last_lines = stderr.strip().split("\n")
         for line in reversed(last_lines):
-            type_match = re.match(r'^(\w+Error|\w+Warning|\w+Exception):\s*(.+)$', line.strip())
+            type_match = re.match(r"^(\w+Error|\w+Warning|\w+Exception):\s*(.+)$", line.strip())
             if type_match:
                 break
 
@@ -129,7 +139,7 @@ def _parse_python_error(stderr: str) -> Optional[FriendlyError]:
 
     # 提取行号
     line_num = None
-    line_match = re.search(r'line\s+(\d+)', stderr)
+    line_match = re.search(r"line\s+(\d+)", stderr)
     if line_match:
         line_num = int(line_match.group(1))
 
@@ -151,7 +161,7 @@ def _parse_chinese_lang_error(stderr: str) -> Optional[FriendlyError]:
         if re.search(pattern, stderr, re.IGNORECASE):
             # 提取行号
             line_num = None
-            line_match = re.search(r'line\s+(\d+)', stderr)
+            line_match = re.search(r"line\s+(\d+)", stderr)
             if line_match:
                 line_num = int(line_match.group(1))
 
@@ -187,7 +197,7 @@ def _parse_generic_error(stderr: str, lang_name: str) -> FriendlyError:
 
     # 提取行号
     line_num = None
-    line_match = re.search(r'line\s+(\d+)', stderr)
+    line_match = re.search(r"line\s+(\d+)", stderr)
     if line_match:
         line_num = int(line_match.group(1))
 
@@ -226,7 +236,7 @@ def _make_friendly_message(error_type: str, raw_msg: str, line: int | None) -> s
     }
 
     # 如果消息包含中文，直接使用
-    if re.search(r'[\u4e00-\u9fff]', raw_msg):
+    if re.search(r"[\u4e00-\u9fff]", raw_msg):
         friendly = raw_msg
     else:
         # 对纯英文消息做简单翻译
@@ -251,7 +261,9 @@ def format_friendly_error(error: FriendlyError, lang_name: str = "") -> str:
 
     # 错误消息
     if error.line is not None:
-        lines.append(f"  位置：第 {error.line} 行" + (f"，第 {error.column} 列" if error.column else ""))
+        lines.append(
+            f"  位置：第 {error.line} 行" + (f"，第 {error.column} 列" if error.column else "")
+        )
     lines.append(f"  {error.message}")
 
     # 修复建议（黄色）

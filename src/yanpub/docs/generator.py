@@ -16,17 +16,19 @@ from yanpub.core.registry import LanguageRegistry, get_registry
 @dataclass
 class KeywordDoc:
     """关键字文档条目"""
+
     keyword: str
     lang_id: str
     lang_name: str
-    category: str = ""       # 定义/控制流/函数/运算/模块/IO/异常/数据结构
+    category: str = ""  # 定义/控制流/函数/运算/模块/IO/异常/数据结构
     syntax_example: str = ""  # 语法示例
-    description: str = ""     # 描述
+    description: str = ""  # 描述
 
 
 @dataclass
 class LanguageOverview:
     """语言概览"""
+
     lang_id: str
     name: str
     version: str
@@ -61,12 +63,14 @@ class DocsGenerator:
 
         kw_docs = []
         for kw in adapter.keywords:
-            kw_docs.append(KeywordDoc(
-                keyword=kw,
-                lang_id=adapter.id,
-                lang_name=adapter.name,
-                category=_categorize_keyword(kw),
-            ))
+            kw_docs.append(
+                KeywordDoc(
+                    keyword=kw,
+                    lang_id=adapter.id,
+                    lang_name=adapter.name,
+                    category=_categorize_keyword(kw),
+                )
+            )
 
         return LanguageOverview(
             lang_id=adapter.id,
@@ -98,12 +102,14 @@ class DocsGenerator:
                 continue
             for kw in adapter.keywords:
                 if query in kw:
-                    results.append(KeywordDoc(
-                        keyword=kw,
-                        lang_id=adapter.id,
-                        lang_name=adapter.name,
-                        category=_categorize_keyword(kw),
-                    ))
+                    results.append(
+                        KeywordDoc(
+                            keyword=kw,
+                            lang_id=adapter.id,
+                            lang_name=adapter.name,
+                            category=_categorize_keyword(kw),
+                        )
+                    )
         return results
 
     def compare_concept(self, concept: str) -> dict[str, KeywordDoc]:
@@ -147,7 +153,8 @@ class DocsGenerator:
                     continue
                 # 找出该语言中属于此概念的所有关键字
                 matching = [
-                    kw for kw in adapter.keywords
+                    kw
+                    for kw in adapter.keywords
                     if kw in KEYWORD_CATEGORIES.get(concept, []) or kw == concept
                 ]
                 row["languages"][lang_id] = matching
@@ -190,7 +197,15 @@ class DocsGenerator:
                     "capabilities": lang.capabilities,
                     "comment_syntax": lang.comment_syntax,
                     "keywords_by_category": {
-                        cat: [{"keyword": kd.keyword, "category": kd.category, "lang_id": kd.lang_id, "lang_name": kd.lang_name} for kd in kws]
+                        cat: [
+                            {
+                                "keyword": kd.keyword,
+                                "category": kd.category,
+                                "lang_id": kd.lang_id,
+                                "lang_name": kd.lang_name,
+                            }
+                            for kd in kws
+                        ]
                         for cat, kws in self.generate_keyword_index(lang.lang_id).items()
                     },
                 }

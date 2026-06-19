@@ -25,10 +25,10 @@ _DEFINITION_KEYWORDS: dict[str, str] = {
 
 # 符号类型 → SymbolKind 数值（LSP 协议）
 _SYMBOL_KIND_MAP: dict[str, int] = {
-    "function": 12,   # Function
-    "method": 6,      # Method
-    "class": 5,       # Class
-    "variable": 13,   # Variable
+    "function": 12,  # Function
+    "method": 6,  # Method
+    "class": 5,  # Class
+    "variable": 13,  # Variable
 }
 
 
@@ -42,7 +42,9 @@ def _is_cjk(ch: str) -> bool:
     return "\u4e00" <= ch <= "\u9fff"
 
 
-def _extract_identifier_at(code: str, line: int, column: int, keywords: Optional[set[str]] = None) -> Optional[tuple[str, int, int]]:
+def _extract_identifier_at(
+    code: str, line: int, column: int, keywords: Optional[set[str]] = None
+) -> Optional[tuple[str, int, int]]:
     """提取光标位置的标识符
 
     对于 CJK 字符，尝试扩展为完整的多字符标识符（如"加法"、"乘法"）。
@@ -99,7 +101,7 @@ def _extract_identifier_at(code: str, line: int, column: int, keywords: Optional
         stripped_start = start
         for kw in sorted(kw_set, key=len, reverse=True):
             if stripped.startswith(kw) and len(stripped) > len(kw):
-                stripped = stripped[len(kw):]
+                stripped = stripped[len(kw) :]
                 stripped_start = start + len(kw)
                 break
 
@@ -114,9 +116,13 @@ def _extract_identifier_at(code: str, line: int, column: int, keywords: Optional
         # ASCII 标识符：向左右扩展（alnum/_，不含 CJK）
         start = pos
         end = pos
-        while start > 0 and _is_ident_char(code_line[start - 1]) and not _is_cjk(code_line[start - 1]):
+        while (
+            start > 0 and _is_ident_char(code_line[start - 1]) and not _is_cjk(code_line[start - 1])
+        ):
             start -= 1
-        while end < len(code_line) and _is_ident_char(code_line[end]) and not _is_cjk(code_line[end]):
+        while (
+            end < len(code_line) and _is_ident_char(code_line[end]) and not _is_cjk(code_line[end])
+        ):
             end += 1
 
         if start == end:
@@ -242,16 +248,20 @@ class SymbolNavigator:
                             while original_after < len(ln) and ln[original_after] in " \t":
                                 original_after += 1
                             original_name_end = original_after
-                            while original_name_end < len(ln) and _is_ident_char(ln[original_name_end]):
+                            while original_name_end < len(ln) and _is_ident_char(
+                                ln[original_name_end]
+                            ):
                                 original_name_end += 1
 
-                            results.append({
-                                "uri": uri,
-                                "range": {
-                                    "start": {"line": i, "character": original_after},
-                                    "end": {"line": i, "character": original_name_end},
-                                },
-                            })
+                            results.append(
+                                {
+                                    "uri": uri,
+                                    "range": {
+                                        "start": {"line": i, "character": original_after},
+                                        "end": {"line": i, "character": original_name_end},
+                                    },
+                                }
+                            )
                     search_pos = kw_idx + 1
 
             # 模式 2：设 <名称> 为 …（变量定义）
@@ -271,13 +281,15 @@ class SymbolNavigator:
                             # 清理尾部标点后的 end
                             while name_end > name_start and ln[name_end - 1] in "。，；：,;:":
                                 name_end -= 1
-                            results.append({
-                                "uri": uri,
-                                "range": {
-                                    "start": {"line": i, "character": name_start},
-                                    "end": {"line": i, "character": name_end},
-                                },
-                            })
+                            results.append(
+                                {
+                                    "uri": uri,
+                                    "range": {
+                                        "start": {"line": i, "character": name_start},
+                                        "end": {"line": i, "character": name_end},
+                                    },
+                                }
+                            )
 
         return results
 
@@ -329,11 +341,13 @@ class SymbolNavigator:
             for doc_uri, doc_code in search_docs.items():
                 for defn in self._scan_definitions(doc_code, symbol_name, doc_uri):
                     r = defn["range"]
-                    definitions.add((
-                        defn["uri"],
-                        r["start"]["line"],
-                        r["start"]["character"],
-                    ))
+                    definitions.add(
+                        (
+                            defn["uri"],
+                            r["start"]["line"],
+                            r["start"]["character"],
+                        )
+                    )
 
         results = []
         is_cjk_symbol = len(symbol_name) == 1 and _is_cjk(symbol_name)
@@ -358,13 +372,15 @@ class SymbolNavigator:
                     if match_ok:
                         loc_key = (doc_uri, i, idx)
                         if include_declaration or loc_key not in definitions:
-                            results.append({
-                                "uri": doc_uri,
-                                "range": {
-                                    "start": {"line": i, "character": idx},
-                                    "end": {"line": i, "character": idx + len(symbol_name)},
-                                },
-                            })
+                            results.append(
+                                {
+                                    "uri": doc_uri,
+                                    "range": {
+                                        "start": {"line": i, "character": idx},
+                                        "end": {"line": i, "character": idx + len(symbol_name)},
+                                    },
+                                }
+                            )
 
                     search_start = idx + 1
 
@@ -416,12 +432,18 @@ class SymbolNavigator:
 
         # 扫描 outgoing calls（此函数调用了哪些函数）
         outgoing = self._find_outgoing_calls(
-            code, func_name, func_range, uri, search_docs,
+            code,
+            func_name,
+            func_range,
+            uri,
+            search_docs,
         )
 
         # 扫描 incoming calls（哪些函数调用了此函数）
         incoming = self._find_incoming_calls(
-            func_name, uri, search_docs,
+            func_name,
+            uri,
+            search_docs,
         )
 
         # 构建调用层次结构
@@ -438,7 +460,11 @@ class SymbolNavigator:
         return {"items": [item]}
 
     def _find_enclosing_function(
-        self, code: str, line: int, column: int, uri: str,
+        self,
+        code: str,
+        line: int,
+        column: int,
+        uri: str,
     ) -> Optional[dict]:
         """找到光标所在的函数/段落定义
 
@@ -619,7 +645,7 @@ class SymbolNavigator:
                 # 如果标识符以关键字开头，剥离关键字
                 for kw in self._def_kw_sorted:
                     if ident.startswith(kw) and len(ident) > len(kw):
-                        stripped = ident[len(kw):]
+                        stripped = ident[len(kw) :]
                         # 检查剥离后是否跟括号
                         if pos < line_len and ln[pos] in "(（":
                             ident = stripped
@@ -629,10 +655,11 @@ class SymbolNavigator:
             elif ch.isalpha() or ch == "_":
                 # ASCII 标识符：多字符后跟括号
                 ident_end = pos + 1
-                while ident_end < line_len and (
-                    ln[ident_end].isalnum()
-                    or ln[ident_end] == "_"
-                ) and not _is_cjk(ln[ident_end]):
+                while (
+                    ident_end < line_len
+                    and (ln[ident_end].isalnum() or ln[ident_end] == "_")
+                    and not _is_cjk(ln[ident_end])
+                ):
                     ident_end += 1
                 ident = ln[ident_start:ident_end]
                 pos = ident_end
@@ -649,13 +676,15 @@ class SymbolNavigator:
                         seen.add(ident)
                         # 取第一个定义的位置
                         first_def = defined_names[ident][0]
-                        outgoing.append({
-                            "name": ident,
-                            "kind": first_def["kind"],
-                            "uri": first_def["uri"],
-                            "range": first_def["range"],
-                            "selectionRange": first_def["range"],
-                        })
+                        outgoing.append(
+                            {
+                                "name": ident,
+                                "kind": first_def["kind"],
+                                "uri": first_def["uri"],
+                                "range": first_def["range"],
+                                "selectionRange": first_def["range"],
+                            }
+                        )
 
     def _find_incoming_calls(
         self,
@@ -699,17 +728,19 @@ class SymbolNavigator:
 
                             func_end = self._find_block_end(lines, i)
                             kind = _DEFINITION_KEYWORDS.get(kw, "function")
-                            func_defs.append({
-                                "name": def_name,
-                                "kind": _SYMBOL_KIND_MAP.get(kind, 12),
-                                "uri": doc_uri,
-                                "range": {
-                                    "start": {"line": i, "character": orig_after},
-                                    "end": {"line": i, "character": orig_name_end},
-                                },
-                                "body_start": i,
-                                "body_end": func_end,
-                            })
+                            func_defs.append(
+                                {
+                                    "name": def_name,
+                                    "kind": _SYMBOL_KIND_MAP.get(kind, 12),
+                                    "uri": doc_uri,
+                                    "range": {
+                                        "start": {"line": i, "character": orig_after},
+                                        "end": {"line": i, "character": orig_name_end},
+                                    },
+                                    "body_start": i,
+                                    "body_end": func_end,
+                                }
+                            )
 
             # 在每个函数体中搜索对目标函数的调用
             for fd in func_defs:
@@ -746,13 +777,15 @@ class SymbolNavigator:
                         break
 
                 if found_call:
-                    incoming.append({
-                        "name": fd["name"],
-                        "kind": fd["kind"],
-                        "uri": fd["uri"],
-                        "range": fd["range"],
-                        "selectionRange": fd["range"],
-                    })
+                    incoming.append(
+                        {
+                            "name": fd["name"],
+                            "kind": fd["kind"],
+                            "uri": fd["uri"],
+                            "range": fd["range"],
+                            "selectionRange": fd["range"],
+                        }
+                    )
 
         return incoming
 

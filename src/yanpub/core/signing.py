@@ -33,6 +33,7 @@ try:
         PrivateFormat,
         NoEncryption,
     )
+
     _HAS_CRYPTOGRAPHY = True
 except ImportError:
     pass
@@ -52,9 +53,9 @@ def _ed25519_available() -> bool:
 class SigningKey:
     """签名密钥（公钥部分）"""
 
-    key_id: str          # 密钥标识（指纹前8位）
-    algorithm: str       # "ed25519" | "hmac-sha256"
-    public_key: str      # Base64 编码的公钥
+    key_id: str  # 密钥标识（指纹前8位）
+    algorithm: str  # "ed25519" | "hmac-sha256"
+    public_key: str  # Base64 编码的公钥
     created_at: float = 0.0
 
     def __post_init__(self):
@@ -74,10 +75,13 @@ class SigningKey:
         if algorithm == "ed25519" and _ed25519_available():
             private_key = Ed25519PrivateKey.generate()
             pub_bytes = private_key.public_key().public_bytes(
-                Encoding.Raw, PublicFormat.Raw,
+                Encoding.Raw,
+                PublicFormat.Raw,
             )
             priv_bytes = private_key.private_bytes(
-                Encoding.Raw, PrivateFormat.Raw, NoEncryption(),
+                Encoding.Raw,
+                PrivateFormat.Raw,
+                NoEncryption(),
             )
             pub_b64 = base64.b64encode(pub_bytes).decode("ascii")
             priv_b64 = base64.b64encode(priv_bytes).decode("ascii")
@@ -85,6 +89,7 @@ class SigningKey:
             # 降级到 HMAC-SHA256（对称密钥）
             algorithm = "hmac-sha256"
             import secrets
+
             priv_bytes = secrets.token_bytes(32)
             # 对称密钥：public_key = private_key（HMAC 验证需要相同密钥）
             pub_bytes = priv_bytes
@@ -120,12 +125,12 @@ class SigningKey:
 class CodeSignature:
     """代码签名"""
 
-    signer: str          # 签名者标识
-    key_id: str          # 使用的密钥 ID
-    algorithm: str       # 签名算法
-    signature: str       # Base64 编码的签名值
-    timestamp: float     # 签名时间
-    content_hash: str    # 签名的内容哈希（SHA-256）
+    signer: str  # 签名者标识
+    key_id: str  # 使用的密钥 ID
+    algorithm: str  # 签名算法
+    signature: str  # Base64 编码的签名值
+    timestamp: float  # 签名时间
+    content_hash: str  # 签名的内容哈希（SHA-256）
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -256,14 +261,16 @@ class TrustStore:
         """列出所有受信任的密钥"""
         result = []
         for key_id, entry in self._keys.items():
-            result.append({
-                "key_id": key_id,
-                "algorithm": entry["key"].algorithm,
-                "signer": entry["signer"],
-                "trust_level": entry["trust_level"],
-                "signed_by": entry.get("signed_by"),
-                "created_at": entry["key"].created_at,
-            })
+            result.append(
+                {
+                    "key_id": key_id,
+                    "algorithm": entry["key"].algorithm,
+                    "signer": entry["signer"],
+                    "trust_level": entry["trust_level"],
+                    "signed_by": entry.get("signed_by"),
+                    "created_at": entry["key"].created_at,
+                }
+            )
         return result
 
     def verify_chain(self, key_id: str) -> list[dict]:
@@ -282,24 +289,28 @@ class TrustStore:
             entry = self._keys.get(current_id)
             if entry is None:
                 # 密钥不在信任存储中，链断裂
-                chain.append({
-                    "key_id": current_id,
-                    "signer": "",
-                    "trust_level": "",
-                    "signed_by": None,
-                    "valid": False,
-                    "reason": "密钥不在信任存储中",
-                })
+                chain.append(
+                    {
+                        "key_id": current_id,
+                        "signer": "",
+                        "trust_level": "",
+                        "signed_by": None,
+                        "valid": False,
+                        "reason": "密钥不在信任存储中",
+                    }
+                )
                 break
 
-            chain.append({
-                "key_id": current_id,
-                "signer": entry["signer"],
-                "trust_level": entry["trust_level"],
-                "signed_by": entry.get("signed_by"),
-                "valid": True,
-                "reason": "",
-            })
+            chain.append(
+                {
+                    "key_id": current_id,
+                    "signer": entry["signer"],
+                    "trust_level": entry["trust_level"],
+                    "signed_by": entry.get("signed_by"),
+                    "valid": True,
+                    "reason": "",
+                }
+            )
 
             # full 级别的密钥是根信任锚，链终止
             if entry["trust_level"] == "full":
@@ -395,7 +406,8 @@ class CodeSigner:
         if actual_algorithm == "ed25519" and _ed25519_available():
             priv_key = Ed25519PrivateKey.from_private_bytes(priv_bytes)
             pub_bytes = priv_key.public_key().public_bytes(
-                Encoding.Raw, PublicFormat.Raw,
+                Encoding.Raw,
+                PublicFormat.Raw,
             )
         else:
             # HMAC-SHA256 对称密钥：public_key = private_key
@@ -428,11 +440,15 @@ class CodeSigner:
         sig_bytes = base64.b64decode(signature.signature)
         if signature.algorithm == "ed25519" and _ed25519_available():
             sig_valid = self._verify_ed25519(
-                signature.content_hash, sig_bytes, signature.key_id,
+                signature.content_hash,
+                sig_bytes,
+                signature.key_id,
             )
         else:
             sig_valid = self._verify_hmac(
-                signature.content_hash, sig_bytes, signature.key_id,
+                signature.content_hash,
+                sig_bytes,
+                signature.key_id,
             )
 
         if not sig_valid:
@@ -464,20 +480,23 @@ class CodeSigner:
         sig = self.sign(content, private_key, signer, algorithm=algorithm)
 
         # 写入伴随签名文件
-        sig_path = Path(file_path).with_suffix(
-            Path(file_path).suffix + ".yanpub-sig"
-        )
+        sig_path = Path(file_path).with_suffix(Path(file_path).suffix + ".yanpub-sig")
         sig_path.write_text(
             json.dumps(sig.to_dict(), ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
 
         # 记录审计日志
-        self._audit_log("sign", signer, sig.key_id, {
-            "file": str(file_path),
-            "algorithm": sig.algorithm,
-            "content_hash": sig.content_hash,
-        })
+        self._audit_log(
+            "sign",
+            signer,
+            sig.key_id,
+            {
+                "file": str(file_path),
+                "algorithm": sig.algorithm,
+                "content_hash": sig.content_hash,
+            },
+        )
 
         return sig
 
@@ -487,9 +506,7 @@ class CodeSigner:
         Returns:
             (valid, message)
         """
-        sig_path = Path(file_path).with_suffix(
-            Path(file_path).suffix + ".yanpub-sig"
-        )
+        sig_path = Path(file_path).with_suffix(Path(file_path).suffix + ".yanpub-sig")
 
         if not sig_path.exists():
             return False, "未找到签名文件"
@@ -511,10 +528,15 @@ class CodeSigner:
 
         # 记录审计日志
         action = "verify" if valid else "verify_fail"
-        self._audit_log(action, signature.signer, signature.key_id, {
-            "file": str(file_path),
-            "result": message,
-        })
+        self._audit_log(
+            action,
+            signature.signer,
+            signature.key_id,
+            {
+                "file": str(file_path),
+                "result": message,
+            },
+        )
 
         return valid, message
 
@@ -538,7 +560,10 @@ class CodeSigner:
         ).digest()
 
     def _verify_ed25519(
-        self, content_hash: str, sig_bytes: bytes, key_id: str,
+        self,
+        content_hash: str,
+        sig_bytes: bytes,
+        key_id: str,
     ) -> bool:
         """验证 Ed25519 签名"""
         key = self.trust_store.get_key(key_id)
@@ -554,7 +579,10 @@ class CodeSigner:
             return False
 
     def _verify_hmac(
-        self, content_hash: str, sig_bytes: bytes, key_id: str,
+        self,
+        content_hash: str,
+        sig_bytes: bytes,
+        key_id: str,
     ) -> bool:
         """验证 HMAC-SHA256 签名（对称密钥）"""
         key = self.trust_store.get_key(key_id)
@@ -573,11 +601,16 @@ class CodeSigner:
     # ---- 审计日志辅助 ----
 
     def _audit_log(
-        self, action: str, signer: str, key_id: str, details: dict,
+        self,
+        action: str,
+        signer: str,
+        key_id: str,
+        details: dict,
     ) -> None:
         """记录审计日志"""
         try:
             from yanpub.core.audit import AuditLog, AuditEntry
+
             log = AuditLog()
             entry = AuditEntry(
                 action=action,

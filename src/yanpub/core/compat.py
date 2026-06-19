@@ -24,6 +24,7 @@ from yanpub.core.registry import LanguageRegistry
 @dataclass
 class CompatResult:
     """兼容性检查结果"""
+
     adapter_id: str
     adapter_name: str
     adapter_version: str = ""
@@ -122,6 +123,7 @@ def check_compatibility(adapter: LanguageAdapter) -> CompatResult:
 
     # ---- 检查4: 版本格式 ----
     import re
+
     version = adapter.version
     semver_ok = bool(re.match(r"^\d+\.\d+", version))
 
@@ -153,7 +155,9 @@ def format_compat_matrix(results: list[CompatResult]) -> str:
     lines.append(f"yanpub 版本: {__version__}\n")
 
     # 表格头
-    lines.append(f"{'语言':12s} {'版本':10s} {'总体':12s} {'API':6s} {'关键字':8s} {'LSP':6s} {'版本号':8s}")
+    lines.append(
+        f"{'语言':12s} {'版本':10s} {'总体':12s} {'API':6s} {'关键字':8s} {'LSP':6s} {'版本号':8s}"
+    )
     lines.append("-" * 70)
 
     for r in results:

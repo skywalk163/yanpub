@@ -67,7 +67,9 @@ class SearchIndex:
     """
 
     def __init__(self):
-        self._inverted: dict[str, list[tuple[str, float]]] = defaultdict(list)  # term -> [(doc_id, weight)]
+        self._inverted: dict[str, list[tuple[str, float]]] = defaultdict(
+            list
+        )  # term -> [(doc_id, weight)]
         self._documents: dict[str, dict] = {}  # doc_id -> {title, content, ...}
         self._doc_terms: dict[str, dict[str, int]] = {}  # doc_id -> {term: count}
         self._trie_root = _TrieNode()
@@ -163,16 +165,18 @@ class SearchIndex:
             doc = self._documents.get(doc_id, {})
             # 提取高亮片段
             highlights = self._extract_highlights(doc.get("content", ""), query_terms)
-            results.append(SearchResult(
-                title=doc.get("title", ""),
-                content=doc.get("content", ""),
-                url=doc.get("url", ""),
-                score=score,
-                highlights=highlights,
-                category=doc.get("category", ""),
-                lang_id=doc.get("lang_id", ""),
-                lang_name=doc.get("lang_name", ""),
-            ))
+            results.append(
+                SearchResult(
+                    title=doc.get("title", ""),
+                    content=doc.get("content", ""),
+                    url=doc.get("url", ""),
+                    score=score,
+                    highlights=highlights,
+                    category=doc.get("category", ""),
+                    lang_id=doc.get("lang_id", ""),
+                    lang_name=doc.get("lang_name", ""),
+                )
+            )
         return results
 
     def suggest(self, prefix: str, limit: int = 8) -> list[str]:
@@ -198,7 +202,9 @@ class SearchIndex:
                     expansions.append(key)
         return expansions[:5]  # 限制扩展数量
 
-    def _extract_highlights(self, content: str, query_terms: list[str], context: int = 40) -> list[str]:
+    def _extract_highlights(
+        self, content: str, query_terms: list[str], context: int = 40
+    ) -> list[str]:
         """提取高亮片段"""
         highlights = []
         for qt in query_terms[:3]:  # 最多3个查询词

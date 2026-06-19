@@ -24,6 +24,7 @@ from yanpub.core.adapter import LanguageAdapter, SubprocessAdapter
 @dataclass
 class HealthCheckResult:
     """健康检查结果"""
+
     adapter_id: str
     adapter_name: str
     status: str  # healthy / degraded / unhealthy
@@ -171,7 +172,7 @@ def _get_test_code(adapter: LanguageAdapter) -> str:
     """获取用于测试执行的代码片段"""
     # 尝试使用注释语法写一个简单的测试
     comment = adapter.comment_syntax or "#"
-    return f"{comment} health check\n打印(\"ok\")。\n"
+    return f'{comment} health check\n打印("ok")。\n'
 
 
 def check_all_adapters(registry) -> list[HealthCheckResult]:

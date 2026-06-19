@@ -26,6 +26,7 @@ from yanpub.core.registry import LanguageRegistry
 @dataclass
 class BenchResult:
     """单个基准测试结果"""
+
     name: str
     iterations: int = 1
     times_ms: list[float] = field(default_factory=list)
@@ -65,6 +66,7 @@ class BenchResult:
 @dataclass
 class AdapterBenchResult:
     """适配器完整基准测试结果"""
+
     adapter_id: str
     adapter_name: str
     startup: Optional[BenchResult] = None
@@ -161,7 +163,7 @@ def _bench_execution(adapter: LanguageAdapter, iterations: int, warmup: int) -> 
 
     # 测试代码
     comment = adapter.comment_syntax or "#"
-    test_code = f"{comment} bench test\n打印(\"hello\")。\n"
+    test_code = f'{comment} bench test\n打印("hello")。\n'
 
     # 预热
     for _ in range(warmup):

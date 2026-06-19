@@ -115,7 +115,7 @@ def _parse_size(size_str: str) -> int:
     if not size_str:
         return 0
 
-    units = {"k": 1024, "m": 1024 ** 2, "g": 1024 ** 3, "t": 1024 ** 4}
+    units = {"k": 1024, "m": 1024**2, "g": 1024**3, "t": 1024**4}
     if size_str[-1] in units:
         return int(float(size_str[:-1]) * units[size_str[-1]])
     return int(size_str)
@@ -145,9 +145,7 @@ class SandboxBackend(ABC):
         ...
 
     @abstractmethod
-    def execute(
-        self, sandbox_id: str, command: list[str], stdin: str = ""
-    ) -> SandboxResult:
+    def execute(self, sandbox_id: str, command: list[str], stdin: str = "") -> SandboxResult:
         """在沙箱中执行命令"""
         ...
 
@@ -225,9 +223,7 @@ class DockerSandbox(SandboxBackend):
 
         return sandbox_id
 
-    def execute(
-        self, sandbox_id: str, command: list[str], stdin: str = ""
-    ) -> SandboxResult:
+    def execute(self, sandbox_id: str, command: list[str], stdin: str = "") -> SandboxResult:
         meta = self._sandboxes.get(sandbox_id)
         if meta is None:
             return SandboxResult(
@@ -405,14 +401,14 @@ class FreeBSDJailSandbox(SandboxBackend):
         # 创建 jail.conf 配置
         jail_conf = jail_root / "jail.conf"
         conf_content = (
-            f'{jail_name} {{\n'
+            f"{jail_name} {{\n"
             f'    path = "{jail_root}";\n'
             f'    host.hostname = "{jail_name}.yanpub";\n'
-            f'    ip4.addr = {config.jail_ip};\n'
-            f'    mount.devfs;\n'
-            f'    exec.stop = "/bin/sh -c \'umount /dev 2>/dev/null; true\'";\n'
-            f'    persist;\n'
-            f'}}\n'
+            f"    ip4.addr = {config.jail_ip};\n"
+            f"    mount.devfs;\n"
+            f"    exec.stop = \"/bin/sh -c 'umount /dev 2>/dev/null; true'\";\n"
+            f"    persist;\n"
+            f"}}\n"
         )
         jail_conf.write_text(conf_content, encoding="utf-8")
 
@@ -444,9 +440,7 @@ class FreeBSDJailSandbox(SandboxBackend):
 
         return sandbox_id
 
-    def execute(
-        self, sandbox_id: str, command: list[str], stdin: str = ""
-    ) -> SandboxResult:
+    def execute(self, sandbox_id: str, command: list[str], stdin: str = "") -> SandboxResult:
         meta = self._jails.get(sandbox_id)
         if meta is None:
             return SandboxResult(
@@ -575,9 +569,7 @@ class ProcessSandbox(SandboxBackend):
 
         return sandbox_id
 
-    def execute(
-        self, sandbox_id: str, command: list[str], stdin: str = ""
-    ) -> SandboxResult:
+    def execute(self, sandbox_id: str, command: list[str], stdin: str = "") -> SandboxResult:
         meta = self._sandboxes.get(sandbox_id)
         if meta is None:
             return SandboxResult(
@@ -622,6 +614,7 @@ class ProcessSandbox(SandboxBackend):
             if sys.platform != "win32":
                 try:
                     import resource as res_module
+
                     # ru_maxrss 在 Linux 上是 KB，在 macOS/BSD 上是 bytes
                     usage = res_module.getrusage(res_module.RUSAGE_CHILDREN)
                     if sys.platform == "darwin":
@@ -692,23 +685,17 @@ class ProcessSandbox(SandboxBackend):
             # 内存限制（字节）
             memory_bytes = 512 * 1024 * 1024  # 默认 512MB
             try:
-                resource.setrlimit(
-                    resource.RLIMIT_AS, (memory_bytes, memory_bytes)
-                )
+                resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
             except (ValueError, OSError):
                 pass  # 某些系统不支持 RLIMIT_AS
 
             # 文件大小限制
             file_size = 10 * 1024 * 1024  # 10MB
-            resource.setrlimit(
-                resource.RLIMIT_FSIZE, (file_size, file_size)
-            )
+            resource.setrlimit(resource.RLIMIT_FSIZE, (file_size, file_size))
 
             # 进程数限制
             try:
-                resource.setrlimit(
-                    resource.RLIMIT_NPROC, (10, 10)
-                )
+                resource.setrlimit(resource.RLIMIT_NPROC, (10, 10))
             except (ValueError, OSError):
                 pass  # macOS 上可能不支持
 
@@ -739,7 +726,9 @@ class SandboxManager:
     def __init__(self, config: SandboxConfig | None = None):
         self.config = config or SandboxConfig()
         self._backends: dict[str, SandboxBackend] = {}
-        self._active_sandboxes: dict[str, tuple[str, str]] = {}  # sandbox_id -> (backend_name, backend_sandbox_id)
+        self._active_sandboxes: dict[
+            str, tuple[str, str]
+        ] = {}  # sandbox_id -> (backend_name, backend_sandbox_id)
 
     def _get_backend(self, name: str) -> SandboxBackend:
         """获取或创建指定后端实例"""
@@ -799,8 +788,10 @@ class SandboxManager:
 
         # 准备代码文件
         # 优先使用 ASCII 扩展名，避免 Windows 上中文文件名编码问题
-        suffix = ".duan" if ".duan" in adapter.file_extensions else (
-            adapter.file_extensions[-1] if adapter.file_extensions else ".txt"
+        suffix = (
+            ".duan"
+            if ".duan" in adapter.file_extensions
+            else (adapter.file_extensions[-1] if adapter.file_extensions else ".txt")
         )
 
         # 写临时文件
@@ -946,6 +937,3 @@ class SandboxManager:
         }
 
         return status
-
-
-

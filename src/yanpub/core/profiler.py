@@ -24,11 +24,12 @@ from yanpub.core.adapter import LanguageAdapter
 
 # ---- 性能记录 ----
 
+
 @dataclass
 class ProfileRecord:
     """性能记录数据类"""
 
-    name: str              # 操作名称: "eval", "run", "tokenize", "complete"
+    name: str  # 操作名称: "eval", "run", "tokenize", "complete"
     adapter_id: str
     duration_ms: float
     timestamp: float
@@ -40,6 +41,7 @@ class ProfileRecord:
 
 
 # ---- 性能分析报告 ----
+
 
 @dataclass
 class ProfileReport:
@@ -94,6 +96,7 @@ class ProfileReport:
 
 # ---- 百分位计算 ----
 
+
 def _percentile(sorted_values: list[float], pct: float) -> float:
     """计算百分位数
 
@@ -137,6 +140,7 @@ def _build_report(name: str, adapter_id: str, records: list[ProfileRecord]) -> P
 
 # ---- 适配器性能分析器 ----
 
+
 class AdapterProfiler:
     """适配器性能分析器
 
@@ -155,27 +159,31 @@ class AdapterProfiler:
             try:
                 result = self.adapter.eval(code)
                 duration_ms = (time.perf_counter() - ts) * 1000
-                records.append(ProfileRecord(
-                    name="eval",
-                    adapter_id=self.adapter.id,
-                    duration_ms=duration_ms,
-                    timestamp=ts,
-                    metadata={
-                        "code_length": len(code),
-                        "output_length": len(result.stdout),
-                    },
-                    success=result.success,
-                ))
+                records.append(
+                    ProfileRecord(
+                        name="eval",
+                        adapter_id=self.adapter.id,
+                        duration_ms=duration_ms,
+                        timestamp=ts,
+                        metadata={
+                            "code_length": len(code),
+                            "output_length": len(result.stdout),
+                        },
+                        success=result.success,
+                    )
+                )
             except Exception as e:
                 duration_ms = (time.perf_counter() - ts) * 1000
-                records.append(ProfileRecord(
-                    name="eval",
-                    adapter_id=self.adapter.id,
-                    duration_ms=duration_ms,
-                    timestamp=ts,
-                    metadata={"code_length": len(code), "error": str(e)},
-                    success=False,
-                ))
+                records.append(
+                    ProfileRecord(
+                        name="eval",
+                        adapter_id=self.adapter.id,
+                        duration_ms=duration_ms,
+                        timestamp=ts,
+                        metadata={"code_length": len(code), "error": str(e)},
+                        success=False,
+                    )
+                )
         return _build_report("eval", self.adapter.id, records)
 
     def profile_run(self, file_path: str, iterations: int = 1) -> ProfileReport:
@@ -186,27 +194,31 @@ class AdapterProfiler:
             try:
                 result = self.adapter.run(file_path)
                 duration_ms = (time.perf_counter() - ts) * 1000
-                records.append(ProfileRecord(
-                    name="run",
-                    adapter_id=self.adapter.id,
-                    duration_ms=duration_ms,
-                    timestamp=ts,
-                    metadata={
-                        "file_path": file_path,
-                        "output_length": len(result.stdout),
-                    },
-                    success=result.success,
-                ))
+                records.append(
+                    ProfileRecord(
+                        name="run",
+                        adapter_id=self.adapter.id,
+                        duration_ms=duration_ms,
+                        timestamp=ts,
+                        metadata={
+                            "file_path": file_path,
+                            "output_length": len(result.stdout),
+                        },
+                        success=result.success,
+                    )
+                )
             except Exception as e:
                 duration_ms = (time.perf_counter() - ts) * 1000
-                records.append(ProfileRecord(
-                    name="run",
-                    adapter_id=self.adapter.id,
-                    duration_ms=duration_ms,
-                    timestamp=ts,
-                    metadata={"file_path": file_path, "error": str(e)},
-                    success=False,
-                ))
+                records.append(
+                    ProfileRecord(
+                        name="run",
+                        adapter_id=self.adapter.id,
+                        duration_ms=duration_ms,
+                        timestamp=ts,
+                        metadata={"file_path": file_path, "error": str(e)},
+                        success=False,
+                    )
+                )
         return _build_report("run", self.adapter.id, records)
 
     def profile_tokenize(self, code: str, iterations: int = 1) -> ProfileReport:
@@ -217,30 +229,36 @@ class AdapterProfiler:
             try:
                 tokens = self.adapter.tokenize(code)
                 duration_ms = (time.perf_counter() - ts) * 1000
-                records.append(ProfileRecord(
-                    name="tokenize",
-                    adapter_id=self.adapter.id,
-                    duration_ms=duration_ms,
-                    timestamp=ts,
-                    metadata={
-                        "code_length": len(code),
-                        "token_count": len(tokens),
-                    },
-                    success=True,
-                ))
+                records.append(
+                    ProfileRecord(
+                        name="tokenize",
+                        adapter_id=self.adapter.id,
+                        duration_ms=duration_ms,
+                        timestamp=ts,
+                        metadata={
+                            "code_length": len(code),
+                            "token_count": len(tokens),
+                        },
+                        success=True,
+                    )
+                )
             except Exception as e:
                 duration_ms = (time.perf_counter() - ts) * 1000
-                records.append(ProfileRecord(
-                    name="tokenize",
-                    adapter_id=self.adapter.id,
-                    duration_ms=duration_ms,
-                    timestamp=ts,
-                    metadata={"code_length": len(code), "error": str(e)},
-                    success=False,
-                ))
+                records.append(
+                    ProfileRecord(
+                        name="tokenize",
+                        adapter_id=self.adapter.id,
+                        duration_ms=duration_ms,
+                        timestamp=ts,
+                        metadata={"code_length": len(code), "error": str(e)},
+                        success=False,
+                    )
+                )
         return _build_report("tokenize", self.adapter.id, records)
 
-    def profile_complete(self, code: str, line: int, col: int, iterations: int = 1) -> ProfileReport:
+    def profile_complete(
+        self, code: str, line: int, col: int, iterations: int = 1
+    ) -> ProfileReport:
         """分析补全执行"""
         records: list[ProfileRecord] = []
         for _ in range(iterations):
@@ -248,27 +266,31 @@ class AdapterProfiler:
             try:
                 items = self.adapter.complete(code, line, col)
                 duration_ms = (time.perf_counter() - ts) * 1000
-                records.append(ProfileRecord(
-                    name="complete",
-                    adapter_id=self.adapter.id,
-                    duration_ms=duration_ms,
-                    timestamp=ts,
-                    metadata={
-                        "code_length": len(code),
-                        "completion_count": len(items),
-                    },
-                    success=True,
-                ))
+                records.append(
+                    ProfileRecord(
+                        name="complete",
+                        adapter_id=self.adapter.id,
+                        duration_ms=duration_ms,
+                        timestamp=ts,
+                        metadata={
+                            "code_length": len(code),
+                            "completion_count": len(items),
+                        },
+                        success=True,
+                    )
+                )
             except Exception as e:
                 duration_ms = (time.perf_counter() - ts) * 1000
-                records.append(ProfileRecord(
-                    name="complete",
-                    adapter_id=self.adapter.id,
-                    duration_ms=duration_ms,
-                    timestamp=ts,
-                    metadata={"code_length": len(code), "error": str(e)},
-                    success=False,
-                ))
+                records.append(
+                    ProfileRecord(
+                        name="complete",
+                        adapter_id=self.adapter.id,
+                        duration_ms=duration_ms,
+                        timestamp=ts,
+                        metadata={"code_length": len(code), "error": str(e)},
+                        success=False,
+                    )
+                )
         return _build_report("complete", self.adapter.id, records)
 
     def profile_all(self, code: str, iterations: int = 1) -> dict[str, ProfileReport]:
@@ -290,6 +312,7 @@ class AdapterProfiler:
 
 # ---- 热点检测 ----
 
+
 @dataclass
 class Hotspot:
     """热点信息"""
@@ -297,7 +320,7 @@ class Hotspot:
     operation: str
     adapter_id: str
     avg_ms: float
-    severity: str   # "critical" | "warning" | "normal"
+    severity: str  # "critical" | "warning" | "normal"
     suggestion: str
 
     def to_dict(self) -> dict:
@@ -344,13 +367,15 @@ class HotspotDetector:
 
             suggestion = _SUGGESTIONS.get(op_name, "检查适配器实现，考虑优化热点路径")
 
-            hotspots.append(Hotspot(
-                operation=op_name,
-                adapter_id=report.adapter_id,
-                avg_ms=avg,
-                severity=severity,
-                suggestion=suggestion,
-            ))
+            hotspots.append(
+                Hotspot(
+                    operation=op_name,
+                    adapter_id=report.adapter_id,
+                    avg_ms=avg,
+                    severity=severity,
+                    suggestion=suggestion,
+                )
+            )
 
         # 按严重程度排序: critical > warning > normal，同级别按 avg_ms 降序
         severity_order = {"critical": 0, "warning": 1, "normal": 2}
@@ -359,6 +384,7 @@ class HotspotDetector:
 
 
 # ---- 火焰图生成器 ----
+
 
 class FlameGraphGenerator:
     """火焰图生成器
@@ -386,17 +412,19 @@ class FlameGraphGenerator:
 
         for op_name, data in report.items():
             avg_ms = data.get("avg_ms", 0)
-            operations.append({
-                "name": op_name,
-                "avg_ms": avg_ms,
-                "min_ms": data.get("min_ms", 0),
-                "max_ms": data.get("max_ms", 0),
-                "median_ms": data.get("median_ms", 0),
-                "p95_ms": data.get("p95_ms", 0),
-                "iterations": data.get("iterations", 0),
-                "adapter_id": data.get("adapter_id", ""),
-                "success_rate": _calc_success_rate(data),
-            })
+            operations.append(
+                {
+                    "name": op_name,
+                    "avg_ms": avg_ms,
+                    "min_ms": data.get("min_ms", 0),
+                    "max_ms": data.get("max_ms", 0),
+                    "median_ms": data.get("median_ms", 0),
+                    "p95_ms": data.get("p95_ms", 0),
+                    "iterations": data.get("iterations", 0),
+                    "adapter_id": data.get("adapter_id", ""),
+                    "success_rate": _calc_success_rate(data),
+                }
+            )
             total_time += avg_ms
             if avg_ms > slowest_ms:
                 slowest_ms = avg_ms
@@ -665,11 +693,13 @@ document.querySelectorAll('.flame-bar-track').forEach(function(el) {
         max_ms = 0.0
         for op_name, data in report.items():
             avg_ms = data.get("avg_ms", 0)
-            operations.append({
-                "name": op_name,
-                "avg_ms": avg_ms,
-                "adapter_id": data.get("adapter_id", ""),
-            })
+            operations.append(
+                {
+                    "name": op_name,
+                    "avg_ms": avg_ms,
+                    "adapter_id": data.get("adapter_id", ""),
+                }
+            )
             if avg_ms > max_ms:
                 max_ms = avg_ms
 
@@ -717,7 +747,7 @@ document.querySelectorAll('.flame-bar-track').forEach(function(el) {
             svg_parts.append(
                 f'<text x="{margin_left + width + 6:.1f}" y="{y + bar_height / 2 + 4}" '
                 f'fill="#888" font-size="11" font-family="Consolas, monospace">'
-                f'{op["avg_ms"]:.1f}ms</text>'
+                f"{op['avg_ms']:.1f}ms</text>"
             )
 
         svg_parts.append("</svg>")
@@ -747,6 +777,7 @@ document.querySelectorAll('.flame-bar-track').forEach(function(el) {
 
 
 # ---- HTML 辅助函数 ----
+
 
 def _calc_success_rate(data: dict) -> float:
     """从 report dict 计算成功率"""
@@ -794,7 +825,7 @@ def _build_flame_bars(operations: list[dict], total_time: float, colors: dict[st
             f'<div class="flame-bar-track" data-op="{op["name"]}">'
             f'<div class="flame-bar-fill" style="width:{width_pct:.1f}%;background:{color};">'
             f'<span class="bar-text">{op["avg_ms"]:.2f} ms</span>'
-            f'</div></div></div>'
+            f"</div></div></div>"
         )
     return "\n".join(rows)
 
@@ -841,14 +872,16 @@ def _build_hotspot_section(report: dict) -> str:
     for op_name, data in report.items():
         records = []
         for r in data.get("records", []):
-            records.append(ProfileRecord(
-                name=r.get("name", op_name),
-                adapter_id=r.get("adapter_id", ""),
-                duration_ms=r.get("duration_ms", 0),
-                timestamp=r.get("timestamp", 0),
-                metadata=r.get("metadata", {}),
-                success=r.get("success", True),
-            ))
+            records.append(
+                ProfileRecord(
+                    name=r.get("name", op_name),
+                    adapter_id=r.get("adapter_id", ""),
+                    duration_ms=r.get("duration_ms", 0),
+                    timestamp=r.get("timestamp", 0),
+                    metadata=r.get("metadata", {}),
+                    success=r.get("success", True),
+                )
+            )
         reports[op_name] = _build_report(op_name, data.get("adapter_id", ""), records)
 
     detector = HotspotDetector()
@@ -903,6 +936,7 @@ def _build_tip_data(operations: list[dict]) -> str:
 
 
 # ---- 默认示例代码生成 ----
+
 
 def _default_code(adapter: LanguageAdapter) -> str:
     """根据适配器生成默认分析代码（优先从模板文件读取）"""

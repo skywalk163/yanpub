@@ -25,11 +25,12 @@ from typing import Optional
 @dataclass
 class CachedPackage:
     """已缓存的包信息"""
-    name: str               # duan:web-framework
-    lang: str               # duan
-    package: str             # web-framework
-    version: str             # 0.2.0
-    install_path: str        # 缓存路径
+
+    name: str  # duan:web-framework
+    lang: str  # duan
+    package: str  # web-framework
+    version: str  # 0.2.0
+    install_path: str  # 缓存路径
     installed_at: str = ""
 
     def __post_init__(self):

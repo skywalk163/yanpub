@@ -314,9 +314,7 @@ class LineTracer:
                 exec(compiled)
             except _DebugStopException as e:
                 # 断点或单步命中
-                frames = self._build_stack_frames(
-                    tracer_state, e.line, source_file
-                )
+                frames = self._build_stack_frames(tracer_state, e.line, source_file)
                 variables = self._build_variables(tracer_state["local_vars"])
                 stopped_event = DebugEvent(
                     type="stopped",
@@ -446,7 +444,7 @@ class LineTracer:
         import re
 
         # Python traceback 格式: File "...", line N
-        match = re.search(r'line\s+(\d+)', error_text)
+        match = re.search(r"line\s+(\d+)", error_text)
         if match:
             return int(match.group(1))
         return 1
@@ -617,9 +615,7 @@ class DebugSession:
         self.state = "running"
 
         if self._tracer:
-            event = self._tracer.step_execution(
-                self._code, self.current_line, step_type
-            )
+            event = self._tracer.step_execution(self._code, self.current_line, step_type)
         else:
             result = self.adapter.eval(self._code)
             event = DebugEvent(

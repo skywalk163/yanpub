@@ -21,7 +21,7 @@ class AuditEntry:
     """审计条目"""
 
     timestamp: float = 0.0
-    action: str = ""       # "sign" | "verify" | "trust_add" | "trust_remove" | "verify_fail"
+    action: str = ""  # "sign" | "verify" | "trust_add" | "trust_remove" | "verify_fail"
     signer: str = ""
     key_id: str = ""
     details: dict = field(default_factory=dict)  # 附加信息
@@ -129,9 +129,16 @@ class AuditLog:
 
         if format == "csv":
             output = io.StringIO()
-            writer = csv.DictWriter(output, fieldnames=[
-                "timestamp", "action", "signer", "key_id", "details",
-            ])
+            writer = csv.DictWriter(
+                output,
+                fieldnames=[
+                    "timestamp",
+                    "action",
+                    "signer",
+                    "key_id",
+                    "details",
+                ],
+            )
             writer.writeheader()
             for entry in entries:
                 row = entry.to_dict()

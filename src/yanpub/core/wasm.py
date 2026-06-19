@@ -32,7 +32,8 @@ from yanpub.core.adapter import LanguageAdapter, ExecutionResult
 @dataclass
 class WasmRuntimeInfo:
     """WASM 运行时信息"""
-    name: str = ""           # wasmtime / wasmer / pyodide / none
+
+    name: str = ""  # wasmtime / wasmer / pyodide / none
     version: str = ""
     available: bool = False
     path: str = ""
@@ -49,6 +50,7 @@ class WasmRuntimeInfo:
 @dataclass
 class WasmBuildResult:
     """WASM 构建结果"""
+
     success: bool = False
     output_path: str = ""
     size_bytes: int = 0
@@ -67,6 +69,7 @@ class WasmBuildResult:
 
 # ---- WASM 运行时检测 ----
 
+
 def detect_wasm_runtime() -> WasmRuntimeInfo:
     """检测可用的 WASM 运行时
 
@@ -79,6 +82,7 @@ def detect_wasm_runtime() -> WasmRuntimeInfo:
     # 1. wasmtime
     try:
         import wasmtime
+
         return WasmRuntimeInfo(
             name="wasmtime",
             version=getattr(wasmtime, "__version__", "unknown"),
@@ -91,6 +95,7 @@ def detect_wasm_runtime() -> WasmRuntimeInfo:
     # 2. wasmer
     try:
         import wasmer
+
         return WasmRuntimeInfo(
             name="wasmer",
             version=getattr(wasmer, "__version__", "unknown"),
@@ -104,7 +109,9 @@ def detect_wasm_runtime() -> WasmRuntimeInfo:
     try:
         result = subprocess.run(
             ["wasm", "--version"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         if result.returncode == 0:
             version = result.stdout.strip().split()[-1] if result.stdout.strip() else "unknown"
@@ -121,7 +128,9 @@ def detect_wasm_runtime() -> WasmRuntimeInfo:
     try:
         result = subprocess.run(
             ["node", "--version"],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True,
+            text=True,
+            timeout=5,
         )
         if result.returncode == 0:
             return WasmRuntimeInfo(
@@ -137,6 +146,7 @@ def detect_wasm_runtime() -> WasmRuntimeInfo:
 
 
 # ---- WASM 执行器 ----
+
 
 class WasmExecutor:
     """WASM 代码执行器
@@ -220,7 +230,10 @@ class WasmExecutor:
         if wasm_file.exists():
             # 写入代码到临时文件
             with tempfile.NamedTemporaryFile(
-                mode="w", encoding="utf-8", suffix=".txt", delete=False,
+                mode="w",
+                encoding="utf-8",
+                suffix=".txt",
+                delete=False,
             ) as f:
                 f.write(code)
                 code_file = f.name
@@ -317,7 +330,10 @@ WebAssembly.instantiate(wasmBuffer).then(results => {{
 }});
 """
         with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".js", delete=False, encoding="utf-8",
+            mode="w",
+            suffix=".js",
+            delete=False,
+            encoding="utf-8",
         ) as f:
             f.write(js_runner)
             js_path = f.name
@@ -326,8 +342,12 @@ WebAssembly.instantiate(wasmBuffer).then(results => {{
             cmd = [self._runtime.path, js_path]
             start = time.monotonic()
             result = subprocess.run(
-                cmd, capture_output=True, text=True,
-                encoding="utf-8", errors="replace", timeout=30,
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=30,
             )
             elapsed = (time.monotonic() - start) * 1000
             return ExecutionResult(
@@ -343,6 +363,7 @@ WebAssembly.instantiate(wasmBuffer).then(results => {{
 
 
 # ---- Pyodide 配置生成 ----
+
 
 def generate_pyodide_config(adapter: LanguageAdapter) -> dict:
     """生成 Pyodide 前端执行配置
@@ -392,6 +413,7 @@ def generate_pyodide_runner_html(adapter: LanguageAdapter) -> str:
 
     # 使用 string.Template 避免与 JS 的 {} 冲突
     from string import Template
+
     tpl = Template("""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -569,9 +591,7 @@ class WasmBuilder:
             )
 
             elapsed = (time.monotonic() - start) * 1000
-            total_size = sum(
-                f.stat().st_size for f in lang_dir.iterdir() if f.is_file()
-            )
+            total_size = sum(f.stat().st_size for f in lang_dir.iterdir() if f.is_file())
 
             return WasmBuildResult(
                 success=True,

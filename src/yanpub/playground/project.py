@@ -163,7 +163,7 @@ _TEMPLATES: dict[str, list[dict]] = {
             "files": {
                 "main.duan": (
                     "# 段言 (Duan) 示例\n"
-                    "打印(\"你好，世界！\")。\n\n"
+                    '打印("你好，世界！")。\n\n'
                     "设甲为四十二。\n设乙为甲乘二。\n打印(乙)。\n\n"
                     "段落 求和 参数 甲 乙\n  返回 甲 加 乙。\n结束\n\n"
                     "设结果为 求和 三 五。\n打印(结果)。\n\n"
@@ -171,7 +171,7 @@ _TEMPLATES: dict[str, list[dict]] = {
                     "段落 斐波那契 参数 甲\n"
                     "  如果 甲 小于 二 那么\n    返回 甲。\n  结束\n"
                     "  返回 斐波那契(甲减一) 加 斐波那契(甲减二)。\n结束\n\n"
-                    "设斐为 斐波那契(十)。\n打印(\"斐波那契(10) = \")。\n打印(斐)。"
+                    '设斐为 斐波那契(十)。\n打印("斐波那契(10) = ")。\n打印(斐)。'
                 ),
             },
             "mainFile": "main.duan",
@@ -195,7 +195,7 @@ _TEMPLATES: dict[str, list[dict]] = {
             "files": {
                 "main.yan": (
                     "-- 言 (Yan) 示例\n"
-                    "打印(\"你好，世界！\")\n\n"
+                    '打印("你好，世界！")\n\n'
                     "定义 甲 = 42\n定义 乙 = 甲 * 2\n打印(乙)\n\n"
                     "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}\n\n"
                     "定义 结果 = 求和(3, 5)\n打印(结果)\n\n"
@@ -203,7 +203,7 @@ _TEMPLATES: dict[str, list[dict]] = {
                     "函数 斐波那契(甲) {\n"
                     "  如果 甲 < 2 那么 {\n    返回 甲\n  }\n"
                     "  返回 斐波那契(甲 - 1) + 斐波那契(甲 - 2)\n}\n\n"
-                    "打印(\"斐波那契(10) = \" + 斐波那契(10))"
+                    '打印("斐波那契(10) = " + 斐波那契(10))'
                 ),
             },
             "mainFile": "main.yan",
@@ -217,7 +217,7 @@ _TEMPLATES: dict[str, list[dict]] = {
             "files": {
                 "main.moyan": (
                     "-- 墨言 (Moyan) 示例\n"
-                    "打印(\"你好，世界！\")\n\n"
+                    '打印("你好，世界！")\n\n'
                     "定义 甲 = 42\n定义 乙 = 甲 * 2\n打印(乙)\n\n"
                     "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}\n\n"
                     "定义 结果 = 求和(3, 5)\n打印(结果)\n\n"
@@ -225,7 +225,7 @@ _TEMPLATES: dict[str, list[dict]] = {
                     "函数 斐波那契(甲) {\n"
                     "  如果 甲 < 2 那么 {\n    返回 甲\n  }\n"
                     "  返回 斐波那契(甲 - 1) + 斐波那契(甲 - 2)\n}\n\n"
-                    "打印(\"斐波那契(10) = \" + 斐波那契(10))"
+                    '打印("斐波那契(10) = " + 斐波那契(10))'
                 ),
             },
             "mainFile": "main.moyan",
@@ -262,7 +262,7 @@ _TEMPLATES: dict[str, list[dict]] = {
             "files": {
                 "main.yan": (
                     "# 知行 (Zhixing) 示例\n"
-                    "打印(\"你好，世界！\")\n\n"
+                    '打印("你好，世界！")\n\n'
                     "定 甲 = 42\n定 乙 = 甲 * 2\n打印(乙)\n\n"
                     "函 求和(甲, 乙) {\n  返回 甲 + 乙\n}\n\n"
                     "定 结果 = 求和(3, 5)\n打印(结果)\n\n"
@@ -270,7 +270,7 @@ _TEMPLATES: dict[str, list[dict]] = {
                     "函 斐波那契(甲) {\n"
                     "  若 甲 < 2 则 {\n    返回 甲\n  }\n"
                     "  返回 斐波那契(甲 - 1) + 斐波那契(甲 - 2)\n}\n\n"
-                    "打印(\"斐波那契(10) = \" + 斐波那契(10))"
+                    '打印("斐波那契(10) = " + 斐波那契(10))'
                 ),
             },
             "mainFile": "main.yan",
@@ -284,7 +284,7 @@ _TEMPLATES: dict[str, list[dict]] = {
             "files": {
                 "main.yan": (
                     "# 言知 (Yanzhi) 示例\n"
-                    "打印(\"你好，世界！\")\n\n"
+                    '打印("你好，世界！")\n\n'
                     "定义 甲 = 42\n定义 乙 = 甲 * 2\n打印(乙)\n\n"
                     "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}\n\n"
                     "定义 结果 = 求和(3, 5)\n打印(结果)\n\n"
@@ -292,7 +292,7 @@ _TEMPLATES: dict[str, list[dict]] = {
                     "函数 斐波那契(甲) {\n"
                     "  如果 甲 < 2 那么 {\n    返回 甲\n  }\n"
                     "  返回 斐波那契(甲 - 1) + 斐波那契(甲 - 2)\n}\n\n"
-                    "打印(\"斐波那契(10) = \" + 斐波那契(10))"
+                    '打印("斐波那契(10) = " + 斐波那契(10))'
                 ),
             },
             "mainFile": "main.yan",
@@ -306,7 +306,7 @@ _TEMPLATES: dict[str, list[dict]] = {
             "files": {
                 "main.xinyu": (
                     "# 心语 (XinYu) 示例\n"
-                    "打印(\"你好，世界！\")\n\n"
+                    '打印("你好，世界！")\n\n'
                     "定 甲 = 42\n定 乙 = 甲 * 2\n打印(乙)\n\n"
                     "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}\n\n"
                     "定 结果 = 求和(3, 5)\n打印(结果)\n\n"
@@ -314,7 +314,7 @@ _TEMPLATES: dict[str, list[dict]] = {
                     "函数 斐波那契(甲) {\n"
                     "  如果 甲 < 2 那么 {\n    返回 甲\n  }\n"
                     "  返回 斐波那契(甲 - 1) + 斐波那契(甲 - 2)\n}\n\n"
-                    "打印(\"斐波那契(10) = \" + 斐波那契(10))"
+                    '打印("斐波那契(10) = " + 斐波那契(10))'
                 ),
             },
             "mainFile": "main.xinyu",
@@ -328,7 +328,7 @@ _TEMPLATES: dict[str, list[dict]] = {
             "files": {
                 "main.yan": (
                     "# 言律 (YanLv) 示例\n"
-                    "输出(\"你好，世界！\")\n\n"
+                    '输出("你好，世界！")\n\n'
                     "定 甲 = 42\n定 乙 = 甲 * 2\n输出(乙)\n\n"
                     "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}\n\n"
                     "定 结果 = 求和(3, 5)\n输出(结果)\n\n"
@@ -336,7 +336,7 @@ _TEMPLATES: dict[str, list[dict]] = {
                     "函数 斐波那契(甲) {\n"
                     "  如果 甲 < 2 那么 {\n    返回 甲\n  }\n"
                     "  返回 斐波那契(甲 - 1) + 斐波那契(甲 - 2)\n}\n\n"
-                    "输出(\"斐波那契(10) = \" + 斐波那契(10))"
+                    '输出("斐波那契(10) = " + 斐波那契(10))'
                 ),
             },
             "mainFile": "main.yan",
@@ -350,7 +350,7 @@ _TEMPLATES: dict[str, list[dict]] = {
             "files": {
                 "main.yan": (
                     "# 趣言 (traeyan) 示例\n"
-                    "印\"你好，世界！\"。\n\n"
+                    '印"你好，世界！"。\n\n'
                     "定甲等于42。\n定乙等于加甲 2。\n印乙。\n\n"
                     "定mysum等于函a b：\n"
                     "  返加a b。\n"
@@ -361,7 +361,7 @@ _TEMPLATES: dict[str, list[dict]] = {
                     "  若小n 2：\n    返n。\n  结束\n"
                     "  返加fib减n 1 fib减n 2。\n"
                     "。\n\n"
-                    "印\"斐波那契(10)等于\"。\n印fib 10。"
+                    '印"斐波那契(10)等于"。\n印fib 10。'
                 ),
             },
             "mainFile": "main.yan",
@@ -415,9 +415,7 @@ class ProjectManager:
         self._projects: dict[str, Project] = {}
         self._storage_dir = storage_dir
 
-    def create_project(
-        self, name: str, language: str, template: str = "default"
-    ) -> Project:
+    def create_project(self, name: str, language: str, template: str = "default") -> Project:
         """创建多文件项目"""
         project_id = uuid.uuid4().hex[:12]
         tmpl = None
@@ -455,15 +453,17 @@ class ProjectManager:
         """列出所有项目"""
         result = []
         for p in self._projects.values():
-            result.append({
-                "id": p.id,
-                "name": p.name,
-                "language": p.language,
-                "fileCount": len(p.files),
-                "mainFile": p.main_file,
-                "createdAt": p.created_at,
-                "updatedAt": p.updated_at,
-            })
+            result.append(
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "language": p.language,
+                    "fileCount": len(p.files),
+                    "mainFile": p.main_file,
+                    "createdAt": p.created_at,
+                    "updatedAt": p.updated_at,
+                }
+            )
         return sorted(result, key=lambda x: x["updatedAt"], reverse=True)
 
     def delete_project(self, project_id: str) -> bool:
@@ -478,9 +478,7 @@ class ProjectManager:
         project.updated_at = time.time()
         self._projects[project.id] = project
 
-    def execute_project(
-        self, project_id: str, adapter: LanguageAdapter
-    ) -> ExecutionResult:
+    def execute_project(self, project_id: str, adapter: LanguageAdapter) -> ExecutionResult:
         """执行项目 — 将所有文件写入临时目录，运行 main_file"""
         project = self._projects.get(project_id)
         if project is None:
@@ -540,9 +538,7 @@ class ProjectManager:
             return [_get_default_template(language)]
         return lang_templates
 
-    def create_from_template(
-        self, name: str, language: str, template_id: str
-    ) -> Project:
+    def create_from_template(self, name: str, language: str, template_id: str) -> Project:
         """从指定模板创建项目"""
         return self.create_project(name, language, template=template_id)
 

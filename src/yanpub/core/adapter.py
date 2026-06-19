@@ -16,6 +16,7 @@ from typing import Callable, Optional
 @dataclass
 class ExecutionResult:
     """代码执行结果"""
+
     stdout: str = ""
     stderr: str = ""
     exit_code: int = 0
@@ -29,6 +30,7 @@ class ExecutionResult:
 @dataclass
 class CompletionItem:
     """补全项"""
+
     label: str
     kind: str = "keyword"  # keyword | function | variable | type | module
     detail: str = ""
@@ -43,8 +45,9 @@ class CompletionItem:
 @dataclass
 class Diagnostic:
     """诊断信息"""
-    line: int      # 1-based
-    column: int    # 1-based
+
+    line: int  # 1-based
+    column: int  # 1-based
     severity: str  # error | warning | info | hint
     message: str
     source: str = ""  # 来源语言
@@ -53,7 +56,8 @@ class Diagnostic:
 @dataclass
 class TokenInfo:
     """词法分析结果"""
-    type: str      # keyword | identifier | number | string | operator | comment | punctuation
+
+    type: str  # keyword | identifier | number | string | operator | comment | punctuation
     value: str
     line: int = 0
     column: int = 0
@@ -138,20 +142,19 @@ class LanguageAdapter(ABC):
         # 缓存检查
         if self._enable_cache:
             from yanpub.core.cache import get_adapter_cache, AdapterCache
+
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
             cached = cache.get_completions(self._id, code_hash)
             if cached is not None:
                 return cached
 
-        items = [
-            CompletionItem(label=kw, kind="keyword")
-            for kw in self.keywords
-        ]
+        items = [CompletionItem(label=kw, kind="keyword") for kw in self.keywords]
 
         # 写入缓存
         if self._enable_cache and items:
             from yanpub.core.cache import get_adapter_cache, AdapterCache
+
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
             cache.put_completions(self._id, code_hash, items)
@@ -163,6 +166,7 @@ class LanguageAdapter(ABC):
         # 缓存检查
         if self._enable_cache:
             from yanpub.core.cache import get_adapter_cache, AdapterCache
+
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
             cached = cache.get_diagnostics(self._id, code_hash)
@@ -174,16 +178,20 @@ class LanguageAdapter(ABC):
             diags: list[Diagnostic] = []
         else:
             # 尝试从 stderr 提取错误行号
-            diags = [Diagnostic(
-                line=1, column=1,
-                severity="error",
-                message=result.stderr.strip() or "执行错误",
-                source=self.id,
-            )]
+            diags = [
+                Diagnostic(
+                    line=1,
+                    column=1,
+                    severity="error",
+                    message=result.stderr.strip() or "执行错误",
+                    source=self.id,
+                )
+            ]
 
         # 写入缓存
         if self._enable_cache:
             from yanpub.core.cache import get_adapter_cache, AdapterCache
+
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
             cache.put_diagnostics(self._id, code_hash, diags)
@@ -269,9 +277,7 @@ class LanguageAdapter(ABC):
 
         return "\n".join(result_lines) + "\n" if result_lines else "\n"
 
-    def rename(
-        self, code: str, line: int, column: int, new_name: str
-    ) -> Optional[list[dict]]:
+    def rename(self, code: str, line: int, column: int, new_name: str) -> Optional[list[dict]]:
         """符号重命名。默认实现基于关键字/标识符文本替换。
 
         Args:
@@ -314,9 +320,17 @@ class LanguageAdapter(ABC):
             end = pos + 1
         else:
             # ASCII标识符：向左右扩展（alnum/_）
-            while start > 0 and is_ident_char(code_line[start - 1]) and not is_cjk(code_line[start - 1]):
+            while (
+                start > 0
+                and is_ident_char(code_line[start - 1])
+                and not is_cjk(code_line[start - 1])
+            ):
                 start -= 1
-            while end < len(code_line) and is_ident_char(code_line[end]) and not is_cjk(code_line[end]):
+            while (
+                end < len(code_line)
+                and is_ident_char(code_line[end])
+                and not is_cjk(code_line[end])
+            ):
                 end += 1
 
             if start == end:
@@ -335,25 +349,31 @@ class LanguageAdapter(ABC):
                 if len(old_name) == 1 and is_cjk(old_name):
                     # 单个CJK字符：不做严格边界检查
                     # 中文token之间无分隔符，无法仅凭文本判断边界
-                    edits.append({
-                        "range": {
-                            "start": {"line": i, "character": idx},
-                            "end": {"line": i, "character": idx + len(old_name)},
-                        },
-                        "newText": new_name,
-                    })
-                else:
-                    # ASCII标识符：严格边界检查
-                    before_ok = idx == 0 or not is_ident_char(ln[idx - 1])
-                    after_ok = idx + len(old_name) >= len(ln) or not is_ident_char(ln[idx + len(old_name)])
-                    if before_ok and after_ok:
-                        edits.append({
+                    edits.append(
+                        {
                             "range": {
                                 "start": {"line": i, "character": idx},
                                 "end": {"line": i, "character": idx + len(old_name)},
                             },
                             "newText": new_name,
-                        })
+                        }
+                    )
+                else:
+                    # ASCII标识符：严格边界检查
+                    before_ok = idx == 0 or not is_ident_char(ln[idx - 1])
+                    after_ok = idx + len(old_name) >= len(ln) or not is_ident_char(
+                        ln[idx + len(old_name)]
+                    )
+                    if before_ok and after_ok:
+                        edits.append(
+                            {
+                                "range": {
+                                    "start": {"line": i, "character": idx},
+                                    "end": {"line": i, "character": idx + len(old_name)},
+                                },
+                                "newText": new_name,
+                            }
+                        )
                 search_start = idx + 1
 
         return edits if edits else None
@@ -370,7 +390,9 @@ class LanguageAdapter(ABC):
         """调用层次。返回 {"items": [{"name": str, "kind": str, "uri": str, "range": {...}, "children": [...]}]}"""
         return None
 
-    def extract_function(self, code: str, start_line: int, end_line: int, new_name: str) -> Optional[dict]:
+    def extract_function(
+        self, code: str, start_line: int, end_line: int, new_name: str
+    ) -> Optional[dict]:
         """提取函数重构
 
         将选中的代码块提取为一个新的段落/函数。
@@ -572,6 +594,7 @@ class SubprocessAdapter(LanguageAdapter):
         # 缓存检查
         if self._enable_cache:
             from yanpub.core.cache import get_adapter_cache, AdapterCache
+
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
             cached = cache.get_eval_result(self._id, code_hash)
@@ -588,9 +611,12 @@ class SubprocessAdapter(LanguageAdapter):
         else:
             # fallback: 写临时文件再运行
             import tempfile
+
             # 优先使用 ASCII 扩展名，避免 Windows 上中文文件名编码问题
-            suffix = ".duan" if ".duan" in self._extensions else (
-                self._extensions[-1] if self._extensions else ".txt"
+            suffix = (
+                ".duan"
+                if ".duan" in self._extensions
+                else (self._extensions[-1] if self._extensions else ".txt")
             )
             with tempfile.NamedTemporaryFile(
                 suffix=suffix,
@@ -608,6 +634,7 @@ class SubprocessAdapter(LanguageAdapter):
         # 写入缓存（仅成功结果缓存，失败结果不缓存）
         if self._enable_cache and result.success:
             from yanpub.core.cache import get_adapter_cache, AdapterCache
+
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
             cache.put_eval_result(self._id, code_hash, result)
@@ -686,10 +713,10 @@ class HTTPAdapter(LanguageAdapter, ABC):
         return self.eval(code)
 
     def eval(self, code: str) -> ExecutionResult:
-
         start = time.monotonic()
         try:
             import httpx
+
             resp = httpx.post(
                 f"{self.base_url}/eval",
                 json={"code": code},

@@ -286,7 +286,21 @@ def _check_deep_nesting(code: str, lang_id: str) -> list[LintResult]:
     for i, line in enumerate(lines, 1):
         stripped = line.lstrip()
         # 中文关键字增加嵌套
-        for kw in ("如果", "若", "当", "当满足", "当满", "遍历", "对于", "循环当", "尝试", "函数", "函", "段落", "类"):
+        for kw in (
+            "如果",
+            "若",
+            "当",
+            "当满足",
+            "当满",
+            "遍历",
+            "对于",
+            "循环当",
+            "尝试",
+            "函数",
+            "函",
+            "段落",
+            "类",
+        ):
             if stripped.startswith(kw) or f" {kw}" in stripped or f"\t{kw}" in stripped:
                 depth += 1
                 break

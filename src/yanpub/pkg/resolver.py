@@ -20,6 +20,7 @@ from yanpub.pkg.registry import PackageRegistry
 @dataclass
 class ResolvedDependency:
     """解析后的依赖项"""
+
     name: str
     version: str
     resolved_version: str = ""
@@ -61,22 +62,26 @@ class DependencyResolver:
         pkg = self.registry.get(package_name)
         if pkg is None:
             # 未注册的包，跳过（可能需要从远程获取）
-            result.append(ResolvedDependency(
-                name=package_name,
-                version=version or "*",
-                resolved_version="unknown",
-                source="missing",
-            ))
+            result.append(
+                ResolvedDependency(
+                    name=package_name,
+                    version=version or "*",
+                    resolved_version="unknown",
+                    source="missing",
+                )
+            )
             return
 
         # 检查版本约束
         if version and not self._version_matches(pkg.version, version):
-            result.append(ResolvedDependency(
-                name=package_name,
-                version=version,
-                resolved_version=pkg.version,
-                source="version_mismatch",
-            ))
+            result.append(
+                ResolvedDependency(
+                    name=package_name,
+                    version=version,
+                    resolved_version=pkg.version,
+                    source="version_mismatch",
+                )
+            )
             return
 
         # 先解析子依赖
@@ -84,12 +89,14 @@ class DependencyResolver:
             self._resolve_recursive(dep_name, dep_version, visited, result)
 
         # 再添加自身
-        result.append(ResolvedDependency(
-            name=package_name,
-            version=version or pkg.version,
-            resolved_version=pkg.version,
-            source="registry",
-        ))
+        result.append(
+            ResolvedDependency(
+                name=package_name,
+                version=version or pkg.version,
+                resolved_version=pkg.version,
+                source="registry",
+            )
+        )
 
     @staticmethod
     def _version_matches(available: str, constraint: str) -> bool:

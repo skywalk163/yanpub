@@ -20,15 +20,16 @@ from typing import Optional
 @dataclass
 class PackageInfo:
     """包元信息"""
-    name: str                    # 完整名: duan:web-framework
-    lang: str                    # 语言ID: duan
-    package: str                 # 包名: web-framework
+
+    name: str  # 完整名: duan:web-framework
+    lang: str  # 语言ID: duan
+    package: str  # 包名: web-framework
     version: str = "0.1.0"
     description: str = ""
     authors: list[str] = field(default_factory=list)
     dependencies: dict[str, str] = field(default_factory=dict)  # {包名: 版本约束}
-    source_url: str = ""         # Git 仓库地址
-    source_type: str = "git"     # git | local | http
+    source_url: str = ""  # Git 仓库地址
+    source_type: str = "git"  # git | local | http
     tags: list[str] = field(default_factory=list)
     created_at: str = ""
     updated_at: str = ""

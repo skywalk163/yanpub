@@ -29,14 +29,29 @@ from yanpub.core.registry import get_registry, LanguageRegistry
 
 # 块开始关键字（这些关键字后面通常需要缩进/续行）
 _BLOCK_KEYWORDS = {
-    "如果", "若", "当", "遍历", "循环", "对于", "尝试",
-    "函数", "段落", "类", "定义", "设",
-    "否则", "否则若", "捕获", "最终",
+    "如果",
+    "若",
+    "当",
+    "遍历",
+    "循环",
+    "对于",
+    "尝试",
+    "函数",
+    "段落",
+    "类",
+    "定义",
+    "设",
+    "否则",
+    "否则若",
+    "捕获",
+    "最终",
 }
 
 # 块结束关键字（这些关键字表示块结束，不需要续行）
 _BLOCK_END_KEYWORDS = {
-    "结束", "完毕", "完",
+    "结束",
+    "完毕",
+    "完",
 }
 
 
@@ -80,7 +95,7 @@ def _needs_continuation(code: str) -> bool:
         return True
 
     # 行尾是块开始关键字
-    last_word = re.findall(r'[\u4e00-\u9fff]+', last_line)
+    last_word = re.findall(r"[\u4e00-\u9fff]+", last_line)
     if last_word and last_word[-1] in _BLOCK_KEYWORDS:
         return True
 
@@ -88,6 +103,7 @@ def _needs_continuation(code: str) -> bool:
 
 
 # ---- 中文语言语法高亮器 ----
+
 
 class ChineseLangLexer(Lexer):
     """基于关键字列表的语法高亮器
@@ -122,9 +138,9 @@ class ChineseLangLexer(Lexer):
                     continue
 
                 # 中文关键字
-                if '\u4e00' <= ch <= '\u9fff':
+                if "\u4e00" <= ch <= "\u9fff":
                     # 匹配连续中文字符
-                    match = re.match(r'[\u4e00-\u9fff]+', line[pos:])
+                    match = re.match(r"[\u4e00-\u9fff]+", line[pos:])
                     if match:
                         word = match.group()
                         if word in self._keyword_set:
@@ -140,27 +156,27 @@ class ChineseLangLexer(Lexer):
                     end = line.find(quote, pos + 1)
                     if end == -1:
                         end = len(line) - 1
-                    result.append((line[pos:end + 1], "class:string"))
+                    result.append((line[pos : end + 1], "class:string"))
                     pos = end + 1
                     continue
 
                 # 数字
                 if ch.isdigit():
-                    match = re.match(r'\d+(\.\d+)?', line[pos:])
+                    match = re.match(r"\d+(\.\d+)?", line[pos:])
                     if match:
                         result.append((match.group(), "class:number"))
                         pos += len(match.group())
                         continue
 
                 # 运算符
-                if ch in '+-*/%=<>!&|^~':
+                if ch in "+-*/%=<>!&|^~":
                     result.append((ch, "class:operator"))
                     pos += 1
                     continue
 
                 # 英文标识符
-                if ch.isalpha() or ch == '_':
-                    match = re.match(r'[a-zA-Z_]\w*', line[pos:])
+                if ch.isalpha() or ch == "_":
+                    match = re.match(r"[a-zA-Z_]\w*", line[pos:])
                     if match:
                         word = match.group()
                         if word in self._keyword_set:
@@ -180,6 +196,7 @@ class ChineseLangLexer(Lexer):
 
 
 # ---- REPL 命令补全器 ----
+
 
 class REPLCompleter(Completer):
     """REPL 命令 + 关键字补全"""
@@ -237,6 +254,7 @@ class REPLCompleter(Completer):
 
 
 # ---- REPL 主类 ----
+
 
 class YanREPL:
     """统一 REPL — 支持多语言热切换"""
@@ -321,6 +339,7 @@ class YanREPL:
             if result.stderr:
                 # 使用友好错误提示
                 from yanpub.repl.error_display import parse_error, format_friendly_error
+
                 friendly = parse_error(result.stderr, adapter.name)
                 print(format_friendly_error(friendly, adapter.name))
 
@@ -362,7 +381,7 @@ class YanREPL:
                 print(f"{adapter.name} 关键字（{len(kws)}个）：")
                 # 分组显示
                 for i in range(0, len(kws), 15):
-                    group = kws[i:i+15]
+                    group = kws[i : i + 15]
                     print("  " + "、".join(group))
             else:
                 print("未提供关键字列表")

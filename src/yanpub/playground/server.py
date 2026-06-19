@@ -51,17 +51,19 @@ def create_app() -> FastAPI:
         registry = get_registry()
         result = []
         for a in registry:
-            result.append({
-                "id": a.id,
-                "name": a.name,
-                "version": a.version,
-                "extensions": a.file_extensions,
-                "capabilities": a.capabilities,
-                "keywords": a.keywords[:50] if len(a.keywords) > 50 else a.keywords,
-                "commentSyntax": a.comment_syntax,
-                "primaryColor": a.primary_color,
-                "description": a.description,
-            })
+            result.append(
+                {
+                    "id": a.id,
+                    "name": a.name,
+                    "version": a.version,
+                    "extensions": a.file_extensions,
+                    "capabilities": a.capabilities,
+                    "keywords": a.keywords[:50] if len(a.keywords) > 50 else a.keywords,
+                    "commentSyntax": a.comment_syntax,
+                    "primaryColor": a.primary_color,
+                    "description": a.description,
+                }
+            )
         return result
 
     # 示例元数据：文件名 -> 显示名
@@ -131,11 +133,13 @@ def create_app() -> FastAPI:
             except Exception:
                 decoded_code = code
 
-        return JSONResponse({
-            "lang": lang,
-            "name": adapter.name,
-            "code": decoded_code,
-        })
+        return JSONResponse(
+            {
+                "lang": lang,
+                "name": adapter.name,
+                "code": decoded_code,
+            }
+        )
 
     @app.post("/api/run")
     async def run_code_sync(body: dict):
@@ -146,10 +150,13 @@ def create_app() -> FastAPI:
         registry = get_registry()
         adapter = registry.get(lang_id)
         if adapter is None:
-            return JSONResponse({
-                "type": "error",
-                "message": f"未知语言: {lang_id}",
-            }, status_code=400)
+            return JSONResponse(
+                {
+                    "type": "error",
+                    "message": f"未知语言: {lang_id}",
+                },
+                status_code=400,
+            )
 
         # 在线程池中执行，避免阻塞事件循环
         loop = asyncio.get_event_loop()
@@ -180,25 +187,29 @@ def create_app() -> FastAPI:
 
                 adapter = registry.get(lang_id)
                 if adapter is None:
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": f"未知语言: {lang_id}",
-                        "id": request_id,
-                    })
+                    await websocket.send_json(
+                        {
+                            "type": "error",
+                            "message": f"未知语言: {lang_id}",
+                            "id": request_id,
+                        }
+                    )
                     continue
 
                 # 在线程池中执行
                 loop = asyncio.get_event_loop()
                 result = await loop.run_in_executor(None, adapter.eval, code)
 
-                await websocket.send_json({
-                    "type": "result",
-                    "stdout": result.stdout,
-                    "stderr": result.stderr,
-                    "exitCode": result.exit_code,
-                    "durationMs": result.duration_ms,
-                    "id": request_id,
-                })
+                await websocket.send_json(
+                    {
+                        "type": "result",
+                        "stdout": result.stdout,
+                        "stderr": result.stderr,
+                        "exitCode": result.exit_code,
+                        "durationMs": result.duration_ms,
+                        "id": request_id,
+                    }
+                )
 
         except WebSocketDisconnect:
             pass
@@ -219,6 +230,7 @@ def create_app() -> FastAPI:
             return JSONResponse({"error": f"未知语言: {lang_id}"}, status_code=404)
 
         from yanpub.core.wasm import generate_pyodide_config
+
         config = generate_pyodide_config(adapter)
         return JSONResponse(config)
 
@@ -232,6 +244,7 @@ def create_app() -> FastAPI:
 
         from yanpub.core.wasm import generate_pyodide_runner_html
         from fastapi.responses import HTMLResponse
+
         html = generate_pyodide_runner_html(adapter)
         return HTMLResponse(content=html)
 
@@ -246,11 +259,15 @@ def create_app() -> FastAPI:
             return JSONResponse({"error": f"未知语言: {lang_id}"}, status_code=404)
 
         from yanpub.core.wasm import WasmExecutor
+
         executor = WasmExecutor()
 
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
-            None, executor.execute_with_adapter, adapter, code,
+            None,
+            executor.execute_with_adapter,
+            adapter,
+            code,
         )
 
         return {
@@ -277,10 +294,13 @@ def create_app() -> FastAPI:
         registry = get_registry()
         adapter = registry.get(lang_id)
         if adapter is None:
-            return JSONResponse({
-                "type": "error",
-                "message": f"未知语言: {lang_id}",
-            }, status_code=400)
+            return JSONResponse(
+                {
+                    "type": "error",
+                    "message": f"未知语言: {lang_id}",
+                },
+                status_code=400,
+            )
 
         from yanpub.core.sandbox import SandboxManager, SandboxConfig
 
@@ -362,9 +382,12 @@ def _register_ai_routes(app: FastAPI) -> None:
         registry = get_registry()
         adapter = registry.get(lang_id)
         if adapter is None:
-            return JSONResponse({
-                "error": f"未知语言: {lang_id}",
-            }, status_code=400)
+            return JSONResponse(
+                {
+                    "error": f"未知语言: {lang_id}",
+                },
+                status_code=400,
+            )
 
         result = _ai_engine.smart_complete(adapter, code, line, column)
         return {"items": result}
@@ -379,9 +402,12 @@ def _register_ai_routes(app: FastAPI) -> None:
         registry = get_registry()
         adapter = registry.get(lang_id)
         if adapter is None:
-            return JSONResponse({
-                "error": f"未知语言: {lang_id}",
-            }, status_code=400)
+            return JSONResponse(
+                {
+                    "error": f"未知语言: {lang_id}",
+                },
+                status_code=400,
+            )
 
         result = _ai_engine.nl_to_code(adapter, text, context)
         return result
@@ -396,9 +422,12 @@ def _register_ai_routes(app: FastAPI) -> None:
         registry = get_registry()
         adapter = registry.get(lang_id)
         if adapter is None:
-            return JSONResponse({
-                "error": f"未知语言: {lang_id}",
-            }, status_code=400)
+            return JSONResponse(
+                {
+                    "error": f"未知语言: {lang_id}",
+                },
+                status_code=400,
+            )
 
         result = _ai_engine.fix_suggestion(adapter, code, error)
         return {"suggestions": result}
@@ -535,9 +564,7 @@ def _register_project_routes(app: FastAPI) -> None:
             pm.save_project(project)
             return {"ok": True, "mainFile": project.main_file}
         else:
-            return JSONResponse(
-                {"error": f"重命名失败: {old_path} → {new_path}"}, status_code=400
-            )
+            return JSONResponse({"error": f"重命名失败: {old_path} → {new_path}"}, status_code=400)
 
     @app.post("/api/project/{project_id}/run")
     async def run_project(project_id: str):
@@ -556,9 +583,7 @@ def _register_project_routes(app: FastAPI) -> None:
             )
 
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None, pm.execute_project, project_id, adapter
-        )
+        result = await loop.run_in_executor(None, pm.execute_project, project_id, adapter)
 
         return {
             "type": "result",
@@ -594,6 +619,7 @@ def _register_collab(app: FastAPI) -> None:
     """注册实时协作路由（延迟导入避免循环依赖）"""
     try:
         from yanpub.playground.collab import register_collab_routes
+
         register_collab_routes(app)
     except ImportError:
         logger.warning("实时协作模块不可用")
@@ -667,16 +693,12 @@ def _register_share_routes(app: FastAPI) -> None:
         ttl_hours = body.get("ttl_hours")
 
         if not lang_id or not code.strip():
-            return JSONResponse(
-                {"error": "缺少 lang 或 code 参数"}, status_code=400
-            )
+            return JSONResponse({"error": "缺少 lang 或 code 参数"}, status_code=400)
 
         registry = get_registry()
         adapter = registry.get(lang_id)
         if adapter is None:
-            return JSONResponse(
-                {"error": f"未知语言: {lang_id}"}, status_code=404
-            )
+            return JSONResponse({"error": f"未知语言: {lang_id}"}, status_code=404)
 
         mgr = get_share_manager()
         record = mgr.create_share(
@@ -855,7 +877,12 @@ def _register_share_routes(app: FastAPI) -> None:
 
         enhancer = get_collab_enhancer()
         ops = enhancer.go_online(room_id, user_id)
-        return {"ok": True, "status": "online", "pending_ops": len(ops), "ops": [o.to_dict() for o in ops]}
+        return {
+            "ok": True,
+            "status": "online",
+            "pending_ops": len(ops),
+            "ops": [o.to_dict() for o in ops],
+        }
 
     # ---- v1.2.0: 文档搜索 API ----
 

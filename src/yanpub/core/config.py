@@ -42,10 +42,7 @@ class YanPubConfig:
         with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
 
-        return cls(**{
-            k: v for k, v in data.items()
-            if k in cls.__dataclass_fields__
-        })
+        return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
 
     @classmethod
     def find_config(cls) -> "YanPubConfig":

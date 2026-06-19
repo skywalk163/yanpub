@@ -19,6 +19,7 @@ from yanpub.docs.generator import DocsGenerator
 @dataclass
 class ConceptComparison:
     """概念对比结果"""
+
     concept: str
     mappings: dict[str, list[str]]  # lang_id -> 该语言的关键字列表
 
@@ -26,6 +27,7 @@ class ConceptComparison:
 @dataclass
 class LanguageSimilarity:
     """语言相似度"""
+
     lang_id_a: str
     lang_id_b: str
     shared_keywords: list[str]
@@ -54,10 +56,12 @@ class LanguageComparator:
                     mappings[lang_id] = matching
 
             if len(mappings) > 1:  # 至少2种语言有此概念
-                results.append(ConceptComparison(
-                    concept=concept,
-                    mappings=mappings,
-                ))
+                results.append(
+                    ConceptComparison(
+                        concept=concept,
+                        mappings=mappings,
+                    )
+                )
 
         return results
 
@@ -104,7 +108,7 @@ class LanguageComparator:
         lang_ids = self.registry.language_ids
         results = []
         for i, id_a in enumerate(lang_ids):
-            for id_b in lang_ids[i + 1:]:
+            for id_b in lang_ids[i + 1 :]:
                 sim = self.compute_similarity(id_a, id_b)
                 if sim is not None:
                     results.append(sim)

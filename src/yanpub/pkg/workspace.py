@@ -39,11 +39,12 @@ from typing import Optional
 @dataclass
 class WorkspaceMember:
     """工作空间成员（子包）"""
-    name: str                  # 包名（不含语言前缀）
-    full_name: str             # 完整名：duan:web-framework
-    lang: str                  # 语言ID
+
+    name: str  # 包名（不含语言前缀）
+    full_name: str  # 完整名：duan:web-framework
+    lang: str  # 语言ID
     version: str = "0.1.0"
-    path: Path = Path(".")     # 成员目录路径（相对于工作空间根目录）
+    path: Path = Path(".")  # 成员目录路径（相对于工作空间根目录）
     dependencies: dict[str, str] = field(default_factory=dict)
     description: str = ""
 
@@ -65,6 +66,7 @@ class WorkspaceMember:
 @dataclass
 class WorkspaceConfig:
     """工作空间配置"""
+
     name: str = "default-workspace"
     members: list[str] = field(default_factory=lambda: ["packages/*"])
     shared_dependencies: dict[str, str] = field(default_factory=dict)
@@ -178,6 +180,7 @@ class Workspace:
                         members[member.full_name] = member
                 except Exception as e:
                     import warnings
+
                     warnings.warn(
                         f"加载工作空间成员 '{member_dir.name}' 失败: {e}",
                         stacklevel=2,
@@ -244,10 +247,7 @@ class Workspace:
         member_full_names = set(self._members.keys())
 
         for member in self._members.values():
-            internal_deps = [
-                dep for dep in member.dependencies
-                if dep in member_full_names
-            ]
+            internal_deps = [dep for dep in member.dependencies if dep in member_full_names]
             graph[member.full_name] = internal_deps
 
         return graph
@@ -321,17 +321,17 @@ class Workspace:
 
         # 生成 workspace.toml
         lines = [
-            '[workspace]',
+            "[workspace]",
             f'name = "{name}"',
-            f'members = {json.dumps(patterns, ensure_ascii=False)}',
+            f"members = {json.dumps(patterns, ensure_ascii=False)}",
         ]
 
         # 合并共享依赖
         # 自动扫描已有子包的公共依赖
         shared_deps = self._auto_detect_shared_deps()
         if shared_deps:
-            lines.append('')
-            lines.append('[workspace.dependencies]')
+            lines.append("")
+            lines.append("[workspace.dependencies]")
             for dep, spec in sorted(shared_deps.items()):
                 lines.append(f'"{dep}" = "{spec}"')
 
@@ -432,14 +432,14 @@ class Workspace:
 
         ws_path = self._root / "workspace.toml"
         lines = [
-            '[workspace]',
+            "[workspace]",
             f'name = "{self._config.name}"',
-            f'members = {json.dumps(self._config.members, ensure_ascii=False)}',
+            f"members = {json.dumps(self._config.members, ensure_ascii=False)}",
         ]
 
         if self._config.shared_dependencies:
-            lines.append('')
-            lines.append('[workspace.dependencies]')
+            lines.append("")
+            lines.append("[workspace.dependencies]")
             for dep, spec in sorted(self._config.shared_dependencies.items()):
                 lines.append(f'"{dep}" = "{spec}"')
 
@@ -458,8 +458,12 @@ class Workspace:
                     "full_name": m.full_name,
                     "version": m.version,
                     "path": str(m.path),
-                    "internal_deps": [d for d in m.dependencies if m.is_workspace_dep.get(d, False)],
-                    "external_deps": [d for d in m.dependencies if not m.is_workspace_dep.get(d, False)],
+                    "internal_deps": [
+                        d for d in m.dependencies if m.is_workspace_dep.get(d, False)
+                    ],
+                    "external_deps": [
+                        d for d in m.dependencies if not m.is_workspace_dep.get(d, False)
+                    ],
                 }
                 for m in self._members.values()
             ],

@@ -140,7 +140,9 @@ class DocumentHistory:
     def current_version(self) -> int:
         return self._current_version
 
-    def save_snapshot(self, content: str, author: str = "", metadata: dict | None = None) -> DocumentSnapshot:
+    def save_snapshot(
+        self, content: str, author: str = "", metadata: dict | None = None
+    ) -> DocumentSnapshot:
         """保存文档快照"""
         self._current_version += 1
         snap = DocumentSnapshot(
@@ -152,7 +154,7 @@ class DocumentHistory:
         self._snapshots.append(snap)
         # 限制历史长度
         if len(self._snapshots) > self.MAX_HISTORY:
-            self._snapshots = self._snapshots[-self.MAX_HISTORY:]
+            self._snapshots = self._snapshots[-self.MAX_HISTORY :]
         return snap
 
     def get_snapshot(self, version: int) -> DocumentSnapshot | None:
@@ -168,12 +170,14 @@ class DocumentHistory:
         """列出最近的版本"""
         result = []
         for snap in reversed(self._snapshots[-limit:]):
-            result.append({
-                "version": snap.version,
-                "author": snap.author,
-                "timestamp": snap.timestamp,
-                "checksum": snap.checksum,
-            })
+            result.append(
+                {
+                    "version": snap.version,
+                    "author": snap.author,
+                    "timestamp": snap.timestamp,
+                    "checksum": snap.checksum,
+                }
+            )
         return result
 
     def diff(self, v1: int, v2: int) -> dict:
@@ -258,13 +262,15 @@ class ConflictResolution:
                         i += 1
                     else:
                         break
-                conflicts.append(ConflictRegion(
-                    start_line=start,
-                    end_line=i,
-                    our_content="\n".join(our_block),
-                    their_content="\n".join(their_block),
-                    base_content="\n".join(base_block),
-                ))
+                conflicts.append(
+                    ConflictRegion(
+                        start_line=start,
+                        end_line=i,
+                        our_content="\n".join(our_block),
+                        their_content="\n".join(their_block),
+                        base_content="\n".join(base_block),
+                    )
+                )
             else:
                 i += 1
         return conflicts
@@ -331,7 +337,9 @@ class OfflineEditBuffer:
     def go_online(self) -> None:
         self._is_offline = False
 
-    def record(self, op_type: str, position: int, content: str = "", length: int = 0) -> OfflineOperation:
+    def record(
+        self, op_type: str, position: int, content: str = "", length: int = 0
+    ) -> OfflineOperation:
         """记录一个离线编辑操作"""
         self._lamport_counter += 1
         op = OfflineOperation(
@@ -364,13 +372,13 @@ class OfflineEditBuffer:
         result = content
         for op in sorted(self._operations, key=lambda o: o.lamport):
             if op.op_type == "insert":
-                result = result[:op.position] + op.content + result[op.position:]
+                result = result[: op.position] + op.content + result[op.position :]
             elif op.op_type == "delete":
                 end = min(op.position + op.length, len(result))
-                result = result[:op.position] + result[end:]
+                result = result[: op.position] + result[end:]
             elif op.op_type == "replace":
                 end = min(op.position + op.length, len(result))
-                result = result[:op.position] + op.content + result[end:]
+                result = result[: op.position] + op.content + result[end:]
         return result
 
     def to_dict(self) -> dict:
@@ -421,7 +429,9 @@ class CollabEnhancer:
     def detect_conflicts(self, base: str, ours: str, theirs: str) -> list[ConflictRegion]:
         return ConflictResolution.detect_conflicts(base, ours, theirs)
 
-    def resolve_conflict(self, conflict: ConflictRegion, strategy: ResolutionStrategy) -> ConflictRegion:
+    def resolve_conflict(
+        self, conflict: ConflictRegion, strategy: ResolutionStrategy
+    ) -> ConflictRegion:
         return ConflictResolution.resolve(conflict, strategy)
 
     def apply_resolutions(self, content: str, conflicts: list[ConflictRegion]) -> str:

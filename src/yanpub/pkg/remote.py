@@ -136,7 +136,8 @@ class RemoteRegistry:
             stats["added"] = len(new_keys - old_keys)
             stats["removed"] = len(old_keys - new_keys)
             stats["updated"] = sum(
-                1 for k in new_keys & old_keys
+                1
+                for k in new_keys & old_keys
                 if self._remote_packages[k].version != old_packages[k].version
             )
             stats["synced"] = len(self._remote_packages)

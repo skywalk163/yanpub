@@ -27,6 +27,7 @@ logger = logging.getLogger("yanpub.adapter.hotreload")
 @dataclass
 class ReloadEvent:
     """重载事件"""
+
     adapter_id: str
     adapter_name: str
     event_type: str  # "created" | "modified" | "deleted"
@@ -151,6 +152,7 @@ class HotReloader:
 
             # 清除 sys.modules 中的缓存
             import sys
+
             if module_name in sys.modules:
                 del sys.modules[module_name]
 
@@ -188,7 +190,9 @@ class HotReloader:
             # 4. 注册新适配器
             new_adapter = best()
             self._registry.register(new_adapter)
-            logger.info("重载适配器: %s (%s) v%s", new_adapter.name, new_adapter.id, new_adapter.version)
+            logger.info(
+                "重载适配器: %s (%s) v%s", new_adapter.name, new_adapter.id, new_adapter.version
+            )
 
             event = ReloadEvent(
                 adapter_id=new_adapter.id,

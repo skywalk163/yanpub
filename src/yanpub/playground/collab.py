@@ -32,12 +32,14 @@ logger = logging.getLogger("yanpub.playground.collab")
 
 # ---- CRDT 核心数据结构 ----
 
+
 @dataclass
 class CharId:
     """CRDT 字符标识 — 用于全局唯一标识和排序"""
-    site_id: str       # 站点ID（用户ID）
-    seq: int           # 序列号
-    lamport: int = 0   # Lamport 时间戳
+
+    site_id: str  # 站点ID（用户ID）
+    seq: int  # 序列号
+    lamport: int = 0  # Lamport 时间戳
 
     def __lt__(self, other: CharId) -> bool:
         if self.lamport != other.lamport:
@@ -49,9 +51,11 @@ class CharId:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, CharId):
             return NotImplemented
-        return (self.site_id == other.site_id and
-                self.seq == other.seq and
-                self.lamport == other.lamport)
+        return (
+            self.site_id == other.site_id
+            and self.seq == other.seq
+            and self.lamport == other.lamport
+        )
 
     def __hash__(self) -> int:
         return hash((self.site_id, self.seq, self.lamport))
@@ -71,10 +75,11 @@ class CharId:
 @dataclass
 class CRDTChar:
     """CRDT 中的单个字符"""
+
     id: CharId
     value: str
-    left_id: Optional[CharId] = None   # 左邻居ID
-    right_id: Optional[CharId] = None   # 右邻居ID
+    left_id: Optional[CharId] = None  # 左邻居ID
+    right_id: Optional[CharId] = None  # 右邻居ID
     deleted: bool = False
 
     def to_dict(self) -> dict:
@@ -170,10 +175,12 @@ class CollabDocument:
             self._insert_char(new_char)
             current_index += 1
 
-            ops.append({
-                "type": "insert",
-                "char": new_char.to_dict(),
-            })
+            ops.append(
+                {
+                    "type": "insert",
+                    "char": new_char.to_dict(),
+                }
+            )
 
         return ops
 
@@ -191,9 +198,12 @@ class CollabDocument:
         while insert_idx < len(self._chars):
             ch = self._chars[insert_idx]
             # 如果当前字符的左邻居在 new_char 左边，需要继续
-            if (ch.left_id and new_char.left_id and
-                    ch.left_id in self._id_index and
-                    self._id_index.get(ch.left_id, -1) <= left_idx):
+            if (
+                ch.left_id
+                and new_char.left_id
+                and ch.left_id in self._id_index
+                and self._id_index.get(ch.left_id, -1) <= left_idx
+            ):
                 # 比较并发插入的 ID（Lamport 时间戳）
                 if ch.id < new_char.id:
                     insert_idx += 1
@@ -224,11 +234,13 @@ class CollabDocument:
             char.deleted = True
             self._lamport += 1
 
-            ops.append({
-                "type": "delete",
-                "charId": char.id.to_dict(),
-                "lamport": self._lamport,
-            })
+            ops.append(
+                {
+                    "type": "delete",
+                    "charId": char.id.to_dict(),
+                    "lamport": self._lamport,
+                }
+            )
 
         return ops
 
@@ -240,7 +252,9 @@ class CollabDocument:
                 id=CharId.from_dict(char_data["id"]),
                 value=char_data["value"],
                 left_id=CharId.from_dict(char_data["leftId"]) if char_data.get("leftId") else None,
-                right_id=CharId.from_dict(char_data["rightId"]) if char_data.get("rightId") else None,
+                right_id=CharId.from_dict(char_data["rightId"])
+                if char_data.get("rightId")
+                else None,
                 deleted=char_data.get("deleted", False),
             )
 
@@ -289,9 +303,11 @@ class CollabDocument:
 
 # ---- 协作房间 ----
 
+
 @dataclass
 class CollabUser:
     """协作用户"""
+
     user_id: str
     display_name: str = ""
     color: str = "#3498DB"
@@ -314,8 +330,14 @@ class CollabRoom:
 
     # 用户颜色池
     COLORS = [
-        "#E74C3C", "#3498DB", "#2ECC71", "#F39C12",
-        "#9B59B6", "#1ABC9C", "#E67E22", "#34495E",
+        "#E74C3C",
+        "#3498DB",
+        "#2ECC71",
+        "#F39C12",
+        "#9B59B6",
+        "#1ABC9C",
+        "#E67E22",
+        "#34495E",
     ]
 
     def __init__(self, room_id: str, lang: str = "duan"):
@@ -369,15 +391,18 @@ class CollabRoom:
         self._connections[user_id] = websocket
 
         # 通知其他用户
-        await self._broadcast({
-            "type": "user_joined",
-            "roomId": self._room_id,
-            "user": {
-                "userId": user_id,
-                "displayName": display_name,
-                "color": color,
+        await self._broadcast(
+            {
+                "type": "user_joined",
+                "roomId": self._room_id,
+                "user": {
+                    "userId": user_id,
+                    "displayName": display_name,
+                    "color": color,
+                },
             },
-        }, exclude=user_id)
+            exclude=user_id,
+        )
 
         # 返回房间状态
         return {
@@ -399,26 +424,32 @@ class CollabRoom:
         self._users.pop(user_id, None)
         self._connections.pop(user_id, None)
 
-        await self._broadcast({
-            "type": "user_left",
-            "roomId": self._room_id,
-            "userId": user_id,
-        })
+        await self._broadcast(
+            {
+                "type": "user_left",
+                "roomId": self._room_id,
+                "userId": user_id,
+            }
+        )
 
     async def apply_edit(self, user_id: str, ops: list[dict]) -> None:
         """应用编辑操作并广播"""
         for op in ops:
             self._doc.apply_remote(op)
 
-        await self._broadcast({
-            "type": "edit",
-            "roomId": self._room_id,
-            "userId": user_id,
-            "ops": ops,
-        }, exclude=user_id)
+        await self._broadcast(
+            {
+                "type": "edit",
+                "roomId": self._room_id,
+                "userId": user_id,
+                "ops": ops,
+            },
+            exclude=user_id,
+        )
 
-    async def update_cursor(self, user_id: str, line: int, col: int,
-                            selection: Optional[dict] = None) -> None:
+    async def update_cursor(
+        self, user_id: str, line: int, col: int, selection: Optional[dict] = None
+    ) -> None:
         """更新用户光标位置"""
         user = self._users.get(user_id)
         if user is None:
@@ -430,15 +461,18 @@ class CollabRoom:
             user.selection_start = selection.get("start")
             user.selection_end = selection.get("end")
 
-        await self._broadcast({
-            "type": "cursor",
-            "roomId": self._room_id,
-            "userId": user_id,
-            "position": {"line": line, "col": col},
-            "selection": selection,
-            "color": user.color,
-            "displayName": user.display_name,
-        }, exclude=user_id)
+        await self._broadcast(
+            {
+                "type": "cursor",
+                "roomId": self._room_id,
+                "userId": user_id,
+                "position": {"line": line, "col": col},
+                "selection": selection,
+                "color": user.color,
+                "displayName": user.display_name,
+            },
+            exclude=user_id,
+        )
 
     async def _broadcast(self, message: dict, exclude: str | None = None) -> None:
         """广播消息给房间内所有用户"""
@@ -513,7 +547,8 @@ class CollabManager:
         """
         now = time.time()
         expired = [
-            rid for rid, room in self._rooms.items()
+            rid
+            for rid, room in self._rooms.items()
             if now - room._created_at > self._room_ttl and room.user_count == 0
         ]
         for rid in expired:
@@ -527,6 +562,7 @@ class CollabManager:
 
 
 # ---- FastAPI 路由注册 ----
+
 
 def register_collab_routes(app: Any) -> CollabManager:
     """为 FastAPI 应用注册协作路由
@@ -597,10 +633,15 @@ def register_collab_routes(app: Any) -> CollabManager:
         state = await room.join(user_id, display_name, websocket)
 
         # 发送房间状态
-        await websocket.send_text(json.dumps({
-            "type": "room_state",
-            **state,
-        }, ensure_ascii=False))
+        await websocket.send_text(
+            json.dumps(
+                {
+                    "type": "room_state",
+                    **state,
+                },
+                ensure_ascii=False,
+            )
+        )
 
         try:
             while True:

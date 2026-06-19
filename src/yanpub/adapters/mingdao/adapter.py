@@ -57,6 +57,7 @@ class MingdaoAdapter(SubprocessAdapter):
             return self._exec(self._run_command + [tmp])
         finally:
             from pathlib import Path
+
             Path(tmp).unlink(missing_ok=True)
 
     @property
@@ -89,7 +90,9 @@ class MingdaoAdapter(SubprocessAdapter):
 
 def _load_mingdao_keywords() -> list[str]:
     """加载明道关键字（优先从缓存）"""
-    return load_cached_keywords("mingdao", _load_mingdao_keywords_dynamic, _fallback_mingdao_keywords())
+    return load_cached_keywords(
+        "mingdao", _load_mingdao_keywords_dynamic, _fallback_mingdao_keywords()
+    )
 
 
 def _load_mingdao_keywords_dynamic() -> list[str]:
@@ -100,24 +103,60 @@ def _load_mingdao_keywords_dynamic() -> list[str]:
 def _fallback_mingdao_keywords() -> list[str]:
     return [
         # 定义
-        "定义", "常量", "就是", "就是函", "定义宏", "就是宏",
+        "定义",
+        "常量",
+        "就是",
+        "就是函",
+        "定义宏",
+        "就是宏",
         # 控制流
-        "如果", "那么", "否则", "否则若", "对于", "从", "到",
-        "对于每个", "当满足", "跳出", "继续", "返回",
+        "如果",
+        "那么",
+        "否则",
+        "否则若",
+        "对于",
+        "从",
+        "到",
+        "对于每个",
+        "当满足",
+        "跳出",
+        "继续",
+        "返回",
         # 数据
-        "列表", "元组", "字典", "索引", "长度",
+        "列表",
+        "元组",
+        "字典",
+        "索引",
+        "长度",
         # 比较
-        "等于", "不等", "大于", "小于", "大于等于", "小于等于",
+        "等于",
+        "不等",
+        "大于",
+        "小于",
+        "大于等于",
+        "小于等于",
         # 运算
-        "加", "减", "乘", "除", "模", "幂",
+        "加",
+        "减",
+        "乘",
+        "除",
+        "模",
+        "幂",
         # 逻辑
-        "非", "与", "或",
+        "非",
+        "与",
+        "或",
         # 模块
-        "导入", "导出", "模块",
+        "导入",
+        "导出",
+        "模块",
         # 赋值与输出
-        "赋值", "打印", "生成",
+        "赋值",
+        "打印",
+        "生成",
         # 异常
         "捕获",
         # 高级
-        "匿名函数", "做当满足",
+        "匿名函数",
+        "做当满足",
     ]

@@ -35,6 +35,7 @@ from yanpub.core.benchmark import run_benchmarks
 
 # ---- 环境信息采集 ----
 
+
 def _collect_environment() -> dict:
     """采集运行环境信息（仅使用标准库）"""
     return {
@@ -47,6 +48,7 @@ def _collect_environment() -> dict:
 
 
 # ---- 性能基线快照 ----
+
 
 @dataclass
 class BaselineSnapshot:
@@ -88,6 +90,7 @@ class BaselineSnapshot:
 
 # ---- 性能预算 ----
 
+
 @dataclass
 class PerformanceBudget:
     """性能预算"""
@@ -110,13 +113,15 @@ class PerformanceBudget:
                 continue
             over = actual > budget_ms
             pct_over = ((actual - budget_ms) / budget_ms * 100.0) if budget_ms > 0 else 0.0
-            results.append({
-                "metric": metric_name,
-                "budget": budget_ms,
-                "actual": actual,
-                "over_budget": over,
-                "pct_over": round(pct_over, 2),
-            })
+            results.append(
+                {
+                    "metric": metric_name,
+                    "budget": budget_ms,
+                    "actual": actual,
+                    "over_budget": over,
+                    "pct_over": round(pct_over, 2),
+                }
+            )
         return results
 
     def to_dict(self) -> dict:
@@ -306,14 +311,16 @@ class BaselineManager:
             is_regression = diff_pct > 0
             is_improvement = diff_pct < 0
 
-            metric_results.append({
-                "name": name,
-                "a": val_a,
-                "b": val_b,
-                "diff_pct": round(diff_pct, 2),
-                "regression": is_regression,
-                "improvement": is_improvement,
-            })
+            metric_results.append(
+                {
+                    "name": name,
+                    "a": val_a,
+                    "b": val_b,
+                    "diff_pct": round(diff_pct, 2),
+                    "regression": is_regression,
+                    "improvement": is_improvement,
+                }
+            )
 
         regressions = sum(1 for m in metric_results if m["regression"])
         improvements = sum(1 for m in metric_results if m["improvement"])
@@ -412,13 +419,15 @@ class BaselineManager:
                 continue
             # 检查是否超过阈值
             if m["diff_pct"] > threshold_pct:
-                regressions.append({
-                    "metric": m["name"],
-                    "baseline_value": m["a"],
-                    "current_value": m["b"],
-                    "diff_pct": m["diff_pct"],
-                    "threshold_pct": threshold_pct,
-                })
+                regressions.append(
+                    {
+                        "metric": m["name"],
+                        "baseline_value": m["a"],
+                        "current_value": m["b"],
+                        "diff_pct": m["diff_pct"],
+                        "threshold_pct": threshold_pct,
+                    }
+                )
 
         passed = len(regressions) == 0
 

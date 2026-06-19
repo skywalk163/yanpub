@@ -36,9 +36,7 @@ class LanguageRegistry:
         adapter = self.get(lang_id)
         if adapter is None:
             available = ", ".join(sorted(self._adapters.keys())) or "(无)"
-            raise KeyError(
-                f"未注册的语言: '{lang_id}'。可用语言: {available}"
-            )
+            raise KeyError(f"未注册的语言: '{lang_id}'。可用语言: {available}")
         return adapter
 
     def list_languages(self) -> list[dict]:
@@ -106,6 +104,7 @@ def _auto_discover(registry: LanguageRegistry) -> None:
                     registry.register(adapter)
             except Exception as e:
                 import warnings
+
                 warnings.warn(
                     f"加载适配器 '{adapter_dir.name}' 失败: {e}",
                     stacklevel=2,
@@ -147,11 +146,7 @@ def _load_adapter(adapter_dir: Path) -> Optional[LanguageAdapter]:
     best = None
     for attr_name in dir(module):
         attr = getattr(module, attr_name)
-        if (
-            isinstance(attr, type)
-            and issubclass(attr, BaseAdapter)
-            and attr not in _base_classes
-        ):
+        if isinstance(attr, type) and issubclass(attr, BaseAdapter) and attr not in _base_classes:
             # 如果有多个子类，取继承层次最深的那个
             if best is None or (issubclass(attr, best) and attr is not best):
                 best = attr

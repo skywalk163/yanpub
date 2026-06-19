@@ -36,21 +36,63 @@ def _is_word_boundary(text: str, idx: int, length: int) -> bool:
 # ---- 中文编程语言关键字集合 ----
 # 用于 safe_rename 检测新名称是否是关键字
 _CN_KEYWORDS: set[str] = {
-    "段落", "函数", "函", "方法", "类", "定义", "宏定", "构造",
-    "当", "遍历", "循环", "对于", "如果", "若", "尝试",
-    "否则", "否则若", "否则如果", "捕获", "最终",
-    "结束", "完", "完毕",
-    "返回", "设", "为", "参数", "导入", "从", "导出",
-    "继承", "属性", "己", "新建",
-    "抛出", "空", "真", "假",
-    "打印", "输出", "显示",
+    "段落",
+    "函数",
+    "函",
+    "方法",
+    "类",
+    "定义",
+    "宏定",
+    "构造",
+    "当",
+    "遍历",
+    "循环",
+    "对于",
+    "如果",
+    "若",
+    "尝试",
+    "否则",
+    "否则若",
+    "否则如果",
+    "捕获",
+    "最终",
+    "结束",
+    "完",
+    "完毕",
+    "返回",
+    "设",
+    "为",
+    "参数",
+    "导入",
+    "从",
+    "导出",
+    "继承",
+    "属性",
+    "己",
+    "新建",
+    "抛出",
+    "空",
+    "真",
+    "假",
+    "打印",
+    "输出",
+    "显示",
 }
 
 # 中文运算符集合（不作为标识符）
 _CN_OPERATORS: set[str] = {
-    "加", "减", "乘", "除", "取余",
-    "等于", "不等于", "大于", "小于",
-    "且", "或", "非",
+    "加",
+    "减",
+    "乘",
+    "除",
+    "取余",
+    "等于",
+    "不等于",
+    "大于",
+    "小于",
+    "且",
+    "或",
+    "非",
 }
 
 
@@ -124,7 +166,7 @@ class RefactoringEngine:
             }
 
         # 1. 提取代码块
-        block_lines = lines[start_line - 1:end_line]
+        block_lines = lines[start_line - 1 : end_line]
         block = "\n".join(block_lines)
 
         # 2. 分析变量
@@ -137,7 +179,7 @@ class RefactoringEngine:
         base_indent = ""
         if block_lines:
             first_line = block_lines[0]
-            base_indent = first_line[:len(first_line) - len(first_line.lstrip())]
+            base_indent = first_line[: len(first_line) - len(first_line.lstrip())]
 
         # 函数体：调整缩进（增加一级）
         body_lines = []
@@ -180,7 +222,9 @@ class RefactoringEngine:
             if len(output_vars) == 1:
                 replacement = f"{base_indent}设 {output_vars[0]} 为 {new_name}({args_str})。"
             else:
-                replacement = f"{base_indent}设 ({' '.join(output_vars)}) 为 {new_name}({args_str})。"
+                replacement = (
+                    f"{base_indent}设 ({' '.join(output_vars)}) 为 {new_name}({args_str})。"
+                )
         else:
             replacement = f"{base_indent}{new_name}({args_str})。"
 
@@ -217,7 +261,10 @@ class RefactoringEngine:
         var_name = self._is_identifier_at(code, line, column)
         if var_name is None:
             return {
-                "declaration_range": {"start": {"line": 0, "character": 0}, "end": {"line": 0, "character": 0}},
+                "declaration_range": {
+                    "start": {"line": 0, "character": 0},
+                    "end": {"line": 0, "character": 0},
+                },
                 "value": "",
                 "usage_ranges": [],
             }
@@ -226,7 +273,10 @@ class RefactoringEngine:
         decl = self._find_variable_declaration(code, var_name)
         if decl is None:
             return {
-                "declaration_range": {"start": {"line": 0, "character": 0}, "end": {"line": 0, "character": 0}},
+                "declaration_range": {
+                    "start": {"line": 0, "character": 0},
+                    "end": {"line": 0, "character": 0},
+                },
                 "value": "",
                 "usage_ranges": [],
             }
@@ -261,7 +311,14 @@ class RefactoringEngine:
 
     # ---- Safe Rename ----
 
-    def safe_rename(self, code: str, line: int, column: int, new_name: str, documents: Optional[dict[str, str]] = None) -> dict:
+    def safe_rename(
+        self,
+        code: str,
+        line: int,
+        column: int,
+        new_name: str,
+        documents: Optional[dict[str, str]] = None,
+    ) -> dict:
         """安全重命名
 
         增强版重命名，检查：
@@ -368,14 +425,16 @@ class RefactoringEngine:
                         match_ok = _is_word_boundary(ln, idx, len(old_name))
 
                     if match_ok:
-                        changes.append({
-                            "uri": actual_uri,
-                            "range": {
-                                "start": {"line": i, "character": idx},
-                                "end": {"line": i, "character": idx + len(old_name)},
-                            },
-                            "new_text": new_name,
-                        })
+                        changes.append(
+                            {
+                                "uri": actual_uri,
+                                "range": {
+                                    "start": {"line": i, "character": idx},
+                                    "end": {"line": i, "character": idx + len(old_name)},
+                                },
+                                "new_text": new_name,
+                            }
+                        )
 
                     search_pos = idx + 1
 
@@ -386,7 +445,9 @@ class RefactoringEngine:
             navigator = SymbolNavigator(keywords=self.adapter.keywords if self.adapter else None)
             # 使用 navigator 的引用搜索验证完整性
             refs = navigator.find_references(
-                code, line, column,
+                code,
+                line,
+                column,
                 uri="",
                 documents=documents or {},
                 include_declaration=True,
@@ -394,8 +455,7 @@ class RefactoringEngine:
             # 如果找到的引用数量与我们的 changes 数量不匹配，添加警告
             if refs and len(refs) != len(changes):
                 conflicts.append(
-                    f"跨文件引用检查：找到 {len(refs)} 个引用，"
-                    f"但本地文本匹配 {len(changes)} 个位置"
+                    f"跨文件引用检查：找到 {len(refs)} 个引用，但本地文本匹配 {len(changes)} 个位置"
                 )
         except Exception:
             pass  # SymbolNavigator 不可用时跳过
@@ -492,11 +552,13 @@ class RefactoringEngine:
                     match_ok = _is_word_boundary(ln, idx, len(var_name))
 
                 if match_ok:
-                    usages.append({
-                        "line": i,
-                        "start": idx,
-                        "end": idx + len(var_name),
-                    })
+                    usages.append(
+                        {
+                            "line": i,
+                            "start": idx,
+                            "end": idx + len(var_name),
+                        }
+                    )
 
                 search_pos = idx + 1
 
@@ -577,10 +639,10 @@ class RefactoringEngine:
                 pos += 1
                 continue
             if in_string:
-                if ch == string_char or (
-                    string_char == "\u201c" and ch == "\u201d"
-                ) or (
-                    string_char == "\u2018" and ch == "\u2019"
+                if (
+                    ch == string_char
+                    or (string_char == "\u201c" and ch == "\u201d")
+                    or (string_char == "\u2018" and ch == "\u2019")
                 ):
                     in_string = False
                 pos += 1
@@ -644,9 +706,17 @@ class RefactoringEngine:
             # ASCII 标识符：向左右扩展
             start = pos
             end = pos
-            while start > 0 and _is_ident_char(code_line[start - 1]) and not _is_cjk(code_line[start - 1]):
+            while (
+                start > 0
+                and _is_ident_char(code_line[start - 1])
+                and not _is_cjk(code_line[start - 1])
+            ):
                 start -= 1
-            while end < len(code_line) and _is_ident_char(code_line[end]) and not _is_cjk(code_line[end]):
+            while (
+                end < len(code_line)
+                and _is_ident_char(code_line[end])
+                and not _is_cjk(code_line[end])
+            ):
                 end += 1
             if start < end:
                 return code_line[start:end]

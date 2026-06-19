@@ -29,7 +29,7 @@ class PooledProcess:
     created_at: float
     last_used: float
     use_count: int = 0
-    max_uses: int = 100          # 最大使用次数，超过后重建
+    max_uses: int = 100  # 最大使用次数，超过后重建
     idle_timeout: float = 300.0  # 空闲超时（秒）
 
     @property

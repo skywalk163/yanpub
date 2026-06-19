@@ -46,6 +46,7 @@ LOCK_VERSION = "1"
 @dataclass
 class LockedPackage:
     """锁定的包信息"""
+
     version: str
     source: str = ""
     hash: str = ""
@@ -62,6 +63,7 @@ class LockedPackage:
 @dataclass
 class LockFile:
     """依赖锁定文件"""
+
     version: str = LOCK_VERSION
     generated_at: str = ""
     platform: str = ""
@@ -74,9 +76,7 @@ class LockFile:
             "generated_at": self.generated_at,
             "platform": self.platform,
             "python_version": self.python_version,
-            "packages": {
-                name: pkg.to_dict() for name, pkg in self.packages.items()
-            },
+            "packages": {name: pkg.to_dict() for name, pkg in self.packages.items()},
         }
 
     def to_json(self) -> str:
@@ -106,7 +106,9 @@ class LockFile:
         """保存 lock 文件"""
         self.generated_at = datetime.now().isoformat()
         self.platform = platform.system().lower()
-        self.python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        self.python_version = (
+            f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        )
         path.write_text(self.to_json(), encoding="utf-8")
 
 
@@ -231,9 +233,7 @@ class LockManager:
             if locked_pkg.hash:
                 current_hash = self._compute_package_hash(pkg)
                 if current_hash and current_hash != locked_pkg.hash:
-                    result["errors"].append(
-                        f"包 {name} 哈希不匹配: 可能已被修改"
-                    )
+                    result["errors"].append(f"包 {name} 哈希不匹配: 可能已被修改")
                     result["valid"] = False
 
             # 检查缓存

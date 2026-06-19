@@ -27,6 +27,7 @@ def main(cli_lang: str | None):
     """言埠 YanPub -- 中文编程语言统一基础设施"""
     if cli_lang:
         from yanpub.i18n import set_lang
+
         set_lang(cli_lang)
 
 
@@ -75,6 +76,7 @@ def repl(lang_id: str | None, simple: bool):
         # 完整模式：语法高亮 + 补全 + 历史
         try:
             from yanpub.repl.core import YanREPL
+
             yan_repl = YanREPL(registry)
             yan_repl.start(lang_id)
         except ImportError:
@@ -109,6 +111,7 @@ def _simple_repl(lang_id: str, registry) -> None:
             click.echo(result.stdout, nl=False)
         if result.stderr:
             from yanpub.repl.error_display import parse_error, format_friendly_error
+
             friendly = parse_error(result.stderr, adapter.name)
             click.echo(format_friendly_error(friendly, adapter.name))
 
@@ -122,6 +125,7 @@ def playground(host: str, port: int):
     try:
         from yanpub.playground.server import create_app
         import uvicorn
+
         app = create_app()
         uvicorn.run(app, host=host, port=port)
     except ImportError as e:
@@ -164,6 +168,7 @@ def share_code(lang_id: str, file: str, title: str, ttl: int | None):
     click.echo(f"  代码:   {len(code)} 字符")
     if record.expires_at:
         import datetime
+
         expires = datetime.datetime.fromtimestamp(record.expires_at)
         click.echo(f"  过期:   {expires.strftime('%Y-%m-%d %H:%M:%S')}")
     else:
@@ -199,6 +204,7 @@ def start_monitor(host: str, port: int, interval: float):
                 for adapter in registry:
                     try:
                         import time
+
                         start = time.monotonic()
                         comment = adapter.comment_syntax or "#"
                         test_code = f"{comment} monitor sample\n"
@@ -238,6 +244,7 @@ def start_lsp(lang_id: str, host: str, port: int):
     click.echo(f"启动 {adapter.name} LSP 服务: {host}:{port}")
     try:
         from yanpub.lsp.server import create_lsp_server
+
         create_lsp_server(adapter, host, port)
     except ImportError as e:
         click.echo(f"LSP 依赖未安装: {e}", err=True)
@@ -256,6 +263,7 @@ def pkg():
 def pkg_install(package_name: str, version: str | None):
     """安装包（格式: lang:package 或 package）"""
     from yanpub.pkg.installer import install
+
     click.echo(f"安装 {package_name}...")
     success = install(package_name, version)
     if success:
@@ -272,6 +280,7 @@ def pkg_list(lang: str | None, show_all: bool):
     """列出包"""
     if show_all:
         from yanpub.pkg.registry import PackageRegistry
+
         registry = PackageRegistry()
         pkgs = registry.list_by_lang(lang) if lang else registry.list_all()
         if not pkgs:
@@ -282,6 +291,7 @@ def pkg_list(lang: str | None, show_all: bool):
             click.echo(f"  {p.name:30s} v{p.version:8s}  {p.description}")
     else:
         from yanpub.pkg.cache import PackageCache
+
         cache = PackageCache()
         pkgs = cache.list_by_lang(lang) if lang else cache.list_all()
         if not pkgs:
@@ -298,6 +308,7 @@ def pkg_list(lang: str | None, show_all: bool):
 def pkg_search(query: str, lang: str | None):
     """搜索包"""
     from yanpub.pkg.registry import PackageRegistry
+
     registry = PackageRegistry()
     results = registry.search(query, lang)
     if not results:
@@ -347,12 +358,13 @@ def pkg_publish(package_dir: str, force: bool):
 
     # 包名格式验证
     import re
-    if not re.match(r'^[a-zA-Z0-9_-]+$', name):
+
+    if not re.match(r"^[a-zA-Z0-9_-]+$", name):
         click.echo(f"包名只能包含字母、数字、下划线和连字符: {name}", err=True)
         sys.exit(1)
 
     # 版本号格式验证（semver）
-    if not re.match(r'^\d+\.\d+\.\d+([a-zA-Z0-9.+-]*)?$', version):
+    if not re.match(r"^\d+\.\d+\.\d+([a-zA-Z0-9.+-]*)?$", version):
         click.echo(f"版本号格式不正确（需要 semver 如 1.0.0）: {version}", err=True)
         sys.exit(1)
 
@@ -362,7 +374,9 @@ def pkg_publish(package_dir: str, force: bool):
     registry = PackageRegistry()
     existing = registry.get(full_name)
     if existing and not force:
-        if DependencyResolver._parse_version(version) <= DependencyResolver._parse_version(existing.version):
+        if DependencyResolver._parse_version(version) <= DependencyResolver._parse_version(
+            existing.version
+        ):
             click.echo(
                 f"版本未升级: 当前 {existing.version} -> 发布 {version}\n"
                 f"新版本号必须大于当前版本，或使用 --force 跳过检查",
@@ -393,7 +407,9 @@ def pkg_sync(remote: str | None, branch: str):
     """同步远程注册中心索引"""
     from yanpub.pkg.remote import RemoteRegistry
 
-    remote_url = remote or RemoteRegistry.remote_url if hasattr(RemoteRegistry, 'remote_url') else ""
+    remote_url = (
+        remote or RemoteRegistry.remote_url if hasattr(RemoteRegistry, "remote_url") else ""
+    )
     click.echo("正在同步远程注册中心...")
 
     rr = RemoteRegistry(remote_url=remote_url) if remote_url else RemoteRegistry()
@@ -579,6 +595,7 @@ def pkg_bump_version(bump_type: str, dry_run: bool):
 def docs(output: str):
     """生成统一文档站"""
     from yanpub.docs.site_builder import build_site
+
     click.echo("正在生成文档站...")
     out = build_site(output)
     click.echo(f"文档站已生成: {out}")
@@ -661,6 +678,7 @@ def seo_command(action: str, output: str | None, base_url: str):
             sys.exit(1)
 
         from datetime import date
+
         today = date.today().isoformat()
 
         for html_file in html_files:
@@ -674,7 +692,8 @@ def seo_command(action: str, output: str | None, base_url: str):
 
         # 同时生成 robots.txt
         (out_dir / "robots.txt").write_text(
-            optimizer.generate_robots_txt(), encoding="utf-8",
+            optimizer.generate_robots_txt(),
+            encoding="utf-8",
         )
 
         click.echo(f"[OK] sitemap.xml 已生成: {out_dir / 'sitemap.xml'}")
@@ -689,6 +708,7 @@ def seo_command(action: str, output: str | None, base_url: str):
 def compare(concept: str | None, from_lang: str | None, to_lang: str | None):
     """语言对比 — 比较不同中文编程语言的语法"""
     from yanpub.docs.comparator import LanguageComparator
+
     comparator = LanguageComparator()
 
     if from_lang and to_lang:
@@ -742,7 +762,9 @@ def compare(concept: str | None, from_lang: str | None, to_lang: str | None):
             adapter_b = get_registry().get(sim.lang_id_b)
             name_a = adapter_a.name if adapter_a else sim.lang_id_a
             name_b = adapter_b.name if adapter_b else sim.lang_id_b
-            click.echo(f"  {name_a} <-> {name_b}: {sim.similarity_score:.1%} ({len(sim.shared_keywords)}个共享关键字)")
+            click.echo(
+                f"  {name_a} <-> {name_b}: {sim.similarity_score:.1%} ({len(sim.shared_keywords)}个共享关键字)"
+            )
 
         # 全部概念对比
         click.echo("\n概念对比表：\n")
@@ -820,6 +842,7 @@ def bench(lang_id: str | None, iterations: int, as_json: bool):
 
     if as_json:
         import json
+
         click.echo(json.dumps([r.to_dict() for r in results], ensure_ascii=False, indent=2))
     else:
         click.echo(format_bench_report(results))
@@ -830,7 +853,12 @@ def bench(lang_id: str | None, iterations: int, as_json: bool):
 @click.option("--json", "as_json", is_flag=True, help="输出 JSON 格式")
 def compat(lang_id: str | None, as_json: bool):
     """检查适配器版本兼容性"""
-    from yanpub.core.compat import check_compatibility, check_all_compatibility, format_compat_matrix, format_compat_detail
+    from yanpub.core.compat import (
+        check_compatibility,
+        check_all_compatibility,
+        format_compat_matrix,
+        format_compat_detail,
+    )
 
     registry = get_registry()
 
@@ -842,6 +870,7 @@ def compat(lang_id: str | None, as_json: bool):
         result = check_compatibility(adapter)
         if as_json:
             import json
+
             click.echo(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
         else:
             click.echo(format_compat_detail(result))
@@ -849,6 +878,7 @@ def compat(lang_id: str | None, as_json: bool):
         results = check_all_compatibility(registry)
         if as_json:
             import json
+
             click.echo(json.dumps([r.to_dict() for r in results], ensure_ascii=False, indent=2))
         else:
             click.echo(format_compat_matrix(results))
@@ -925,6 +955,7 @@ def adapter_watch(poll: bool, interval: float):
     click.echo("按 Ctrl+C 停止监控")
     try:
         import time
+
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
@@ -966,11 +997,20 @@ def adapter_reload(lang_id: str | None):
 @click.option("--iterations", "-n", default=5, type=int, help="迭代次数")
 @click.option("--code", "-c", default=None, help="分析代码（默认用适配器示例代码）")
 @click.option("--output", "-o", default=None, help="输出报告路径（默认控制台输出）")
-@click.option("--format", "fmt", type=click.Choice(["text", "html", "svg"]), default="text", help="输出格式")
+@click.option(
+    "--format", "fmt", type=click.Choice(["text", "html", "svg"]), default="text", help="输出格式"
+)
 @click.option("--hotspots", is_flag=True, help="是否显示热点分析")
-def adapter_profile(lang_id: str, iterations: int, code: str | None, output: str | None, fmt: str, hotspots: bool):
+def adapter_profile(
+    lang_id: str, iterations: int, code: str | None, output: str | None, fmt: str, hotspots: bool
+):
     """性能分析适配器"""
-    from yanpub.core.profiler import AdapterProfiler, FlameGraphGenerator, HotspotDetector, _default_code
+    from yanpub.core.profiler import (
+        AdapterProfiler,
+        FlameGraphGenerator,
+        HotspotDetector,
+        _default_code,
+    )
 
     registry = get_registry()
     adapter = registry.get(lang_id)
@@ -1034,7 +1074,12 @@ def adapter_profile(lang_id: str, iterations: int, code: str | None, output: str
 @adapter.command("navigate")
 @click.argument("lang_id")
 @click.argument("symbol")
-@click.option("--type", "nav_type", type=click.Choice(["definition", "references", "callers", "callees"]), default="definition")
+@click.option(
+    "--type",
+    "nav_type",
+    type=click.Choice(["definition", "references", "callers", "callees"]),
+    default="definition",
+)
 def adapter_navigate(lang_id: str, symbol: str, nav_type: str):
     """导航 — 查找定义/引用/调用者/被调用者"""
     from yanpub.core.navigator import SymbolNavigator
@@ -1087,7 +1132,11 @@ def adapter_navigate(lang_id: str, symbol: str, nav_type: str):
         code = ""
         docs: dict[str, str] = {}
         results = navigator._find_outgoing_calls(
-            code, symbol, {"start": {"line": 0, "character": 0}, "end": {"line": 0, "character": 0}}, "", docs,
+            code,
+            symbol,
+            {"start": {"line": 0, "character": 0}, "end": {"line": 0, "character": 0}},
+            "",
+            docs,
         )
         if not results:
             click.echo(f"未找到 '{symbol}' 调用的函数（无打开的文档）")
@@ -1102,7 +1151,13 @@ def adapter_navigate(lang_id: str, symbol: str, nav_type: str):
 @click.option("--output", "-o", type=click.Path(), help="报告输出路径")
 @click.option("--format", "fmt", type=click.Choice(["table", "json", "html"]), default="table")
 @click.option("--generate-regression", is_flag=True, help="生成回归测试")
-def adapter_test(lang_id: str | None, category: tuple[str, ...], output: str | None, fmt: str, generate_regression: bool):
+def adapter_test(
+    lang_id: str | None,
+    category: tuple[str, ...],
+    output: str | None,
+    fmt: str,
+    generate_regression: bool,
+):
     """运行适配器测试套件"""
     from yanpub.core.adapter_test import get_builtin_suite, RegressionTestGenerator
 
@@ -1150,6 +1205,7 @@ def _output_report(report, fmt: str, output: str | None, is_multiple: bool = Fal
 
     if fmt == "json":
         import json
+
         content = json.dumps(report.to_dict(), ensure_ascii=False, indent=2)
         if output:
             P(output).write_text(content, encoding="utf-8")
@@ -1350,7 +1406,9 @@ def workspace_lock(upgrade: bool, upgrade_package: str | None):
         mgr.save_lock(lock)
 
     path = mgr.save_lock(lock)
-    click.echo(f"[OK] 已锁定 {len(lock.members)} 个成员、{len(lock.dependencies)} 个外部依赖 → {path}")
+    click.echo(
+        f"[OK] 已锁定 {len(lock.members)} 个成员、{len(lock.dependencies)} 个外部依赖 → {path}"
+    )
 
 
 @workspace.command("check-lock")
@@ -1394,7 +1452,12 @@ def sandbox():
 @sandbox.command("run")
 @click.argument("lang_id")
 @click.argument("file", type=click.Path(exists=True))
-@click.option("--backend", type=click.Choice(["auto", "docker", "podman", "freebsd_jail", "process"]), default="auto", help="沙箱后端")
+@click.option(
+    "--backend",
+    type=click.Choice(["auto", "docker", "podman", "freebsd_jail", "process"]),
+    default="auto",
+    help="沙箱后端",
+)
 @click.option("--memory", default="512m", help="内存限制")
 @click.option("--timeout", "-t", default=30.0, type=float, help="超时时间（秒）")
 @click.option("--network", is_flag=True, help="允许网络访问")
@@ -1543,7 +1606,9 @@ def bench_visualize(lang_id: str | None, iterations: int, output: str):
 
     click.echo("正在运行基准测试...", err=True)
     results, regressions = run_bench_with_regression(
-        registry, lang_id=lang_id, iterations=iterations,
+        registry,
+        lang_id=lang_id,
+        iterations=iterations,
     )
 
     if not results:
@@ -1572,7 +1637,8 @@ def bench_regress(lang_id: str | None, threshold: float):
 
     click.echo("正在运行基准测试并对比历史数据...", err=True)
     results, regressions = run_bench_with_regression(
-        registry, lang_id=lang_id,
+        registry,
+        lang_id=lang_id,
     )
 
     if not regressions:
@@ -1583,7 +1649,9 @@ def bench_regress(lang_id: str | None, threshold: float):
     for r in regressions:
         status = "💥 回归" if r.is_regression else "✅ 正常"
         change = f"+{r.change_pct:.0%}" if r.change_pct > 0 else f"{r.change_pct:.0%}"
-        click.echo(f"  {status} {r.adapter_name} — {r.bench_name}: {r.previous_ms:.1f}ms → {r.current_ms:.1f}ms ({change})")
+        click.echo(
+            f"  {status} {r.adapter_name} — {r.bench_name}: {r.previous_ms:.1f}ms → {r.current_ms:.1f}ms ({change})"
+        )
 
     actual = [r for r in regressions if r.is_regression]
     if actual:
@@ -1613,6 +1681,7 @@ def bench_history(limit: int):
             click.echo(f"  {snap_path.name}  时间: {ts}  适配器: {count}")
         except Exception:
             click.echo(f"  {snap_path.name}  (解析失败)")
+
 
 @plugin.command("list")
 def plugin_list():
@@ -1862,9 +1931,7 @@ def ai_assist(
         click.echo(f"找到 {len(items)} 条补全建议：\n")
         for i, item in enumerate(items, 1):
             ai_tag = "[AI]" if item.get("is_ai") else ""
-            click.echo(
-                f"  {i}. {ai_tag} {item['label']} ({item['kind']})"
-            )
+            click.echo(f"  {i}. {ai_tag} {item['label']} ({item['kind']})")
             if item.get("detail"):
                 click.echo(f"     {item['detail']}")
             if item.get("insert_text") and item["insert_text"] != item["label"]:
@@ -1880,7 +1947,9 @@ def ai_assist(
 @click.argument("file", type=click.Path(exists=True))
 @click.option("--key", "-k", required=True, help="私钥文件路径")
 @click.option("--signer", "-s", required=True, help="签名者标识")
-@click.option("--algorithm", "-a", type=click.Choice(["ed25519", "hmac-sha256"]), default="hmac-sha256")
+@click.option(
+    "--algorithm", "-a", type=click.Choice(["ed25519", "hmac-sha256"]), default="hmac-sha256"
+)
 def sign_file(file: str, key: str, signer: str, algorithm: str):
     """对源代码文件进行签名"""
     from pathlib import Path as P
@@ -1994,7 +2063,9 @@ def trust_remove(key_id: str):
 
 
 @main.command("keygen")
-@click.option("--algorithm", "-a", type=click.Choice(["ed25519", "hmac-sha256"]), default="hmac-sha256")
+@click.option(
+    "--algorithm", "-a", type=click.Choice(["ed25519", "hmac-sha256"]), default="hmac-sha256"
+)
 @click.option("--output", "-o", default=None, help="输出目录")
 def generate_key(algorithm: str, output: str):
     """生成签名密钥对"""
@@ -2078,7 +2149,9 @@ def audit_log(action: str, fmt: str):
 @click.option("--language", "-L", "lang_id", help="主语言")
 @click.option("--project-id", "-p", help="项目 ID")
 @click.option("--template", "-t", default="default", help="项目模板")
-def project_command(action: str, name: str | None, lang_id: str | None, project_id: str | None, template: str):
+def project_command(
+    action: str, name: str | None, lang_id: str | None, project_id: str | None, template: str
+):
     """项目管理 — 创建/列出/运行/删除"""
     from yanpub.playground.project import get_project_manager
 
@@ -2104,8 +2177,10 @@ def project_command(action: str, name: str | None, lang_id: str | None, project_
             return
         click.echo(f"项目列表 ({len(projects)} 个)：\n")
         for p in projects:
-            click.echo(f"  {p['id']:12s} {p['name']:20s} {p['language']:8s} "
-                        f"文件:{p['fileCount']} 入口:{p['mainFile']}")
+            click.echo(
+                f"  {p['id']:12s} {p['name']:20s} {p['language']:8s} "
+                f"文件:{p['fileCount']} 入口:{p['mainFile']}"
+            )
 
     elif action == "run":
         pid = project_id
@@ -2161,7 +2236,9 @@ def project_command(action: str, name: str | None, lang_id: str | None, project_
 @click.option("--label", "-l", default="", help="快照标签")
 @click.option("--threshold", "-t", default=20.0, type=float, help="回归阈值（百分比）")
 @click.option("--snapshot-id", "-s", help="快照 ID")
-def baseline_command(action: str, lang_id: str | None, label: str, threshold: float, snapshot_id: str | None):
+def baseline_command(
+    action: str, lang_id: str | None, label: str, threshold: float, snapshot_id: str | None
+):
     """性能基线管理 — 捕获/列出/对比/删除"""
     from yanpub.core.baseline import BaselineManager
 
@@ -2242,19 +2319,22 @@ def baseline_command(action: str, lang_id: str | None, label: str, threshold: fl
         click.echo(f"  {'─' * 55}")
 
         for m in comparison["metrics"]:
-            status = "💥 回归" if m["regression"] else ("✅ 改善" if m["improvement"] else "➖ 持平")
+            status = (
+                "💥 回归" if m["regression"] else ("✅ 改善" if m["improvement"] else "➖ 持平")
+            )
             diff_str = f"+{m['diff_pct']:.1f}%" if m["diff_pct"] > 0 else f"{m['diff_pct']:.1f}%"
             click.echo(
                 f"  {m['name']:20s} {m['a']:>8.2f}  {m['b']:>8.2f}  {diff_str:>7s}  {status}"
             )
 
-        click.echo(f"\n  回归: {comparison['regressions']}  改善: {comparison['improvements']}  持平: {comparison['neutral']}")
+        click.echo(
+            f"\n  回归: {comparison['regressions']}  改善: {comparison['improvements']}  持平: {comparison['neutral']}"
+        )
 
         # 回归检测
         if comparison["regressions"] > 0:
             regressions_above_threshold = [
-                m for m in comparison["metrics"]
-                if m["regression"] and m["diff_pct"] > threshold
+                m for m in comparison["metrics"] if m["regression"] and m["diff_pct"] > threshold
             ]
             if regressions_above_threshold:
                 click.echo(f"\n⚠ 回归超过阈值（{threshold}%）:")
@@ -2376,7 +2456,16 @@ def budget_command(action: str, lang_id: str | None, metric: tuple[str, ...]):
 @click.option("--new-name", "-n", help="新名称")
 @click.option("--line", type=int, help="光标行（inline/rename，1-based）")
 @click.option("--column", type=int, help="光标列（inline/rename，1-based）")
-def refactor_command(action: str, lang_id: str, file: str, start_line: int | None, end_line: int | None, new_name: str | None, line: int | None, column: int | None):
+def refactor_command(
+    action: str,
+    lang_id: str,
+    file: str,
+    start_line: int | None,
+    end_line: int | None,
+    new_name: str | None,
+    line: int | None,
+    column: int | None,
+):
     """代码重构 — 提取函数/内联变量/安全重命名"""
     from pathlib import Path as P
     from yanpub.core.refactor import RefactoringEngine
@@ -2446,11 +2535,15 @@ def refactor_command(action: str, lang_id: str, file: str, start_line: int | Non
             for ch in result["changes"]:
                 r = ch["range"]
                 uri_info = f" ({ch['uri']})" if ch["uri"] else ""
-                click.echo(f"  第 {r['start']['line'] + 1} 行, 列 {r['start']['character'] + 1}{uri_info}")
+                click.echo(
+                    f"  第 {r['start']['line'] + 1} 行, 列 {r['start']['character'] + 1}{uri_info}"
+                )
 
 
 @main.command("i18n")
-@click.option("--action", type=click.Choice(["export", "import", "check", "translate"]), required=True)
+@click.option(
+    "--action", type=click.Choice(["export", "import", "check", "translate"]), required=True
+)
 @click.option("--lang", "-L", "target_lang", default="en", help="目标语言")
 @click.option("--output", "-o", default=None, help="输出文件路径")
 def i18n_command(action: str, target_lang: str, output: str | None):
@@ -2595,19 +2688,29 @@ def lint_command(path, lang_id, fix, rule, as_json):
 
     if as_json:
         summary = engine.summary(results)
-        click.echo(json_mod.dumps({
-            "file": str(file_path),
-            "lang_id": lang_id,
-            "results": [r.to_dict() for r in results],
-            "summary": summary,
-        }, ensure_ascii=False, indent=2))
+        click.echo(
+            json_mod.dumps(
+                {
+                    "file": str(file_path),
+                    "lang_id": lang_id,
+                    "results": [r.to_dict() for r in results],
+                    "summary": summary,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
     else:
         if not results:
             click.echo(f"[OK] {file_path.name}: 无风格问题")
         else:
             for r in results:
-                icon = {"error": "✗", "warning": "⚠", "info": "ℹ", "hint": "💡"}.get(r.severity.value, "?")
-                click.echo(f"  {icon} {file_path.name}:{r.line}:{r.column} [{r.rule_id}] {r.message}")
+                icon = {"error": "✗", "warning": "⚠", "info": "ℹ", "hint": "💡"}.get(
+                    r.severity.value, "?"
+                )
+                click.echo(
+                    f"  {icon} {file_path.name}:{r.line}:{r.column} [{r.rule_id}] {r.message}"
+                )
             click.echo(f"\n共 {len(results)} 个问题")
             summary = engine.summary(results)
             for sev, count in summary["by_severity"].items():
@@ -2636,7 +2739,9 @@ def hot_update_command(lang_id, target_version, list_versions, check):
             click.echo(f"适配器 {lang_id} 版本历史:")
             for v in versions:
                 status = "✓" if v["success"] else "✗"
-                click.echo(f"  v{v['version']} {status} {v['adapter_name']} ({time.strftime('%Y-%m-%d %H:%M', time.localtime(v['timestamp']))})")
+                click.echo(
+                    f"  v{v['version']} {status} {v['adapter_name']} ({time.strftime('%Y-%m-%d %H:%M', time.localtime(v['timestamp']))})"
+                )
                 if v["error"]:
                     click.echo(f"    错误: {v['error']}")
         return
@@ -2647,7 +2752,9 @@ def hot_update_command(lang_id, target_version, list_versions, check):
             click.echo("所有适配器代码无变更")
         else:
             for u in updates:
-                click.echo(f"  {u['adapter_id']}: {u['event_type']} {'成功' if u['success'] else '失败: ' + u['error']}")
+                click.echo(
+                    f"  {u['adapter_id']}: {u['event_type']} {'成功' if u['success'] else '失败: ' + u['error']}"
+                )
         return
 
     if target_version is not None:
@@ -2669,7 +2776,13 @@ def hot_update_command(lang_id, target_version, list_versions, check):
 
 @main.command("search")
 @click.argument("query")
-@click.option("--category", "-c", type=click.Choice(["keyword", "doc", "example"]), default=None, help="搜索类别")
+@click.option(
+    "--category",
+    "-c",
+    type=click.Choice(["keyword", "doc", "example"]),
+    default=None,
+    help="搜索类别",
+)
 @click.option("--lang", "-L", "lang_id", default=None, help="限定语言")
 @click.option("--suggest", is_flag=True, help="关键字联想模式")
 @click.option("--json", "as_json", is_flag=True, help="输出 JSON 格式")
@@ -2685,7 +2798,9 @@ def search_command(query, category, lang_id, suggest, as_json):
     if suggest:
         suggestions = engine.suggest(query)
         if as_json:
-            click.echo(json_mod.dumps({"prefix": query, "suggestions": suggestions}, ensure_ascii=False))
+            click.echo(
+                json_mod.dumps({"prefix": query, "suggestions": suggestions}, ensure_ascii=False)
+            )
         else:
             for s in suggestions:
                 click.echo(f"  {s}")

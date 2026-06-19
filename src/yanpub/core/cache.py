@@ -25,6 +25,7 @@ from yanpub.core.adapter import CompletionItem, Diagnostic, ExecutionResult
 
 # ---- 缓存条目 ----
 
+
 @dataclass
 class CacheEntry:
     """缓存条目"""
@@ -45,6 +46,7 @@ class CacheEntry:
 
 
 # ---- LRU 缓存 ----
+
 
 class LRUCache:
     """LRU 缓存（OrderedDict + 线程安全锁）
@@ -92,8 +94,10 @@ class LRUCache:
             if key in self._data:
                 # 已存在：更新值并移到末尾
                 self._data[key] = CacheEntry(
-                    key=key, value=value,
-                    created_at=now, accessed_at=now,
+                    key=key,
+                    value=value,
+                    created_at=now,
+                    accessed_at=now,
                     ttl=effective_ttl,
                 )
                 self._data.move_to_end(key)
@@ -102,8 +106,10 @@ class LRUCache:
                 while len(self._data) >= self._max_size:
                     self._data.popitem(last=False)
                 self._data[key] = CacheEntry(
-                    key=key, value=value,
-                    created_at=now, accessed_at=now,
+                    key=key,
+                    value=value,
+                    created_at=now,
+                    accessed_at=now,
                     ttl=effective_ttl,
                 )
 
@@ -124,10 +130,7 @@ class LRUCache:
         import fnmatch
 
         with self._lock:
-            keys_to_remove = [
-                k for k in self._data
-                if fnmatch.fnmatch(k, pattern)
-            ]
+            keys_to_remove = [k for k in self._data if fnmatch.fnmatch(k, pattern)]
             for k in keys_to_remove:
                 del self._data[k]
             return len(keys_to_remove)
@@ -155,7 +158,7 @@ class LRUCache:
 # ---- 适配器专用缓存 ----
 
 # 默认 TTL（秒）
-EVAL_TTL = 60.0       # 执行结果缓存 60 秒
+EVAL_TTL = 60.0  # 执行结果缓存 60 秒
 COMPLETION_TTL = 30.0  # 补全结果缓存 30 秒
 DIAGNOSTIC_TTL = 30.0  # 诊断结果缓存 30 秒
 

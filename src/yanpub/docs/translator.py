@@ -86,20 +86,68 @@ class RuleBasedTranslator:
 
     # 文档字段翻译映射
     _FIELD_TRANSLATIONS: dict[str, dict[str, str]] = {
-        "变量/常量声明与赋值": {"en": "Variable/Constant declaration and assignment", "ja": "変数/定数の宣言と代入", "ko": "변수/상수 선언 및 할당"},
-        "函数定义与声明": {"en": "Function definition and declaration", "ja": "関数の定義と宣言", "ko": "함수 정의 및 선언"},
-        "条件判断与循环控制": {"en": "Conditionals and loop control", "ja": "条件分岐とループ制御", "ko": "조건문과 루프 제어"},
+        "变量/常量声明与赋值": {
+            "en": "Variable/Constant declaration and assignment",
+            "ja": "変数/定数の宣言と代入",
+            "ko": "변수/상수 선언 및 할당",
+        },
+        "函数定义与声明": {
+            "en": "Function definition and declaration",
+            "ja": "関数の定義と宣言",
+            "ko": "함수 정의 및 선언",
+        },
+        "条件判断与循环控制": {
+            "en": "Conditionals and loop control",
+            "ja": "条件分岐とループ制御",
+            "ko": "조건문과 루프 제어",
+        },
         "条件表达式": {"en": "Conditional expression", "ja": "条件式", "ko": "조건식"},
-        "异常处理机制": {"en": "Exception handling", "ja": "例外処理メカニズム", "ko": "예외 처리 메커니즘"},
-        "模块导入与导出": {"en": "Module import and export", "ja": "モジュールのインポートとエクスポート", "ko": "모듈 임포트와 익스포트"},
-        "算术/比较/逻辑运算": {"en": "Arithmetic/Comparison/Logical operators", "ja": "算術/比較/論理演算", "ko": "산술/비교/논리 연산"},
-        "复合赋值运算符（如 加等于）": {"en": "Compound assignment operators (e.g. +=)", "ja": "複合代入演算子（例: +=）", "ko": "복합 대입 연산자 (예: +=)"},
-        "数据结构操作（列表/字典/集合）": {"en": "Data structure operations (List/Dict/Set)", "ja": "データ構造操作（リスト/辞書/セット）", "ko": "데이터 구조 조작 (리스트/딕셔너리/집합)"},
-        "布尔/空值字面量": {"en": "Boolean/Null literals", "ja": "論理/ヌルリテラル", "ko": "불/널 리터럴"},
-        "类型标注与内建类型": {"en": "Type annotations and built-in types", "ja": "型アノテーションと組み込み型", "ko": "타입 어노테이션과 내장 타입"},
+        "异常处理机制": {
+            "en": "Exception handling",
+            "ja": "例外処理メカニズム",
+            "ko": "예외 처리 메커니즘",
+        },
+        "模块导入与导出": {
+            "en": "Module import and export",
+            "ja": "モジュールのインポートとエクスポート",
+            "ko": "모듈 임포트와 익스포트",
+        },
+        "算术/比较/逻辑运算": {
+            "en": "Arithmetic/Comparison/Logical operators",
+            "ja": "算術/比較/論理演算",
+            "ko": "산술/비교/논리 연산",
+        },
+        "复合赋值运算符（如 加等于）": {
+            "en": "Compound assignment operators (e.g. +=)",
+            "ja": "複合代入演算子（例: +=）",
+            "ko": "복합 대입 연산자 (예: +=)",
+        },
+        "数据结构操作（列表/字典/集合）": {
+            "en": "Data structure operations (List/Dict/Set)",
+            "ja": "データ構造操作（リスト/辞書/セット）",
+            "ko": "데이터 구조 조작 (리스트/딕셔너리/집합)",
+        },
+        "布尔/空值字面量": {
+            "en": "Boolean/Null literals",
+            "ja": "論理/ヌルリテラル",
+            "ko": "불/널 리터럴",
+        },
+        "类型标注与内建类型": {
+            "en": "Type annotations and built-in types",
+            "ja": "型アノテーションと組み込み型",
+            "ko": "타입 어노테이션과 내장 타입",
+        },
         "输入输出操作": {"en": "I/O operations", "ja": "入出力操作", "ko": "입출력 조작"},
-        "面向对象编程": {"en": "Object-Oriented Programming", "ja": "オブジェクト指向プログラミング", "ko": "객체지향 프로그래밍"},
-        "函数式编程（映射/过滤/归约）": {"en": "Functional programming (Map/Filter/Reduce)", "ja": "関数型プログラミング（マップ/フィルタ/リデュース）", "ko": "함수형 프로그래밍 (맵/필터/리듀스)"},
+        "面向对象编程": {
+            "en": "Object-Oriented Programming",
+            "ja": "オブジェクト指向プログラミング",
+            "ko": "객체지향 프로그래밍",
+        },
+        "函数式编程（映射/过滤/归约）": {
+            "en": "Functional programming (Map/Filter/Reduce)",
+            "ja": "関数型プログラミング（マップ/フィルタ/リデュース）",
+            "ko": "함수형 프로그래밍 (맵/필터/리듀스)",
+        },
         "模式匹配": {"en": "Pattern matching", "ja": "パターンマッチ", "ko": "패턴 매칭"},
         "领域特定语言与宏": {"en": "DSL and macros", "ja": "DSLとマクロ", "ko": "DSL과 매크로"},
     }
@@ -155,9 +203,13 @@ class RuleBasedTranslator:
         """
         # 默认可翻译字段
         default_fields = [
-            "category", "description", "concept",
-            "site_name", "site_description",
-            "name", "comment_syntax",
+            "category",
+            "description",
+            "concept",
+            "site_name",
+            "site_description",
+            "name",
+            "comment_syntax",
         ]
         target_fields = fields or default_fields
 

@@ -92,9 +92,13 @@ class HotUpdateManager:
 
     MAX_VERSIONS = 20
 
-    def __init__(self, registry: LanguageRegistry | None = None, backup_dir: str | Path | None = None):
+    def __init__(
+        self, registry: LanguageRegistry | None = None, backup_dir: str | Path | None = None
+    ):
         self._registry = registry or get_registry()
-        self._backup_dir = Path(backup_dir) if backup_dir else Path.home() / ".yanpub" / "hotupdate_backups"
+        self._backup_dir = (
+            Path(backup_dir) if backup_dir else Path.home() / ".yanpub" / "hotupdate_backups"
+        )
         self._backup_dir.mkdir(parents=True, exist_ok=True)
         self._version_chains: dict[str, list[VersionRecord]] = {}
         self._current_versions: dict[str, int] = {}  # adapter_id -> current version number
@@ -163,7 +167,9 @@ class HotUpdateManager:
                 shutil.copy2(f, backup_path / f.name)
         return str(backup_path)
 
-    def _record_version(self, adapter_id: str, success: bool = True, error: str = "") -> VersionRecord:
+    def _record_version(
+        self, adapter_id: str, success: bool = True, error: str = ""
+    ) -> VersionRecord:
         """记录一个版本"""
         version = self._next_version(adapter_id)
         adapter = self._registry.get(adapter_id)
@@ -201,7 +207,9 @@ class HotUpdateManager:
 
         # 限制版本链长度
         if len(self._version_chains[adapter_id]) > self.MAX_VERSIONS:
-            self._version_chains[adapter_id] = self._version_chains[adapter_id][-self.MAX_VERSIONS:]
+            self._version_chains[adapter_id] = self._version_chains[adapter_id][
+                -self.MAX_VERSIONS :
+            ]
 
         return record
 
@@ -217,7 +225,9 @@ class HotUpdateManager:
         """
         adapter = self._registry.get(adapter_id)
         if not adapter:
-            return self._record_version(adapter_id, success=False, error=f"适配器不存在: {adapter_id}")
+            return self._record_version(
+                adapter_id, success=False, error=f"适配器不存在: {adapter_id}"
+            )
 
         # 1. 提取当前状态
         state_data = self._extract_state(adapter_id)
@@ -229,7 +239,9 @@ class HotUpdateManager:
             old_module = sys.modules.get(module_name)
             if old_module:
                 # 清理模块及其子模块
-                to_remove = [k for k in sys.modules if k == module_name or k.startswith(module_name + ".")]
+                to_remove = [
+                    k for k in sys.modules if k == module_name or k.startswith(module_name + ".")
+                ]
                 for k in to_remove:
                     del sys.modules[k]
 
@@ -243,6 +255,7 @@ class HotUpdateManager:
                     InProcessAdapter,
                     HTTPAdapter,
                 )
+
                 _base_classes = {BaseAdapter, SubprocessAdapter, InProcessAdapter, HTTPAdapter}
                 best = None
                 for attr_name in dir(new_module):
@@ -265,9 +278,13 @@ class HotUpdateManager:
 
                     return self._record_version(adapter_id, success=True)
                 else:
-                    return self._record_version(adapter_id, success=False, error="重新加载后未找到适配器类")
+                    return self._record_version(
+                        adapter_id, success=False, error="重新加载后未找到适配器类"
+                    )
             else:
-                return self._record_version(adapter_id, success=False, error="模块不在 sys.modules 中")
+                return self._record_version(
+                    adapter_id, success=False, error="模块不在 sys.modules 中"
+                )
         except Exception as e:
             return self._record_version(adapter_id, success=False, error=str(e))
 
@@ -289,10 +306,14 @@ class HotUpdateManager:
                     target = rec
                     break
             if not target:
-                return self._record_version(adapter_id, success=False, error=f"版本 {target_version} 不存在")
+                return self._record_version(
+                    adapter_id, success=False, error=f"版本 {target_version} 不存在"
+                )
 
         if not target.code_path or not Path(target.code_path).exists():
-            return self._record_version(adapter_id, success=False, error=f"版本 {target.version} 代码备份不存在")
+            return self._record_version(
+                adapter_id, success=False, error=f"版本 {target.version} 代码备份不存在"
+            )
 
         # 从备份恢复代码
         try:
@@ -347,6 +368,7 @@ class HotUpdateManager:
     def check_for_updates(self) -> list[dict]:
         """检查所有适配器是否有代码变更"""
         from yanpub.core.hotreload import HotReloader
+
         reloader = HotReloader(self._registry)
         events = reloader.check_and_reload()
         return [

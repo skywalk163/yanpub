@@ -24,6 +24,7 @@ from typing import Optional
 @dataclass
 class SemanticVersion:
     """语义化版本号（SemVer 2.0）"""
+
     major: int = 0
     minor: int = 0
     patch: int = 0
@@ -42,7 +43,7 @@ class SemanticVersion:
           1.0.0-alpha+build.123
         """
         version_str = version_str.lstrip("vV")
-        pattern = r'^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.]+))?(?:\+([a-zA-Z0-9.]+))?$'
+        pattern = r"^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.]+))?(?:\+([a-zA-Z0-9.]+))?$"
         m = re.match(pattern, version_str)
         if not m:
             raise ValueError(f"无效的语义版本号: {version_str}")
@@ -100,10 +101,10 @@ class SemanticVersion:
 # 格式: type(scope): description
 # type: feat/fix/docs/style/refactor/perf/test/build/ci/chore/revert
 COMMIT_PATTERN = re.compile(
-    r'^(?P<type>feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)'
-    r'(?:\((?P<scope>[^)]+)\))?'
-    r'(?P<breaking>!)?'
-    r':\s*(?P<description>.+)$'
+    r"^(?P<type>feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)"
+    r"(?:\((?P<scope>[^)]+)\))?"
+    r"(?P<breaking>!)?"
+    r":\s*(?P<description>.+)$"
 )
 
 # 中文 commit 类型映射
@@ -125,16 +126,19 @@ COMMIT_TYPE_NAMES = {
 @dataclass
 class ConventionalCommit:
     """解析后的 Conventional Commit"""
-    type: str               # feat, fix, docs, ...
-    scope: str = ""         # 可选的作用域
-    description: str = ""   # 描述
+
+    type: str  # feat, fix, docs, ...
+    scope: str = ""  # 可选的作用域
+    description: str = ""  # 描述
     breaking: bool = False  # 是否是破坏性变更
-    body: str = ""          # commit body
-    hash: str = ""          # commit hash
-    date: str = ""          # commit date
+    body: str = ""  # commit body
+    hash: str = ""  # commit hash
+    date: str = ""  # commit date
 
     @classmethod
-    def parse(cls, message: str, hash_str: str = "", date: str = "") -> Optional["ConventionalCommit"]:
+    def parse(
+        cls, message: str, hash_str: str = "", date: str = ""
+    ) -> Optional["ConventionalCommit"]:
         """解析 commit 消息
 
         Args:
@@ -323,11 +327,11 @@ class ChangelogGenerator:
             header_end = previous_changelog.find("\n## ")
             if header_end >= 0:
                 return (
-                    previous_changelog[:header_end + 1]
+                    previous_changelog[: header_end + 1]
                     + "\n"
                     + new_entry
                     + "\n"
-                    + previous_changelog[header_end + 1:]
+                    + previous_changelog[header_end + 1 :]
                 )
             return new_entry + "\n" + previous_changelog
 
@@ -462,8 +466,10 @@ def _get_commits_since_tag(project_dir: Path) -> list[ConventionalCommit]:
     try:
         latest_tag = subprocess.run(
             ["git", "describe", "--tags", "--abbrev=0"],
-            capture_output=True, text=True,
-            cwd=str(project_dir), timeout=10,
+            capture_output=True,
+            text=True,
+            cwd=str(project_dir),
+            timeout=10,
         )
         tag_ref = latest_tag.stdout.strip() if latest_tag.returncode == 0 else ""
     except Exception:
@@ -474,9 +480,12 @@ def _get_commits_since_tag(project_dir: Path) -> list[ConventionalCommit]:
         log_range = f"{tag_ref}..HEAD" if tag_ref else "HEAD~50..HEAD"
         result = subprocess.run(
             ["git", "log", log_range, "--pretty=format:%h|||%ad|||%s", "--date=short"],
-            capture_output=True, text=True,
-            cwd=str(project_dir), timeout=10,
-            encoding="utf-8", errors="replace",
+            capture_output=True,
+            text=True,
+            cwd=str(project_dir),
+            timeout=10,
+            encoding="utf-8",
+            errors="replace",
         )
         if result.returncode != 0:
             return []

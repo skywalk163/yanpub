@@ -47,10 +47,7 @@ class YanAdapter(SubprocessAdapter):
 
     @property
     def repl_welcome(self) -> str:
-        return (
-            f"言 v{self.version} — 墨言编程语言\n"
-            "输入代码并回车执行，输入 :help 查看帮助"
-        )
+        return f"言 v{self.version} — 墨言编程语言\n输入代码并回车执行，输入 :help 查看帮助"
 
 
 def _load_yan_keywords() -> list[str]:
@@ -81,17 +78,34 @@ def _load_yan_keywords_dynamic() -> list[str]:
 def _fallback_yan_keywords() -> list[str]:
     return [
         # 定义
-        "定义", "赋值",
+        "定义",
+        "赋值",
         # 控制流
-        "如果", "那么", "否则", "每当", "时候", "遍历", "于中",
+        "如果",
+        "那么",
+        "否则",
+        "每当",
+        "时候",
+        "遍历",
+        "于中",
         # 函数与结构
-        "函数", "宏定", "返回", "跳出", "继续",
+        "函数",
+        "宏定",
+        "返回",
+        "跳出",
+        "继续",
         # 模块
-        "导入", "来自", "导出",
+        "导入",
+        "来自",
+        "导出",
         # 字面量
-        "真值", "假值", "空值",
+        "真值",
+        "假值",
+        "空值",
         # 错误处理
-        "试", "捕获", "则",
+        "试",
+        "捕获",
+        "则",
         # 调试
         "断点",
         # 并发

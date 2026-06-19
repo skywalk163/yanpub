@@ -57,12 +57,14 @@ class SitemapGenerator:
             changefreq: 更新频率（always/hourly/daily/weekly/monthly/yearly/never）
             priority: 优先级（0.0 ~ 1.0）
         """
-        self._pages.append({
-            "path": path.lstrip("/"),
-            "lastmod": lastmod,
-            "changefreq": changefreq,
-            "priority": max(0.0, min(1.0, priority)),
-        })
+        self._pages.append(
+            {
+                "path": path.lstrip("/"),
+                "lastmod": lastmod,
+                "changefreq": changefreq,
+                "priority": max(0.0, min(1.0, priority)),
+            }
+        )
 
     def generate_xml(self) -> str:
         """生成 sitemap.xml 内容"""
@@ -87,7 +89,8 @@ class SitemapGenerator:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
         (output_dir / "sitemap.xml").write_text(
-            self.generate_xml(), encoding="utf-8",
+            self.generate_xml(),
+            encoding="utf-8",
         )
 
 
@@ -114,22 +117,32 @@ class OpenGraphBuilder:
         tags = []
         # Open Graph
         tags.append(f'<meta property="og:title" content="{html_module.escape(title)}" />')
-        tags.append(f'<meta property="og:description" content="{html_module.escape(description)}" />')
+        tags.append(
+            f'<meta property="og:description" content="{html_module.escape(description)}" />'
+        )
         tags.append(f'<meta property="og:url" content="{html_module.escape(url)}" />')
         tags.append(f'<meta property="og:type" content="{html_module.escape(page_type)}" />')
-        tags.append(f'<meta property="og:site_name" content="{html_module.escape(self.config.site_name)}" />')
-        tags.append(f'<meta property="og:locale" content="{html_module.escape(self.config.site_language)}" />')
+        tags.append(
+            f'<meta property="og:site_name" content="{html_module.escape(self.config.site_name)}" />'
+        )
+        tags.append(
+            f'<meta property="og:locale" content="{html_module.escape(self.config.site_language)}" />'
+        )
         og_img = image or self.config.og_image
         if og_img:
             tags.append(f'<meta property="og:image" content="{html_module.escape(og_img)}" />')
         # Twitter Card
         tags.append('<meta name="twitter:card" content="summary_large_image" />')
         tags.append(f'<meta name="twitter:title" content="{html_module.escape(title)}" />')
-        tags.append(f'<meta name="twitter:description" content="{html_module.escape(description)}" />')
+        tags.append(
+            f'<meta name="twitter:description" content="{html_module.escape(description)}" />'
+        )
         if og_img:
             tags.append(f'<meta name="twitter:image" content="{html_module.escape(og_img)}" />')
         if self.config.twitter_handle:
-            tags.append(f'<meta name="twitter:site" content="{html_module.escape(self.config.twitter_handle)}" />')
+            tags.append(
+                f'<meta name="twitter:site" content="{html_module.escape(self.config.twitter_handle)}" />'
+            )
         return "\n".join(tags)
 
     def build_structured_data(self, page_type: str, data: dict) -> str:
@@ -185,14 +198,16 @@ class OpenGraphBuilder:
         elif page_type == "FAQPage":
             main_entity = []
             for item in data.get("questions", []):
-                main_entity.append({
-                    "@type": "Question",
-                    "name": item.get("question", ""),
-                    "acceptedAnswer": {
-                        "@type": "Answer",
-                        "text": item.get("answer", ""),
-                    },
-                })
+                main_entity.append(
+                    {
+                        "@type": "Question",
+                        "name": item.get("question", ""),
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": item.get("answer", ""),
+                        },
+                    }
+                )
             schema = {
                 "@context": "https://schema.org",
                 "@type": "FAQPage",
@@ -680,21 +695,20 @@ def build_site(
     for lang in site_data["languages"]:
         caps = lang["capabilities"]
         cap_badges = " ".join(
-            f'<span class="cap-badge {"active" if v else ""}">{k}</span>'
-            for k, v in caps.items()
+            f'<span class="cap-badge {"active" if v else ""}">{k}</span>' for k, v in caps.items()
         )
         lang_cards_html += f"""
-    <div class="lang-card" onclick="location.href='lang_{lang['id']}.html'">
+    <div class="lang-card" onclick="location.href='lang_{lang["id"]}.html'">
       <div class="lang-header">
-        <span class="lang-dot" style="background:{lang['primary_color']}"></span>
-        <span class="lang-name">{lang['name']}</span>
-        <span class="lang-id">{lang['id']}</span>
-        <span class="lang-version">v{lang['version']}</span>
+        <span class="lang-dot" style="background:{lang["primary_color"]}"></span>
+        <span class="lang-name">{lang["name"]}</span>
+        <span class="lang-id">{lang["id"]}</span>
+        <span class="lang-version">v{lang["version"]}</span>
       </div>
       <div class="lang-meta">
-        <span>关键字 <strong>{lang['keyword_count']}</strong></span>
-        <span>扩展名 <strong>{', '.join(lang['extensions'])}</strong></span>
-        <span>注释 <strong>{lang['comment_syntax']}</strong></span>
+        <span>关键字 <strong>{lang["keyword_count"]}</strong></span>
+        <span>扩展名 <strong>{", ".join(lang["extensions"])}</strong></span>
+        <span>注释 <strong>{lang["comment_syntax"]}</strong></span>
       </div>
       <div class="capabilities">{cap_badges}</div>
     </div>"""
@@ -723,12 +737,14 @@ def build_site(
     for lang in site_data["languages"]:
         for cat, kw_docs in lang["keywords_by_category"].items():
             for kd in kw_docs:
-                search_items.append({
-                    "keyword": kd["keyword"],
-                    "lang_id": kd["lang_id"],
-                    "lang_name": kd["lang_name"],
-                    "category": kd["category"],
-                })
+                search_items.append(
+                    {
+                        "keyword": kd["keyword"],
+                        "lang_id": kd["lang_id"],
+                        "lang_name": kd["lang_name"],
+                        "category": kd["category"],
+                    }
+                )
 
     # 渲染首页
     html = _LANDING_TEMPLATE.format(
@@ -779,7 +795,8 @@ def build_site(
 
     # 生成 robots.txt
     (output / "robots.txt").write_text(
-        optimizer.generate_robots_txt(), encoding="utf-8",
+        optimizer.generate_robots_txt(),
+        encoding="utf-8",
     )
 
     return output
@@ -800,8 +817,8 @@ def _build_language_page(
         kw_rows = ""
         for kd in kw_docs:
             kw_rows += f"""<tr>
-          <td><code>{kd['keyword']}</code></td>
-          <td>{kd['category']}</td>
+          <td><code>{kd["keyword"]}</code></td>
+          <td>{kd["category"]}</td>
         </tr>"""
         category_sections += f"""
       <h3>{cat}</h3>
@@ -815,7 +832,7 @@ def _build_language_page(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{lang['name']} - 言埠 YanPub</title>
+<title>{lang["name"]} - 言埠 YanPub</title>
 <style>
 :root {{
   --bg: #1a1a2e;
@@ -823,7 +840,7 @@ def _build_language_page(
   --card: #0f3460;
   --text: #e8e8e8;
   --text-dim: #a0a0b0;
-  --accent: {lang['primary_color']};
+  --accent: {lang["primary_color"]};
   --border: #2a2a4a;
 }}
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -856,13 +873,13 @@ code {{ background: var(--surface); padding: 2px 6px; border-radius: 3px; font-s
 <body>
 <header>
   <a href="index.html">&larr; 返回首页</a>
-  <h1>{lang['name']} <small>{lang['id']} v{lang['version']}</small></h1>
+  <h1>{lang["name"]} <small>{lang["id"]} v{lang["version"]}</small></h1>
 </header>
 <main>
   <div class="meta">
-    <span>扩展名 <strong>{', '.join(lang['extensions'])}</strong></span>
-    <span>注释 <strong>{lang['comment_syntax']}</strong></span>
-    <span>关键字 <strong>{lang['keyword_count']}</strong></span>
+    <span>扩展名 <strong>{", ".join(lang["extensions"])}</strong></span>
+    <span>注释 <strong>{lang["comment_syntax"]}</strong></span>
+    <span>关键字 <strong>{lang["keyword_count"]}</strong></span>
   </div>
 
   <h2>关键字索引</h2>

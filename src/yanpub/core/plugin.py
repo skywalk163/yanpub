@@ -51,6 +51,7 @@ _PLUGINS_DIR = Path.home() / ".yanpub" / "plugins"
 @dataclass
 class PluginInfo:
     """插件元信息"""
+
     name: str
     version: str = "0.1.0"
     description: str = ""
@@ -73,10 +74,13 @@ class PluginInfo:
 
 # 支持的钩子列表
 SUPPORTED_HOOKS = {
-    "pre_eval", "post_eval",
-    "pre_run", "post_run",
+    "pre_eval",
+    "post_eval",
+    "pre_run",
+    "post_run",
     "on_error",
-    "on_repl_start", "on_repl_command",
+    "on_repl_start",
+    "on_repl_command",
 }
 
 
@@ -288,8 +292,7 @@ class PluginManager:
     def has_hook(self, hook_name: str) -> bool:
         """检查是否有任何插件注册了指定钩子"""
         return any(
-            p.info.enabled and p.get_handler(hook_name) is not None
-            for p in self._plugins.values()
+            p.info.enabled and p.get_handler(hook_name) is not None for p in self._plugins.values()
         )
 
 

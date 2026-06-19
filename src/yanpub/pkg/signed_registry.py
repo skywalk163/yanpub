@@ -70,9 +70,7 @@ class SignedPackageRegistry:
             "signature": signature,
         }
 
-    def install_verified(
-        self, package_id: str
-    ) -> tuple[dict, tuple[bool, str]]:
+    def install_verified(self, package_id: str) -> tuple[dict, tuple[bool, str]]:
         """安装并验证包签名
 
         Args:

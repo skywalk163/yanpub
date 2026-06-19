@@ -23,26 +23,55 @@ from dataclasses import dataclass, field
 @dataclass
 class FormatterConfig:
     """格式化器配置"""
+
     indent_size: int = 4
     use_tabs: bool = False
     max_blank_lines: int = 2
     trim_trailing_whitespace: bool = True
     insert_final_newline: bool = True
     # 块开始关键字（用于自动缩进推断）
-    block_start_keywords: list[str] = field(default_factory=lambda: [
-        "如果", "若", "当", "遍历", "循环", "对于", "尝试",
-        "函数", "段落", "类", "定义",
-        "否则", "否则若", "捕获", "最终",
-    ])
+    block_start_keywords: list[str] = field(
+        default_factory=lambda: [
+            "如果",
+            "若",
+            "当",
+            "遍历",
+            "循环",
+            "对于",
+            "尝试",
+            "函数",
+            "段落",
+            "类",
+            "定义",
+            "否则",
+            "否则若",
+            "捕获",
+            "最终",
+        ]
+    )
     # 块结束关键字
-    block_end_keywords: list[str] = field(default_factory=lambda: [
-        "结束", "完毕", "完",
-    ])
+    block_end_keywords: list[str] = field(
+        default_factory=lambda: [
+            "结束",
+            "完毕",
+            "完",
+        ]
+    )
     # 冒号关键字（这些关键字后跟冒号表示块开始）
-    colon_keywords: list[str] = field(default_factory=lambda: [
-        "如果", "若", "当", "遍历", "对于", "尝试",
-        "否则", "否则若", "捕获", "最终",
-    ])
+    colon_keywords: list[str] = field(
+        default_factory=lambda: [
+            "如果",
+            "若",
+            "当",
+            "遍历",
+            "对于",
+            "尝试",
+            "否则",
+            "否则若",
+            "捕获",
+            "最终",
+        ]
+    )
     # 运算符前后是否加空格
     space_around_operators: bool = True
 
@@ -124,10 +153,7 @@ class ChineseCodeFormatter:
                 continue
 
             # 块结束关键字 → 先减缩进
-            is_block_end = any(
-                stripped.startswith(kw) or stripped == kw
-                for kw in block_ends
-            )
+            is_block_end = any(stripped.startswith(kw) or stripped == kw for kw in block_ends)
 
             current_indent = indent_level
             if is_block_end:
@@ -141,16 +167,12 @@ class ChineseCodeFormatter:
                 indent_level = max(0, indent_level - 1)
 
             # 块开始关键字 → 下一行增加缩进
-            is_block_start = any(
-                stripped.startswith(kw) for kw in block_starts
-            )
+            is_block_start = any(stripped.startswith(kw) for kw in block_starts)
             # 也检测行尾冒号
             if is_block_start or stripped.endswith("：") or stripped.endswith(":"):
                 # 只有冒号关键字或行尾冒号才算
                 is_colon_block = stripped.endswith("：") or stripped.endswith(":")
-                is_keyword_block = any(
-                    stripped.startswith(kw) for kw in self.config.colon_keywords
-                )
+                is_keyword_block = any(stripped.startswith(kw) for kw in self.config.colon_keywords)
                 if is_colon_block or is_keyword_block:
                     indent_level += 1
 
@@ -173,10 +195,16 @@ class ChineseCodeFormatter:
             # 跳过单字符运算符在标识符中间的情况
             if len(op) == 1:
                 # 如 a+b → a + b，但不影响 a-b（负数）
-                pattern = r'([a-zA-Z0-9\u4e00-\u9fff])' + re.escape(op) + r'([a-zA-Z0-9\u4e00-\u9fff])'
-                result = re.sub(pattern, r'\1 ' + op + r' \2', result)
+                pattern = (
+                    r"([a-zA-Z0-9\u4e00-\u9fff])" + re.escape(op) + r"([a-zA-Z0-9\u4e00-\u9fff])"
+                )
+                result = re.sub(pattern, r"\1 " + op + r" \2", result)
             else:
-                pattern = r'([a-zA-Z0-9\u4e00-\u9fff])\s*' + re.escape(op) + r'\s*([a-zA-Z0-9\u4e00-\u9fff])'
-                result = re.sub(pattern, r'\1 ' + op + r' \2', result)
+                pattern = (
+                    r"([a-zA-Z0-9\u4e00-\u9fff])\s*"
+                    + re.escape(op)
+                    + r"\s*([a-zA-Z0-9\u4e00-\u9fff])"
+                )
+                result = re.sub(pattern, r"\1 " + op + r" \2", result)
 
         return result

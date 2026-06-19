@@ -229,7 +229,11 @@ class ShareManager:
                     if c < 0 or c >= size:
                         continue
                     # 跳过定位图案区域
-                    if (row < 9 and c < 9) or (row < 9 and c >= size - 8) or (row >= size - 8 and c < 9):
+                    if (
+                        (row < 9 and c < 9)
+                        or (row < 9 and c >= size - 8)
+                        or (row >= size - 8 and c < 9)
+                    ):
                         continue
                     # 跳过定时图案
                     if row == 6 or c == 6:
@@ -268,9 +272,7 @@ class ShareManager:
     @staticmethod
     def generate_short_id(length: int = 6) -> str:
         """生成短链接 ID（字母+数字）"""
-        return "".join(
-            random.choices(string.ascii_lowercase + string.digits, k=length)
-        )
+        return "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
     # ---- 持久化 ----
 

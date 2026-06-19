@@ -33,6 +33,7 @@ BENCH_HISTORY_DIR = Path.home() / ".yanpub" / "bench_history"
 @dataclass
 class BenchSnapshot:
     """单次基准测试快照"""
+
     timestamp: str
     adapter_id: str
     adapter_name: str
@@ -110,9 +111,11 @@ class BenchHistory:
 
 # ---- 回归检测 ----
 
+
 @dataclass
 class RegressionInfo:
     """性能回归信息"""
+
     adapter_id: str
     adapter_name: str
     bench_name: str
@@ -179,20 +182,23 @@ class RegressionDetector:
                 change_pct = (curr_mean - prev_mean) / prev_mean
                 is_regression = change_pct > self.threshold
 
-                regressions.append(RegressionInfo(
-                    adapter_id=curr.adapter_id,
-                    adapter_name=curr.adapter_name,
-                    bench_name=curr_bench.name,
-                    previous_ms=prev_mean,
-                    current_ms=curr_mean,
-                    change_pct=change_pct,
-                    is_regression=is_regression,
-                ))
+                regressions.append(
+                    RegressionInfo(
+                        adapter_id=curr.adapter_id,
+                        adapter_name=curr.adapter_name,
+                        bench_name=curr_bench.name,
+                        previous_ms=prev_mean,
+                        current_ms=curr_mean,
+                        change_pct=change_pct,
+                        is_regression=is_regression,
+                    )
+                )
 
         return regressions
 
 
 # ---- 可视化 HTML 报告 ----
+
 
 class BenchVisualizer:
     """基准测试可视化报告生成器
@@ -406,6 +412,7 @@ footer {{
 
 # ---- HTML 生成辅助函数 ----
 
+
 def _prepare_chart_data(results: list[AdapterBenchResult]) -> dict:
     """准备柱状图数据"""
     data = {}
@@ -438,24 +445,32 @@ def _generate_summary_cards(results: list[AdapterBenchResult]) -> str:
     cards = []
 
     # 总适配器数
-    cards.append(f'<div class="card"><h3>适配器数量</h3><div class="value good">{len(results)}</div></div>')
+    cards.append(
+        f'<div class="card"><h3>适配器数量</h3><div class="value good">{len(results)}</div></div>'
+    )
 
     # 平均执行延迟
     exec_means = [r.execution.mean_ms for r in results if r.execution]
     if exec_means:
         avg = statistics.mean(exec_means)
         cls = "good" if avg < 500 else ("warn" if avg < 2000 else "bad")
-        cards.append(f'<div class="card"><h3>平均执行延迟</h3><div class="value {cls}">{avg:.0f}ms</div></div>')
+        cards.append(
+            f'<div class="card"><h3>平均执行延迟</h3><div class="value {cls}">{avg:.0f}ms</div></div>'
+        )
 
     # 最快适配器
     if results:
         fastest = min(results, key=lambda r: r.execution.mean_ms if r.execution else float("inf"))
-        cards.append(f'<div class="card"><h3>最快适配器</h3><div class="value good">{fastest.adapter_name}</div></div>')
+        cards.append(
+            f'<div class="card"><h3>最快适配器</h3><div class="value good">{fastest.adapter_name}</div></div>'
+        )
 
     # 最慢适配器
     if results:
         slowest = max(results, key=lambda r: r.execution.mean_ms if r.execution else 0)
-        cards.append(f'<div class="card"><h3>最慢适配器</h3><div class="value warn">{slowest.adapter_name}</div></div>')
+        cards.append(
+            f'<div class="card"><h3>最慢适配器</h3><div class="value warn">{slowest.adapter_name}</div></div>'
+        )
 
     return "\n".join(cards)
 
@@ -475,7 +490,7 @@ def _generate_bar_chart(data: dict) -> str:
             f'<span class="bar-label">{name}</span>'
             f'<div class="bar-track">'
             f'<div class="bar-fill" style="width:{width_pct:.1f}%;background:{color};">{value:.0f}ms</div>'
-            f'</div></div>'
+            f"</div></div>"
         )
     return "\n".join(rows)
 
@@ -497,7 +512,18 @@ def _generate_radar_svg(data: list[dict]) -> str:
 
     cx, cy, r = 200, 200, 150
     n = len(all_axes)
-    colors = ["#E85D3A", "#4CAF50", "#2196F3", "#FF9800", "#9C27B0", "#00BCD4", "#795548", "#607D8B", "#E91E63", "#3F51B5"]
+    colors = [
+        "#E85D3A",
+        "#4CAF50",
+        "#2196F3",
+        "#FF9800",
+        "#9C27B0",
+        "#00BCD4",
+        "#795548",
+        "#607D8B",
+        "#E91E63",
+        "#3F51B5",
+    ]
 
     svg_parts = []
 
@@ -509,18 +535,24 @@ def _generate_radar_svg(data: list[dict]) -> str:
             x = cx + r * level * __import__("math").cos(angle)
             y = cy + r * level * __import__("math").sin(angle)
             points.append(f"{x:.1f},{y:.1f}")
-        svg_parts.append(f'<polygon points="{" ".join(points)}" fill="none" stroke="#2a2a4a" stroke-width="1"/>')
+        svg_parts.append(
+            f'<polygon points="{" ".join(points)}" fill="none" stroke="#2a2a4a" stroke-width="1"/>'
+        )
 
     # 绘制轴线和标签
     for i, axis in enumerate(all_axes):
         angle = 2 * 3.14159 * i / n - 3.14159 / 2
         x = cx + r * __import__("math").cos(angle)
         y = cy + r * __import__("math").sin(angle)
-        svg_parts.append(f'<line x1="{cx}" y1="{cy}" x2="{x:.1f}" y2="{y:.1f}" stroke="#2a2a4a" stroke-width="1"/>')
+        svg_parts.append(
+            f'<line x1="{cx}" y1="{cy}" x2="{x:.1f}" y2="{y:.1f}" stroke="#2a2a4a" stroke-width="1"/>'
+        )
         # 标签
         lx = cx + (r + 20) * __import__("math").cos(angle)
         ly = cy + (r + 20) * __import__("math").sin(angle)
-        svg_parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" fill="#888" text-anchor="middle" font-size="12">{axis}</text>')
+        svg_parts.append(
+            f'<text x="{lx:.1f}" y="{ly:.1f}" fill="#888" text-anchor="middle" font-size="12">{axis}</text>'
+        )
 
     # 绘制数据多边形
     for idx, d in enumerate(data):
@@ -595,10 +627,10 @@ def _format_regressions_html(regressions: list[RegressionInfo]) -> str:
     for r in actual:
         items.append(
             f'<div class="regression-item">'
-            f'⚠ {r.adapter_name} — {r.bench_name}: '
-            f'{r.previous_ms:.1f}ms → {r.current_ms:.1f}ms '
-            f'(+{r.change_pct:.0%})'
-            f'</div>'
+            f"⚠ {r.adapter_name} — {r.bench_name}: "
+            f"{r.previous_ms:.1f}ms → {r.current_ms:.1f}ms "
+            f"(+{r.change_pct:.0%})"
+            f"</div>"
         )
 
     return f"""

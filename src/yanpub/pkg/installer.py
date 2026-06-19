@@ -166,6 +166,7 @@ class Installer:
         """从 HTTP 源安装"""
         try:
             import httpx
+
             resp = httpx.get(pkg.source_url, timeout=30.0)
             if resp.status_code != 200:
                 return False

@@ -39,6 +39,7 @@ from yanpub.pkg.registry import PackageRegistry
 # VersionConstraint — 版本约束解析
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class VersionConstraint:
     """版本约束
@@ -165,6 +166,7 @@ def _same_minor(a: str, b: str) -> bool:
 # ResolvedVersion — 已解析版本
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ResolvedVersion:
     """已解析的版本记录"""
@@ -173,7 +175,7 @@ class ResolvedVersion:
     version: str
     source: str = "registry"  # registry / path / git
     resolved_at: float = 0.0  # 解析时间戳
-    checksum: str = ""        # 校验和（可选）
+    checksum: str = ""  # 校验和（可选）
 
     def __post_init__(self):
         if self.resolved_at == 0.0:
@@ -195,6 +197,7 @@ class ResolvedVersion:
 # WorkspaceLock — 工作空间版本锁定
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class WorkspaceLock:
     """工作空间版本锁定文件"""
@@ -214,12 +217,8 @@ class WorkspaceLock:
                 "name": self.workspace_name,
                 "created_at": self.created_at,
             },
-            "members": {
-                name: rv.to_dict() for name, rv in self.members.items()
-            },
-            "dependencies": {
-                name: rv.to_dict() for name, rv in self.dependencies.items()
-            },
+            "members": {name: rv.to_dict() for name, rv in self.members.items()},
+            "dependencies": {name: rv.to_dict() for name, rv in self.dependencies.items()},
         }
 
     def to_toml(self) -> str:
@@ -228,8 +227,8 @@ class WorkspaceLock:
 
         # [workspace]
         lines.append("[workspace]")
-        lines.append(f'name = {_toml_str(self.workspace_name)}')
-        lines.append(f'created_at = {_toml_str(self.created_at)}')
+        lines.append(f"name = {_toml_str(self.workspace_name)}")
+        lines.append(f"created_at = {_toml_str(self.created_at)}")
 
         # [members]
         if self.members:
@@ -238,8 +237,8 @@ class WorkspaceLock:
             for name in sorted(self.members):
                 rv = self.members[name]
                 lines.append(
-                    f'{_toml_str(name)} = {{version = {_toml_str(rv.version)}, '
-                    f'source = {_toml_str(rv.source)}}}'
+                    f"{_toml_str(name)} = {{version = {_toml_str(rv.version)}, "
+                    f"source = {_toml_str(rv.source)}}}"
                 )
 
         # [dependencies]
@@ -249,8 +248,8 @@ class WorkspaceLock:
             for name in sorted(self.dependencies):
                 rv = self.dependencies[name]
                 lines.append(
-                    f'{_toml_str(name)} = {{version = {_toml_str(rv.version)}, '
-                    f'source = {_toml_str(rv.source)}}}'
+                    f"{_toml_str(name)} = {{version = {_toml_str(rv.version)}, "
+                    f"source = {_toml_str(rv.source)}}}"
                 )
 
         lines.append("")  # 末尾换行
@@ -309,6 +308,7 @@ def _toml_str(s: str) -> str:
 # ---------------------------------------------------------------------------
 # VersionSetManager — 版本工作集管理器
 # ---------------------------------------------------------------------------
+
 
 class VersionSetManager:
     """版本工作集管理器
@@ -459,11 +459,13 @@ class VersionSetManager:
                 continue
             if pkg_info.version != rv.version:
                 # 检查当前约束是否仍然允许新版本
-                result["outdated"].append({
-                    "name": dep_name,
-                    "locked": rv.version,
-                    "latest": pkg_info.version,
-                })
+                result["outdated"].append(
+                    {
+                        "name": dep_name,
+                        "locked": rv.version,
+                        "latest": pkg_info.version,
+                    }
+                )
 
         # 检查是否有缺失（workspace 中声明但 lock 中没有）
         ws = self._workspace
@@ -554,7 +556,9 @@ class VersionSetManager:
 
     # ----- 内部方法 -----
 
-    def _find_best_version(self, dep_name: str, constraint: VersionConstraint) -> Optional[ResolvedVersion]:
+    def _find_best_version(
+        self, dep_name: str, constraint: VersionConstraint
+    ) -> Optional[ResolvedVersion]:
         """从注册中心查找满足约束的最新版本"""
         pkg_info = self._registry.get(dep_name)
         if pkg_info is None:

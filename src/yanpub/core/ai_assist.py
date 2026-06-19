@@ -55,8 +55,8 @@ _NL_TEMPLATES: dict[str, dict] = {
     "function": {
         "patterns": ["定义函数", "写个函数", "创建函数", "定义段落", "写个段落"],
         "templates": {
-            "duan": "段落 {name}。\n  打印(\"{name}\")。\n结束。",
-            "default": "段落 {name}。\n  打印(\"{name}\")。\n结束。",
+            "duan": '段落 {name}。\n  打印("{name}")。\n结束。',
+            "default": '段落 {name}。\n  打印("{name}")。\n结束。',
         },
     },
     "loop": {
@@ -232,13 +232,15 @@ class AIAssistEngine:
         for kw, snippet_info in _KEYWORD_SNIPPETS.items():
             # 如果前缀以某个关键字结尾或为空且关键字以该前缀开头
             if self._matches_prefix(kw, prefix):
-                results.append({
-                    "label": kw,
-                    "kind": "snippet",
-                    "detail": snippet_info.get("detail", ""),
-                    "insert_text": snippet_info["insert_text"],
-                    "is_ai": True,
-                })
+                results.append(
+                    {
+                        "label": kw,
+                        "kind": "snippet",
+                        "detail": snippet_info.get("detail", ""),
+                        "insert_text": snippet_info["insert_text"],
+                        "is_ai": True,
+                    }
+                )
 
         # --- 1b. 基于适配器关键字的补全 ---
         all_keywords = adapter.keywords
@@ -254,13 +256,15 @@ class AIAssistEngine:
                 continue
 
             category = categorize_keyword(kw)
-            results.append({
-                "label": kw,
-                "kind": "keyword",
-                "detail": f"关键字 ({category})" if category != "其他" else "关键字",
-                "insert_text": kw,
-                "is_ai": True,
-            })
+            results.append(
+                {
+                    "label": kw,
+                    "kind": "keyword",
+                    "detail": f"关键字 ({category})" if category != "其他" else "关键字",
+                    "insert_text": kw,
+                    "is_ai": True,
+                }
+            )
 
         # --- 1c. 基于模式匹配的上下文补全 ---
         context_suggestions = self._context_suggestions(adapter, code, line, column)
@@ -316,7 +320,10 @@ class AIAssistEngine:
             for pattern in intent_data["patterns"]:
                 if pattern in text:
                     code = self._apply_template(
-                        intent_data, lang_id, text, pattern,
+                        intent_data,
+                        lang_id,
+                        text,
+                        pattern,
                     )
                     # 推断缩进
                     if context:
@@ -383,12 +390,14 @@ class AIAssistEngine:
                 if fix_type == "add_end_marker":
                     fix_code = self._fix_add_end_marker(adapter, code)
                     if fix_code != code:
-                        results.append({
-                            "title": "添加缺失的结束标记",
-                            "fix": fix_code,
-                            "description": "检测到未闭合的代码块，已添加「结束」标记",
-                            "confidence": confidence,
-                        })
+                        results.append(
+                            {
+                                "title": "添加缺失的结束标记",
+                                "fix": fix_code,
+                                "description": "检测到未闭合的代码块，已添加「结束」标记",
+                                "confidence": confidence,
+                            }
+                        )
 
                 elif fix_type == "suggest_similar":
                     similar_fixes = self._fix_suggest_similar(adapter, code, error)
@@ -406,12 +415,14 @@ class AIAssistEngine:
         if not any(r["title"] == "添加缺失的结束标记" for r in results):
             structure_fix = self._fix_add_end_marker(adapter, code)
             if structure_fix != code:
-                results.append({
-                    "title": "添加缺失的结束标记",
-                    "fix": structure_fix,
-                    "description": "检测到未闭合的代码块，已添加「结束」标记",
-                    "confidence": 0.8,
-                })
+                results.append(
+                    {
+                        "title": "添加缺失的结束标记",
+                        "fix": structure_fix,
+                        "description": "检测到未闭合的代码块，已添加「结束」标记",
+                        "confidence": 0.8,
+                    }
+                )
 
         # 去重
         seen: set[str] = set()
@@ -459,13 +470,15 @@ class AIAssistEngine:
                 if prev_line.startswith(block_kw) and end_marker:
                     # 在块内，建议结束标记
                     if not any(r["label"] == end_marker for r in results):
-                        results.append({
-                            "label": end_marker,
-                            "kind": "keyword",
-                            "detail": f"闭合「{block_kw}」块",
-                            "insert_text": end_marker + "。",
-                            "is_ai": True,
-                        })
+                        results.append(
+                            {
+                                "label": end_marker,
+                                "kind": "keyword",
+                                "detail": f"闭合「{block_kw}」块",
+                                "insert_text": end_marker + "。",
+                                "is_ai": True,
+                            }
+                        )
                     break
 
         # 检查当前行是否在段落定义内
@@ -475,13 +488,15 @@ class AIAssistEngine:
             for kw in ["返回", "结束"]:
                 if kw in adapter.keywords:
                     if not any(r["label"] == kw for r in results):
-                        results.append({
-                            "label": kw,
-                            "kind": "keyword",
-                            "detail": "块内关键字",
-                            "insert_text": kw + "。",
-                            "is_ai": True,
-                        })
+                        results.append(
+                            {
+                                "label": kw,
+                                "kind": "keyword",
+                                "detail": "块内关键字",
+                                "insert_text": kw + "。",
+                                "is_ai": True,
+                            }
+                        )
 
         return results
 
@@ -510,13 +525,15 @@ class AIAssistEngine:
             last_unclosed = block_stack[-1]
             end_marker = _BLOCK_KEYWORDS.get(last_unclosed, "结束")
             if end_marker:
-                results.append({
-                    "label": f"{end_marker}。（闭合 {last_unclosed}）",
-                    "kind": "snippet",
-                    "detail": f"闭合未结束的「{last_unclosed}」块",
-                    "insert_text": end_marker + "。",
-                    "is_ai": True,
-                })
+                results.append(
+                    {
+                        "label": f"{end_marker}。（闭合 {last_unclosed}）",
+                        "kind": "snippet",
+                        "detail": f"闭合未结束的「{last_unclosed}」块",
+                        "insert_text": end_marker + "。",
+                        "is_ai": True,
+                    }
+                )
 
         return results
 
@@ -586,11 +603,11 @@ class AIAssistEngine:
             elif intent_name == "loop":
                 # "循环 甲 大于 零" → condition="甲 大于 零"
                 params["condition"] = remainder if remainder else "条件"
-                params["body"] = "打印(\"循环体\")。"
+                params["body"] = '打印("循环体")。'
             elif intent_name == "condition":
                 # "如果 甲 大于 三" → condition="甲 大于 三"
                 params["condition"] = remainder if remainder else "条件"
-                params["body"] = "打印(\"条件成立\")。"
+                params["body"] = '打印("条件成立")。'
             elif intent_name == "class":
                 # "定义类 动物" → name="动物"
                 name = remainder.strip()
@@ -660,9 +677,7 @@ class AIAssistEngine:
         for i, ln in enumerate(lines):
             stripped = ln.strip()
             for block_kw in _BLOCK_KEYWORDS:
-                if stripped.startswith(block_kw) and not stripped.startswith(
-                    block_kw + "标记"
-                ):
+                if stripped.startswith(block_kw) and not stripped.startswith(block_kw + "标记"):
                     block_stack.append((block_kw, i))
             if stripped.startswith("结束"):
                 if block_stack:
@@ -723,12 +738,14 @@ class AIAssistEngine:
         for match in similar:
             # 生成修复后的代码
             fixed_code = code.replace(undefined_name, match, 1)
-            results.append({
-                "title": f"将「{undefined_name}」改为「{match}」",
-                "fix": fixed_code,
-                "description": f"「{undefined_name}」未定义，您是否想用关键字「{match}」？",
-                "confidence": 0.7,
-            })
+            results.append(
+                {
+                    "title": f"将「{undefined_name}」改为「{match}」",
+                    "fix": fixed_code,
+                    "description": f"「{undefined_name}」未定义，您是否想用关键字「{match}」？",
+                    "confidence": 0.7,
+                }
+            )
 
         return results
 
@@ -757,9 +774,7 @@ class AIAssistEngine:
                 continue
             # 如果行以关键字开头且不以句号或冒号结尾，可能缺少句号
             for kw in adapter.keywords:
-                if stripped.startswith(kw) and not stripped.endswith(
-                    ("。", "：", ":", "）", ")")
-                ):
+                if stripped.startswith(kw) and not stripped.endswith(("。", "：", ":", "）", ")")):
                     # 简单检查：是否看起来像完整语句
                     if len(stripped) > len(kw) and not any(
                         stripped.endswith(c) for c in ("：", ":", "）", ")")
@@ -770,12 +785,14 @@ class AIAssistEngine:
 
         if changed:
             fixed_code = "\n".join(fixed_lines)
-            results.append({
-                "title": "补全缺失的句号",
-                "fix": fixed_code,
-                "description": "部分语句可能缺少句号（。）作为结束符",
-                "confidence": 0.5,
-            })
+            results.append(
+                {
+                    "title": "补全缺失的句号",
+                    "fix": fixed_code,
+                    "description": "部分语句可能缺少句号（。）作为结束符",
+                    "confidence": 0.5,
+                }
+            )
 
         return results
 
@@ -800,16 +817,16 @@ class AIAssistEngine:
                 continue
 
             # 在关键字中找近似的
-            similar = difflib.get_close_matches(
-                word, all_keywords, n=1, cutoff=0.6
-            )
+            similar = difflib.get_close_matches(word, all_keywords, n=1, cutoff=0.6)
             if similar:
                 fixed_code = code.replace(word, similar[0], 1)
-                results.append({
-                    "title": f"将「{word}」改为「{similar[0]}」",
-                    "fix": fixed_code,
-                    "description": f"「{word}」可能是「{similar[0]}」的拼写错误",
-                    "confidence": 0.6,
-                })
+                results.append(
+                    {
+                        "title": f"将「{word}」改为「{similar[0]}」",
+                        "fix": fixed_code,
+                        "description": f"「{word}」可能是「{similar[0]}」的拼写错误",
+                        "confidence": 0.6,
+                    }
+                )
 
         return results

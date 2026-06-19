@@ -56,10 +56,7 @@ class I18nDocsGenerator:
             "repl_prompt": overview.repl_prompt,
             "capabilities": overview.capabilities,
             "keyword_count": len(overview.keywords),
-            "keywords": [
-                self._translate_keyword_doc(kd, target_lang)
-                for kd in overview.keywords
-            ],
+            "keywords": [self._translate_keyword_doc(kd, target_lang) for kd in overview.keywords],
         }
 
         return result
@@ -92,6 +89,7 @@ class I18nDocsGenerator:
             lang_dir.mkdir(parents=True, exist_ok=True)
 
             import json
+
             data_file = lang_dir / "site_data.json"
             data_file.write_text(
                 json.dumps(translated, ensure_ascii=False, indent=2),
@@ -133,7 +131,8 @@ class I18nDocsGenerator:
         for category, kw_docs in keyword_index.items():
             translated_category = self.translator.translate(category, target_lang=target_lang)
             translated_category_desc = self.translator.translate(
-                CATEGORY_DESCRIPTIONS.get(category, ""), target_lang=target_lang,
+                CATEGORY_DESCRIPTIONS.get(category, ""),
+                target_lang=target_lang,
             )
             translated_kws = []
             for kd in kw_docs:
@@ -152,7 +151,9 @@ class I18nDocsGenerator:
         # 能力矩阵
         capabilities = adapter.capabilities
         capability_labels = {
-            "repl": t("repl.welcome", lang=target_lang).split("!")[0] if target_lang != "zh" else "REPL",
+            "repl": t("repl.welcome", lang=target_lang).split("!")[0]
+            if target_lang != "zh"
+            else "REPL",
             "lsp": "LSP",
             "package_manager": t("docs.category", lang=target_lang),
             "debug": "Debug" if target_lang != "zh" else "调试",
@@ -169,10 +170,7 @@ class I18nDocsGenerator:
             "repl_prompt": adapter.repl_prompt,
             "keywords_by_category": translated_index,
             "keyword_count": len(overview.keywords),
-            "capabilities": {
-                capability_labels.get(k, k): v
-                for k, v in capabilities.items()
-            },
+            "capabilities": {capability_labels.get(k, k): v for k, v in capabilities.items()},
             "primary_color": adapter.primary_color,
         }
 
@@ -202,7 +200,9 @@ class I18nDocsGenerator:
         translated = self.translate_keyword_doc(kd, target_lang)
         return {
             "keyword": translated.keyword,
-            "keyword_display": self.translator.translate(translated.keyword, target_lang=target_lang),
+            "keyword_display": self.translator.translate(
+                translated.keyword, target_lang=target_lang
+            ),
             "lang_id": translated.lang_id,
             "lang_name": translated.lang_name,
             "category": translated.category,
@@ -221,7 +221,9 @@ class I18nDocsGenerator:
             翻译后的文档站数据
         """
         result = {
-            "site_name": t("docs.title", lang=target_lang) if target_lang != "zh" else site_data.get("site_name", ""),
+            "site_name": t("docs.title", lang=target_lang)
+            if target_lang != "zh"
+            else site_data.get("site_name", ""),
             "site_description": t("app.tagline", lang=target_lang),
             "languages": [],
             "comparison": [],
@@ -233,7 +235,8 @@ class I18nDocsGenerator:
             translated_lang = dict(lang_data)
             if "description" in translated_lang:
                 translated_lang["description"] = self.translator.translate(
-                    translated_lang["description"], target_lang=target_lang,
+                    translated_lang["description"],
+                    target_lang=target_lang,
                 )
 
             # 翻译关键字分类
@@ -241,8 +244,7 @@ class I18nDocsGenerator:
             for cat, kws in translated_lang.get("keywords_by_category", {}).items():
                 translated_cat = self.translator.translate(cat, target_lang=target_lang)
                 translated_kws = [
-                    self.translator.translate_keyword_doc(kw, target_lang)
-                    for kw in kws
+                    self.translator.translate_keyword_doc(kw, target_lang) for kw in kws
                 ]
                 translated_kws_by_cat[translated_cat] = translated_kws
             translated_lang["keywords_by_category"] = translated_kws_by_cat
@@ -254,7 +256,8 @@ class I18nDocsGenerator:
             translated_comp = dict(comp)
             if "concept" in translated_comp:
                 translated_comp["concept"] = self.translator.translate(
-                    translated_comp["concept"], target_lang=target_lang,
+                    translated_comp["concept"],
+                    target_lang=target_lang,
                 )
             result["comparison"].append(translated_comp)
 

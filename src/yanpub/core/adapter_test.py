@@ -62,7 +62,9 @@ class AdapterTestCase:
     """适配器测试用例"""
 
     name: str
-    category: str  # "syntax" | "execution" | "completion" | "diagnostics" | "formatting" | "navigation"
+    category: (
+        str  # "syntax" | "execution" | "completion" | "diagnostics" | "formatting" | "navigation"
+    )
     code: str
     expected: dict
     description: str = ""
@@ -147,8 +149,7 @@ class AdapterTestCase:
         items = adapter.complete(self.code, line=1, column=1)
         return {
             "items": [
-                {"label": i.label, "kind": i.kind, "insert_text": i.insert_text}
-                for i in items
+                {"label": i.label, "kind": i.kind, "insert_text": i.insert_text} for i in items
             ],
             "count": len(items),
         }
@@ -231,32 +232,22 @@ class AdapterTestCase:
                 # 最小数量检查
                 count = actual.get("count", 0)
                 if count < expected_val:
-                    mismatches.append(
-                        f"count={count} < min_count={expected_val}"
-                    )
+                    mismatches.append(f"count={count} < min_count={expected_val}")
             elif key == "max_count":
                 # 最大数量检查
                 count = actual.get("count", 0)
                 if count > expected_val:
-                    mismatches.append(
-                        f"count={count} > max_count={expected_val}"
-                    )
+                    mismatches.append(f"count={count} > max_count={expected_val}")
             elif key == "contains_stdout":
                 stdout = actual.get("stdout", "")
                 if expected_val not in stdout:
-                    mismatches.append(
-                        f"stdout 不包含 '{expected_val}'"
-                    )
+                    mismatches.append(f"stdout 不包含 '{expected_val}'")
             elif key == "contains_stderr":
                 stderr = actual.get("stderr", "")
                 if expected_val not in stderr:
-                    mismatches.append(
-                        f"stderr 不包含 '{expected_val}'"
-                    )
+                    mismatches.append(f"stderr 不包含 '{expected_val}'")
             elif actual_val != expected_val:
-                mismatches.append(
-                    f"{key}: 期望={expected_val}, 实际={actual_val}"
-                )
+                mismatches.append(f"{key}: 期望={expected_val}, 实际={actual_val}")
 
         if mismatches:
             return False, "; ".join(mismatches)
@@ -319,8 +310,7 @@ class AdapterTestReport:
                     icon = "✗"
                     status = "FAIL"
                 lines.append(
-                    f"  {icon} [{status:4s}] {r.test_name:30s} "
-                    f"{r.duration_ms:6.1f}ms  {r.message}"
+                    f"  {icon} [{status:4s}] {r.test_name:30s} {r.duration_ms:6.1f}ms  {r.message}"
                 )
 
         lines.append("=" * 70)
@@ -553,7 +543,7 @@ BUILTIN_TESTS: list[AdapterTestCase] = [
     AdapterTestCase(
         name="format_clean",
         category="formatting",
-        code="# clean\n打印(\"hi\")。\n",
+        code='# clean\n打印("hi")。\n',
         expected={"changed": False},
         description="已格式化代码不应被改变",
     ),
@@ -704,9 +694,7 @@ class AdapterCompatibilityValidator:
         try:
             result = adapter.eval("")
             if not isinstance(result, ExecutionResult):
-                errors.append(
-                    f"eval() 应返回 ExecutionResult，实际: {type(result).__name__}"
-                )
+                errors.append(f"eval() 应返回 ExecutionResult，实际: {type(result).__name__}")
         except Exception:
             # eval("") 抛异常不一定错，可能不支持空代码
             pass
@@ -728,9 +716,7 @@ class AdapterCompatibilityValidator:
             result = adapter.eval(test_code)
             if result.exit_code == -2:
                 # 命令未找到 — 后端不可用
-                warnings.append(
-                    f"基本执行不可用: {result.stderr.strip()}"
-                )
+                warnings.append(f"基本执行不可用: {result.stderr.strip()}")
             elif result.exit_code < 0:
                 warnings.append(f"基本执行异常: exit_code={result.exit_code}")
         except Exception as e:
@@ -744,24 +730,18 @@ class AdapterCompatibilityValidator:
             else:
                 # lsp 声明 vs 实际
                 if caps.get("lsp") and not adapter.keywords:
-                    warnings.append(
-                        "capabilities.lsp=True 但 keywords 为空，LSP 功能受限"
-                    )
+                    warnings.append("capabilities.lsp=True 但 keywords 为空，LSP 功能受限")
 
                 # 补全方法存在性
                 if caps.get("lsp") and not hasattr(adapter, "complete"):
-                    warnings.append(
-                        "capabilities.lsp=True 但缺少 complete() 方法"
-                    )
+                    warnings.append("capabilities.lsp=True 但缺少 complete() 方法")
 
                 # 包管理声明 vs 实际
                 if caps.get("package_manager"):
                     if not hasattr(adapter, "list_packages") or not hasattr(
                         adapter, "install_package"
                     ):
-                        warnings.append(
-                            "capabilities.package_manager=True 但缺少包管理方法"
-                        )
+                        warnings.append("capabilities.package_manager=True 但缺少包管理方法")
         except Exception as e:
             warnings.append(f"capabilities 检查异常: {e}")
 
@@ -872,7 +852,9 @@ class RegressionTestGenerator:
                     category=category,
                     code=code,
                     expected=expected,
-                    description=f"自动生成的错误回归测试: {err_msg[:50]}" if err_msg else "自动生成的错误回归测试",
+                    description=f"自动生成的错误回归测试: {err_msg[:50]}"
+                    if err_msg
+                    else "自动生成的错误回归测试",
                 )
             )
 
