@@ -42,7 +42,7 @@ dependencies = [
     "httpx>=0.24",
     "fastapi",
     "lsprotocol",
-    "httpx2"
+    "httpx2",
 ]
 
 [project.optional-dependencies]
