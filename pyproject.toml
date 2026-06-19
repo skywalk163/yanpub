@@ -38,6 +38,14 @@ classifiers = [
 dependencies = [
     "click>=8.0",
     "pyyaml>=6.0",
+    "prompt-toolkit>=3.0",
+    "httpx>=0.24",
+    "fastapi>=0.100",
+    "uvicorn>=0.20",
+    "websockets>=11.0",
+    "pygls>=1.0",
+    "cryptography>=41.0",
+    "watchdog>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -46,29 +54,11 @@ dev = [
     "pytest-asyncio>=0.21",
     "ruff>=0.1",
 ]
-repl = [
-    "prompt-toolkit>=3.0",
-]
-playground = [
-    "fastapi>=0.100",
-    "uvicorn>=0.20",
-    "websockets>=11.0",
-    "httpx>=0.24",
-]
-lsp = [
-    "pygls>=1.0",
-]
-sandbox = [
-    "cryptography>=41.0",
-]
 wasm = [
     "wasmtime>=10.0; python_version >= '3.11'",
 ]
-hotreload = [
-    "watchdog>=3.0",
-]
 all = [
-    "yanpub[repl,playground,lsp,sandbox,hotreload,dev]",
+    "yanpub[wasm,dev]",
 ]
 
 [project.scripts]
