@@ -58,7 +58,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tests (core)
-        run: pytest tests/ -q --tb=short -k "not e2e"
+        run: pytest tests/ -q --tb=short --ignore=tests/test_lsp.py --ignore=tests/test_playground.py -k "not e2e"
 
   # ── Test (full, with all optional deps) ──────────────
   test-full:
