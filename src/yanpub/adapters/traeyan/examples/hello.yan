@@ -1,0 +1,22 @@
+---
+title: '你好世界'
+tags: ['入门', '基础']
+difficulty: '入门'
+description: '最简单的入门示例'
+---
+
+# 趣言 (traeyan) 示例
+# 动词吞噬式中文编程语言
+
+印"你好，世界！"。
+
+定甲等于42。
+定乙等于加甲 2。
+印乙。
+
+定mysum等于函a b：
+  返加a b。
+。
+
+定result等于mysum 3 5。
+印result。

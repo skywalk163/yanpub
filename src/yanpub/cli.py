@@ -797,6 +797,198 @@ def languages():
 
 @main.command()
 @click.argument("lang_id", required=False)
+@click.option("--run", "-r", "example_name", default=None, help="运行指定示例（传入示例名称）")
+@click.option("--show", "-s", "show_code", is_flag=True, help="显示示例代码内容")
+@click.option("--search", "-S", "keyword", default=None, help="按关键字搜索示例")
+@click.option("--json", "as_json", is_flag=True, help="以 JSON 格式输出")
+def examples(
+    lang_id: str | None,
+    example_name: str | None,
+    show_code: bool,
+    keyword: str | None,
+    as_json: bool,
+):
+    """查看和运行各语言的示例代码
+
+    不带参数：列出所有语言的可用示例
+
+    \b
+    yanpub examples              # 列出所有语言的示例
+    yanpub examples duan         # 列出段言的所有示例
+    yanpub examples duan -s      # 显示段言所有示例的代码
+    yanpub examples duan -r hello  # 运行段言的 hello 示例
+    yanpub examples -S 递归       # 搜索包含"递归"的示例
+    """
+    from yanpub.core.examples import get_example_manager
+
+    manager = get_example_manager()
+
+    # 搜索模式
+    if keyword:
+        results = manager.search(keyword)
+        if not results:
+            click.echo(f"未找到包含「{keyword}」的示例。")
+            return
+        _print_search_results(results, show_code, as_json)
+        return
+
+    # 指定语言
+    if lang_id:
+        ex_list = manager.list_for_language(lang_id)
+        if not ex_list:
+            registry = get_registry()
+            if lang_id not in registry:
+                click.echo(f"未知语言: {lang_id}", err=True)
+                click.echo(f"可用语言: {', '.join(registry.language_ids)}")
+                sys.exit(1)
+            adapter = registry.get(lang_id)
+            click.echo(f"{adapter.name} ({lang_id}) 暂无示例。")
+            return
+
+        # 运行指定示例
+        if example_name:
+            click.echo(f"正在运行 {lang_id}/{example_name} ...", err=True)
+            result = manager.run_example(lang_id, example_name)
+            if result is None:
+                click.echo(f"示例不存在: {lang_id}/{example_name}", err=True)
+                available = ", ".join(ex.name for ex in ex_list)
+                click.echo(f"可用示例: {available}")
+                sys.exit(1)
+            if result["stdout"]:
+                click.echo(result["stdout"], nl=False)
+            if result["stderr"]:
+                click.echo(result["stderr"], nl=False, err=True)
+            if not result["success"]:
+                sys.exit(1)
+            return
+
+        # 显示/列出示例
+        adapter = get_registry().get(lang_id)
+        lang_name = adapter.name if adapter else lang_id
+        if as_json:
+            _print_examples_json(ex_list)
+        elif show_code:
+            _print_examples_with_code(lang_name, lang_id, ex_list)
+        else:
+            _print_examples_list(lang_name, lang_id, ex_list)
+        return
+
+    # 列出所有语言的示例
+    all_examples = manager.list_all()
+    if not all_examples:
+        click.echo("暂无任何示例。")
+        return
+
+    if as_json:
+        _print_all_examples_json(all_examples)
+    else:
+        total = sum(len(ex_list) for ex_list in all_examples.values())
+        click.echo(f"共 {len(all_examples)} 种语言，{total} 个示例：\n")
+        for lid in sorted(all_examples.keys()):
+            ex_list = all_examples[lid]
+            adapter = get_registry().get(lid)
+            lang_name = adapter.name if adapter else lid
+            names = ", ".join(ex.name for ex in ex_list)
+            click.echo(f"  {lang_name} ({lid}): {names}")
+
+
+def _print_examples_list(lang_name: str, lang_id: str, examples_list: list):
+    """打印某语言的示例列表"""
+    click.echo(f"{lang_name} ({lang_id}) 的示例：\n")
+    for ex in examples_list:
+        line = f"  {ex.name}"
+        if ex.title != ex.name:
+            line += f" — {ex.title}"
+        if ex.difficulty:
+            line += f" [{ex.difficulty}]"
+        if ex.tags:
+            line += f" #{' #'.join(ex.tags)}"
+        if ex.source == "adapter":
+            line += " (语言维护)"
+        click.echo(line)
+
+
+def _print_examples_with_code(lang_name: str, lang_id: str, examples_list: list):
+    """打印某语言的示例及代码内容"""
+    for i, ex in enumerate(examples_list):
+        if i > 0:
+            click.echo("\n" + "─" * 60 + "\n")
+        header = f"{lang_name}/{ex.name}"
+        if ex.title != ex.name:
+            header += f" — {ex.title}"
+        click.echo(f"── {header} ──\n")
+        click.echo(ex.code)
+
+
+def _print_search_results(results: dict, show_code: bool, as_json: bool):
+    """打印搜索结果"""
+    if as_json:
+        _print_all_examples_json(results)
+        return
+
+    total = sum(len(ex_list) for ex_list in results.values())
+    click.echo(f"找到 {total} 个示例：\n")
+    for lid in sorted(results.keys()):
+        ex_list = results[lid]
+        adapter = get_registry().get(lid)
+        lang_name = adapter.name if adapter else lid
+        for ex in ex_list:
+            line = f"  {lang_name}/{ex.name}"
+            if ex.title != ex.name:
+                line += f" — {ex.title}"
+            click.echo(line)
+            if show_code:
+                # 缩进显示代码
+                for code_line in ex.code.split("\n"):
+                    click.echo(f"    {code_line}")
+                click.echo()
+
+
+def _print_examples_json(examples_list: list):
+    """以 JSON 格式打印示例列表"""
+    import json as json_mod
+
+    data = []
+    for ex in examples_list:
+        data.append(
+            {
+                "name": ex.name,
+                "title": ex.title,
+                "lang_id": ex.lang_id,
+                "path": str(ex.path),
+                "source": ex.source,
+                "tags": ex.tags,
+                "difficulty": ex.difficulty,
+                "description": ex.description,
+            }
+        )
+    click.echo(json_mod.dumps(data, ensure_ascii=False, indent=2))
+
+
+def _print_all_examples_json(all_examples: dict):
+    """以 JSON 格式打印所有语言的示例"""
+    import json as json_mod
+
+    data = {}
+    for lid, ex_list in all_examples.items():
+        data[lid] = [
+            {
+                "name": ex.name,
+                "title": ex.title,
+                "lang_id": ex.lang_id,
+                "path": str(ex.path),
+                "source": ex.source,
+                "tags": ex.tags,
+                "difficulty": ex.difficulty,
+                "description": ex.description,
+            }
+            for ex in ex_list
+        ]
+    click.echo(json_mod.dumps(data, ensure_ascii=False, indent=2))
+
+
+@main.command()
+@click.argument("lang_id", required=False)
 def health(lang_id: str | None):
     """检查语言后端健康状态"""
     from yanpub.core.health import check_adapter_health, check_all_adapters, format_health_report
