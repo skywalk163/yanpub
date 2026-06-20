@@ -705,9 +705,101 @@ def seo_command(action: str, output: str | None, base_url: str):
 @click.argument("concept", required=False)
 @click.option("--from", "from_lang", default=None, help="源语言ID")
 @click.option("--to", "to_lang", default=None, help="目标语言ID")
-def compare(concept: str | None, from_lang: str | None, to_lang: str | None):
-    """语言对比 — 比较不同中文编程语言的语法"""
+@click.option("--matrix", "show_matrix", is_flag=True, help="显示语法对比矩阵")
+@click.option("--html", "html_path", default=None, help="生成 HTML 对比页面（指定输出路径）")
+@click.option(
+    "--concept-id",
+    "concept_ids",
+    multiple=True,
+    help="只对比指定概念（可多次使用）",
+)
+def compare(
+    concept: str | None,
+    from_lang: str | None,
+    to_lang: str | None,
+    show_matrix: bool,
+    html_path: str | None,
+    concept_ids: tuple[str, ...],
+):
+    """语言对比 — 比较不同中文编程语言的语法
+
+    \b
+    yanpub compare                    # 相似度排行 + 概念对比
+    yanpub compare --matrix           # 语法对比矩阵（代码级）
+    yanpub compare --html matrix.html # 生成 HTML 可视化页面
+    yanpub compare --from duan --to yan  # 迁移指南
+    yanpub compare 定义               # 搜索概念在各语言中的关键字
+    yanpub compare --matrix --concept-id var_declare --concept-id func_def
+    """
     from yanpub.docs.comparator import LanguageComparator
+
+    # 生成 HTML 对比页面
+    if html_path:
+        from yanpub.core.syntax_matrix import SyntaxMatrix
+
+        sm = SyntaxMatrix()
+        click.echo("正在生成 HTML 对比页面...", err=True)
+        sm.generate_html(html_path)
+        click.echo(f"对比页面已生成: {html_path}")
+        return
+
+    # 语法对比矩阵
+    if show_matrix:
+        from yanpub.core.syntax_matrix import SyntaxMatrix
+
+        sm = SyntaxMatrix()
+        registry = get_registry()
+        lang_ids = sm.lang_ids
+
+        # 过滤概念
+        matrix = sm.get_matrix()
+        if concept_ids:
+            matrix = [e for e in matrix if e["concept"].id in concept_ids]
+
+        # 打印语法风格总览
+        styles = sm.compute_syntax_style()
+        click.echo("语法风格总览：\n")
+
+        style_keys = ["变量风格", "函数风格", "语句结束", "代码块", "运算风格", "注释"]
+        header = f"{'特征':10s}"
+        for lid in lang_ids:
+            adapter = registry.get(lid)
+            name = adapter.name if adapter else lid
+            header += f" {name:12s}"
+        click.echo(header)
+        click.echo("─" * len(header))
+
+        for style_key in style_keys:
+            row = f"{style_key:10s}"
+            for lid in lang_ids:
+                feat = styles.get(lid, {})
+                val = feat.get(style_key, "—")
+                row += f" {val:12s}"
+            click.echo(row)
+
+        # 打印代码对比矩阵
+        click.echo("\n\n代码对比矩阵：\n")
+
+        for entry in matrix:
+            concept_obj = entry["concept"]
+            snippets = entry["snippets"]
+            click.echo(f"── {concept_obj.title} [{concept_obj.category}] ──")
+            click.echo(f"   {concept_obj.description}\n")
+
+            for lid in lang_ids:
+                snippet = snippets.get(lid)
+                if snippet is None:
+                    continue
+                adapter = registry.get(lid)
+                name = adapter.name if adapter else lid
+                for line in snippet.code.split("\n"):
+                    click.echo(f"  {name:4s} | {line}")
+                if snippet.note:
+                    click.echo(f"       └─ {snippet.note}")
+                click.echo()
+            click.echo()
+
+        return
 
     comparator = LanguageComparator()
 
