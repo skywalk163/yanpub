@@ -1012,6 +1012,252 @@ def _print_examples_with_code(lang_name: str, lang_id: str, examples_list: list)
         click.echo(ex.code)
 
 
+@main.command()
+@click.argument("lang_id")
+@click.option("--name", "-n", default=None, help="示例名称（文件名，不含扩展名）")
+@click.option("--title", "-t", default=None, help="显示标题")
+@click.option("--tags", default=None, help="标签，逗号分隔（如: 递归,算法）")
+@click.option("--difficulty", "-d", type=click.Choice(["入门", "简单", "中等", "困难"]), default=None, help="难度")
+@click.option("--description", "-D", default=None, help="简短描述")
+@click.option("--author", "-a", default=None, help="作者署名")
+@click.option("--code", "-c", default=None, help="示例代码（或从 stdin 读取）")
+@click.option("--file", "-f", "code_file", default=None, help="从文件读取示例代码")
+@click.option("--dry-run", is_flag=True, help="仅预览，不写入文件")
+@click.option("--output-dir", "-o", default=None, help="输出目录（默认自动推断）")
+def contribute(
+    lang_id: str,
+    name: str | None,
+    title: str | None,
+    tags: str | None,
+    difficulty: str | None,
+    description: str | None,
+    author: str | None,
+    code: str | None,
+    code_file: str | None,
+    dry_run: bool,
+    output_dir: str | None,
+):
+    """贡献一个示例到指定语言
+
+    交互式创建示例，也可以通过选项直接指定所有参数。
+
+    \b
+    yanpub examples contribute duan                    # 交互式创建段言示例
+    yanpub examples contribute duan -n sort -t "排序"   # 指定名称和标题
+    yanpub examples contribute duan -c "打印('hi')"     # 直接传入代码
+    yanpub examples contribute duan -f code.duan        # 从文件读取代码
+    echo "打印('hi')" | yanpub examples contribute duan -n hello  # 从 stdin 读取
+    """
+    from yanpub.core.examples import get_example_manager, validate_example_meta
+
+    registry = get_registry()
+    if lang_id not in registry:
+        click.echo(f"未知语言: {lang_id}", err=True)
+        click.echo(f"可用语言: {', '.join(sorted(registry.language_ids))}")
+        sys.exit(1)
+
+    adapter = registry.get(lang_id)
+    lang_name = adapter.name if adapter else lang_id
+
+    # 获取代码内容
+    if code_file:
+        from pathlib import Path as PathLib
+
+        p = PathLib(code_file)
+        if not p.exists():
+            click.echo(f"文件不存在: {code_file}", err=True)
+            sys.exit(1)
+        code_content = p.read_text(encoding="utf-8")
+    elif code:
+        code_content = code
+    elif not sys.stdin.isatty():
+        code_content = sys.stdin.read()
+    else:
+        code_content = None
+
+    # 判断是否为交互模式：缺少必需参数时提示
+    interactive = sys.stdin.isatty() and (name is None or code_content is None)
+
+    if name is None:
+        if not sys.stdin.isatty():
+            click.echo("错误：非交互模式下必须指定 --name", err=True)
+            sys.exit(1)
+        name = click.prompt("示例名称（文件名，不含扩展名）", type=str)
+    if title is None:
+        if interactive:
+            title = click.prompt("显示标题", default=name)
+        else:
+            title = name
+    if code_content is None:
+        if not interactive:
+            click.echo("错误：非交互模式下必须指定 --code 或 --file", err=True)
+            sys.exit(1)
+        click.echo(f"\n请输入 {lang_name} 示例代码（输入空行结束）：")
+        lines: list[str] = []
+        while True:
+            line = input()
+            if line == "" and lines:
+                break
+            lines.append(line)
+        code_content = "\n".join(lines)
+        if not code_content.strip():
+            click.echo("代码不能为空。", err=True)
+            sys.exit(1)
+
+    # 可选参数：交互模式下提示，非交互模式下默认为空
+    if difficulty is None and interactive:
+        difficulty = click.prompt(
+            "难度",
+            type=click.Choice(["入门", "简单", "中等", "困难", ""]),
+            default="",
+        )
+    elif difficulty is None:
+        difficulty = ""
+    if tags is None:
+        if interactive:
+            tags_input = click.prompt("标签（逗号分隔，留空跳过）", default="")
+            tags_list = [t.strip() for t in tags_input.split(",") if t.strip()] if tags_input else []
+        else:
+            tags_list = []
+    else:
+        tags_list = [t.strip() for t in tags.split(",") if t.strip()]
+    if description is None and interactive:
+        description = click.prompt("简短描述（留空跳过）", default="")
+    elif description is None:
+        description = ""
+    if author is None and interactive:
+        author = click.prompt("作者署名（留空跳过）", default="")
+    elif author is None:
+        author = ""
+
+    # 验证
+    issues = validate_example_meta(
+        name=name,
+        title=title,
+        code=code_content,
+        lang_id=lang_id,
+        tags=tags_list,
+        difficulty=difficulty,
+    )
+    if issues:
+        click.echo("\n验证失败：", err=True)
+        for issue in issues:
+            click.echo(f"  - {issue}", err=True)
+        sys.exit(1)
+
+    # 构建预览
+    from yanpub.core.examples import _build_example_file
+
+    file_content = _build_example_file(
+        title=title,
+        tags=tags_list,
+        difficulty=difficulty,
+        description=description,
+        author=author,
+        code=code_content,
+    )
+
+    # 确定输出路径
+    out_dir = PathLib(output_dir) if output_dir else None
+    manager = get_example_manager()
+    if out_dir is None:
+        ext = manager._get_extension_for_lang(lang_id)
+    else:
+        ext = manager._get_extension_for_lang(lang_id)
+
+    if dry_run:
+        click.echo(f"\n--- 预览: {lang_id}/{name}{ext} ---\n")
+        click.echo(file_content)
+        click.echo("\n--- 预览结束（dry-run 模式，未写入文件）---")
+        return
+
+    # 写入文件
+    try:
+        file_path = manager.contribute_example(
+            lang_id=lang_id,
+            name=name,
+            code=code_content,
+            title=title,
+            tags=tags_list,
+            difficulty=difficulty,
+            description=description,
+            author=author,
+            output_dir=out_dir,
+        )
+        click.echo(f"示例已创建: {file_path}")
+        click.echo(f"  语言: {lang_name} ({lang_id})")
+        click.echo(f"  名称: {name}")
+        click.echo(f"  标题: {title}")
+        if tags_list:
+            click.echo(f"  标签: {', '.join(tags_list)}")
+        if difficulty:
+            click.echo(f"  难度: {difficulty}")
+        if author:
+            click.echo(f"  作者: {author}")
+        click.echo("\n使用以下命令查看:")
+        click.echo(f"  yanpub examples {lang_id} -s")
+    except (ValueError, FileNotFoundError) as e:
+        click.echo(f"创建失败: {e}", err=True)
+        sys.exit(1)
+
+
+@main.command("validate-examples")
+@click.argument("lang_id")
+@click.argument("name", required=False)
+def validate_examples(lang_id: str, name: str | None):
+    """验证示例的元数据和代码
+
+    \b
+    yanpub examples validate duan          # 验证段言所有示例
+    yanpub examples validate duan hello    # 验证指定示例
+    """
+    from yanpub.core.examples import get_example_manager, validate_example_meta
+
+    manager = get_example_manager()
+    ex_list = manager.list_for_language(lang_id)
+
+    if not ex_list:
+        registry = get_registry()
+        if lang_id not in registry:
+            click.echo(f"未知语言: {lang_id}", err=True)
+            sys.exit(1)
+        click.echo(f"{lang_id} 暂无示例。")
+        return
+
+    if name:
+        ex_list = [e for e in ex_list if e.name == name]
+        if not ex_list:
+            click.echo(f"示例不存在: {lang_id}/{name}", err=True)
+            sys.exit(1)
+
+    total = len(ex_list)
+    passed = 0
+    failed = 0
+
+    for ex in ex_list:
+        issues = validate_example_meta(
+            name=ex.name,
+            title=ex.title,
+            code=ex.code,
+            lang_id=ex.lang_id,
+            tags=ex.tags,
+            difficulty=ex.difficulty,
+        )
+        if issues:
+            failed += 1
+            click.echo(f"  FAIL {ex.name}")
+            for issue in issues:
+                click.echo(f"       {issue}")
+        else:
+            passed += 1
+
+    click.echo(f"\n验证完成: {passed}/{total} 通过", nl=False)
+    if failed:
+        click.echo(f"，{failed} 个失败")
+    else:
+        click.echo()
+
+
 def _print_search_results(results: dict, show_code: bool, as_json: bool):
     """打印搜索结果"""
     if as_json:
@@ -1052,6 +1298,7 @@ def _print_examples_json(examples_list: list):
                 "tags": ex.tags,
                 "difficulty": ex.difficulty,
                 "description": ex.description,
+                "author": ex.author,
             }
         )
     click.echo(json_mod.dumps(data, ensure_ascii=False, indent=2))
@@ -1073,6 +1320,7 @@ def _print_all_examples_json(all_examples: dict):
                 "tags": ex.tags,
                 "difficulty": ex.difficulty,
                 "description": ex.description,
+                "author": ex.author,
             }
             for ex in ex_list
         ]

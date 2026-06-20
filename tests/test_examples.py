@@ -7,9 +7,11 @@ import pytest
 from yanpub.core.examples import (
     ExampleInfo,
     ExampleManager,
+    _build_example_file,
     _parse_front_matter,
     _scan_examples_from_dir,
     get_example_manager,
+    validate_example_meta,
 )
 
 
@@ -237,3 +239,275 @@ class TestExampleManagerSingleton:
         mgr1 = get_example_manager()
         mgr2 = get_example_manager()
         assert mgr1 is mgr2
+
+
+class TestValidateExampleMeta:
+    """测试示例元数据验证"""
+
+    def test_valid_meta(self):
+        issues = validate_example_meta(
+            name="hello",
+            title="你好世界",
+            code="打印('hello')",
+            lang_id="duan",
+            tags=["入门"],
+            difficulty="入门",
+        )
+        assert issues == []
+
+    def test_empty_name(self):
+        issues = validate_example_meta(
+            name="",
+            title="标题",
+            code="代码",
+            lang_id="duan",
+        )
+        assert any("名称不能为空" in i for i in issues)
+
+    def test_unsafe_name_characters(self):
+        issues = validate_example_meta(
+            name="hello/world",
+            title="标题",
+            code="代码",
+            lang_id="duan",
+        )
+        assert any("不安全字符" in i for i in issues)
+
+    def test_chinese_name_allowed(self):
+        issues = validate_example_meta(
+            name="排序算法",
+            title="排序",
+            code="代码",
+            lang_id="duan",
+        )
+        assert issues == []
+
+    def test_empty_title(self):
+        issues = validate_example_meta(
+            name="hello",
+            title="",
+            code="代码",
+            lang_id="duan",
+        )
+        assert any("标题不能为空" in i for i in issues)
+
+    def test_empty_code(self):
+        issues = validate_example_meta(
+            name="hello",
+            title="标题",
+            code="",
+            lang_id="duan",
+        )
+        assert any("代码不能为空" in i for i in issues)
+
+    def test_unknown_language(self):
+        issues = validate_example_meta(
+            name="hello",
+            title="标题",
+            code="代码",
+            lang_id="nonexistent_lang_xyz",
+        )
+        assert any("未知语言" in i for i in issues)
+
+    def test_invalid_difficulty(self):
+        issues = validate_example_meta(
+            name="hello",
+            title="标题",
+            code="代码",
+            lang_id="duan",
+            difficulty="地狱级",
+        )
+        assert any("难度取值不合法" in i for i in issues)
+
+    def test_valid_difficulties(self):
+        for diff in ("", "入门", "简单", "中等", "困难"):
+            issues = validate_example_meta(
+                name="hello",
+                title="标题",
+                code="代码",
+                lang_id="duan",
+                difficulty=diff,
+            )
+            assert issues == [], f"difficulty={diff!r} 应通过验证"
+
+    def test_empty_tag(self):
+        issues = validate_example_meta(
+            name="hello",
+            title="标题",
+            code="代码",
+            lang_id="duan",
+            tags=["算法", ""],
+        )
+        assert any("标签为空" in i for i in issues)
+
+
+class TestBuildExampleFile:
+    """测试示例文件构建"""
+
+    def test_minimal(self):
+        content = _build_example_file(
+            title="测试",
+            tags=[],
+            difficulty="",
+            description="",
+            author="",
+            code="打印('hello')",
+        )
+        assert content.startswith("---\n")
+        assert "title: 测试" in content
+        assert "---\n" in content[4:]  # 关闭的 ---
+        assert "打印('hello')" in content
+
+    def test_full_meta(self):
+        content = _build_example_file(
+            title="排序",
+            tags=["算法", "递归"],
+            difficulty="中等",
+            description="排序算法示例",
+            author="张三",
+            code="排序([3,1,2])",
+        )
+        assert "title: 排序" in content
+        assert "算法" in content
+        assert "递归" in content
+        assert "difficulty: 中等" in content
+        assert "description: 排序算法示例" in content
+        assert "author: 张三" in content
+        assert "排序([3,1,2])" in content
+
+    def test_roundtrip(self):
+        """构建的文件应能被 _parse_front_matter 正确解析"""
+        content = _build_example_file(
+            title="回环测试",
+            tags=["测试"],
+            difficulty="简单",
+            description="回环测试描述",
+            author="李四",
+            code="打印('roundtrip')",
+        )
+        meta, body = _parse_front_matter(content)
+        assert meta["title"] == "回环测试"
+        assert "测试" in meta["tags"]
+        assert meta["difficulty"] == "简单"
+        assert meta["description"] == "回环测试描述"
+        assert meta["author"] == "李四"
+        assert "打印('roundtrip')" in body
+
+
+class TestContributeExample:
+    """测试贡献示例功能"""
+
+    @pytest.fixture
+    def manager(self, tmp_path):
+        """创建一个使用临时目录的 ExampleManager"""
+        mgr = ExampleManager()
+        # 不使用全局缓存
+        return mgr
+
+    def test_contribute_creates_file(self, manager, tmp_path):
+        file_path = manager.contribute_example(
+            lang_id="duan",
+            name="test_contribute",
+            code="设甲为三",
+            title="贡献测试",
+            tags=["测试"],
+            difficulty="入门",
+            description="测试贡献",
+            author="测试者",
+            output_dir=tmp_path,
+        )
+        assert file_path.exists()
+        content = file_path.read_text(encoding="utf-8")
+        assert "title: 贡献测试" in content
+        assert "author: 测试者" in content
+        assert "设甲为三" in content
+
+    def test_contribute_file_has_correct_extension(self, manager, tmp_path):
+        file_path = manager.contribute_example(
+            lang_id="duan",
+            name="ext_test",
+            code="代码",
+            title="扩展名测试",
+            output_dir=tmp_path,
+        )
+        # duan 适配器的扩展名包含 .段 和 .duan
+        assert file_path.suffix in (".段", ".duan")
+
+    def test_contribute_validates_name(self, manager, tmp_path):
+        with pytest.raises(ValueError, match="验证失败"):
+            manager.contribute_example(
+                lang_id="duan",
+                name="bad/name",
+                code="代码",
+                output_dir=tmp_path,
+            )
+
+    def test_contribute_validates_empty_code(self, manager, tmp_path):
+        with pytest.raises(ValueError, match="验证失败"):
+            manager.contribute_example(
+                lang_id="duan",
+                name="empty_code",
+                code="",
+                output_dir=tmp_path,
+            )
+
+    def test_contribute_validates_unknown_language(self, manager, tmp_path):
+        # validate_example_meta 在 output_dir 提供时仍会检测语言，
+        # 但 contribute_example 会先抛出 ValueError（包含"未知语言"信息）
+        with pytest.raises((ValueError, FileNotFoundError)):
+            manager.contribute_example(
+                lang_id="nonexistent_lang_xyz",
+                name="test",
+                code="代码",
+                output_dir=tmp_path,
+            )
+
+    def test_contribute_creates_output_dir(self, manager, tmp_path):
+        new_dir = tmp_path / "new_examples"
+        file_path = manager.contribute_example(
+            lang_id="duan",
+            name="mkdir_test",
+            code="代码",
+            output_dir=new_dir,
+        )
+        assert new_dir.exists()
+        assert file_path.exists()
+
+    def test_contribute_clears_cache(self, manager, tmp_path):
+        # 先填充缓存
+        manager.list_all()
+        assert manager._cache is not None
+        # 贡献后缓存应被清除
+        manager.contribute_example(
+            lang_id="duan",
+            name="cache_test",
+            code="代码",
+            output_dir=tmp_path,
+        )
+        assert manager._cache is None
+
+
+class TestExampleInfoAuthor:
+    """测试 ExampleInfo 的 author 字段"""
+
+    def test_author_default_empty(self, tmp_path):
+        f = tmp_path / "test.txt"
+        f.write_text("代码\n", encoding="utf-8")
+        info = ExampleInfo(
+            name="test",
+            title="测试",
+            lang_id="test",
+            path=f,
+            source="adapter",
+        )
+        assert info.author == ""
+
+    def test_author_from_front_matter(self, tmp_path):
+        f = tmp_path / "test.txt"
+        f.write_text(
+            "---\ntitle: 测试\nauthor: 张三\n---\n代码\n",
+            encoding="utf-8",
+        )
+        results = _scan_examples_from_dir(tmp_path, "test", "adapter")
+        assert len(results) == 1
+        assert results[0].author == "张三"

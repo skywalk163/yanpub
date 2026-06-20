@@ -31,10 +31,11 @@ class ExampleInfo:
     title: str  # 显示标题，如 "斐波那契数列"
     lang_id: str  # 所属语言 ID
     path: Path  # 文件绝对路径
-    source: str  # 来源: "adapter" | "builtin"
+    source: str  # 来源: "adapter" | "builtin" | "community"
     tags: list[str] = field(default_factory=list)  # 标签
     difficulty: str = ""  # 难度: 入门/简单/中等/困难
     description: str = ""  # 简短描述
+    author: str = ""  # 作者
 
     @property
     def code(self) -> str:
@@ -104,6 +105,7 @@ def _scan_examples_from_dir(examples_dir: Path, lang_id: str, source: str) -> li
             tags = [t.strip() for t in tags.split(",")]
         difficulty = str(meta.get("difficulty", ""))
         description = str(meta.get("description", ""))
+        author = str(meta.get("author", ""))
 
         results.append(
             ExampleInfo(
@@ -115,6 +117,7 @@ def _scan_examples_from_dir(examples_dir: Path, lang_id: str, source: str) -> li
                 tags=tags,
                 difficulty=difficulty,
                 description=description,
+                author=author,
             )
         )
 
@@ -251,6 +254,165 @@ class ExampleManager:
             "stderr": result.stderr,
             "duration_ms": result.duration_ms,
         }
+
+    def contribute_example(
+        self,
+        lang_id: str,
+        name: str,
+        code: str,
+        title: str = "",
+        tags: list[str] | None = None,
+        difficulty: str = "",
+        description: str = "",
+        author: str = "",
+        output_dir: Path | None = None,
+    ) -> Path:
+        """贡献一个示例到指定语言的 examples 目录
+
+        Args:
+            lang_id: 语言 ID
+            name: 示例名称（文件名，不含扩展名）
+            code: 示例代码
+            title: 显示标题（默认等于 name）
+            tags: 标签列表
+            difficulty: 难度
+            description: 简短描述
+            author: 作者
+            output_dir: 输出目录（默认自动推断适配器 examples 目录）
+
+        Returns:
+            生成的示例文件路径
+
+        Raises:
+            ValueError: 参数验证失败
+            FileNotFoundError: 语言或目录不存在
+        """
+        # 参数验证
+        issues = validate_example_meta(
+            name=name,
+            title=title or name,
+            code=code,
+            lang_id=lang_id,
+            tags=tags or [],
+            difficulty=difficulty,
+        )
+        if issues:
+            raise ValueError("示例验证失败: " + "; ".join(issues))
+
+        # 确定输出目录
+        if output_dir is None:
+            registry = get_registry()
+            adapter = registry.get(lang_id)
+            if adapter is None:
+                raise FileNotFoundError(f"未知语言: {lang_id}")
+            output_dir = self._get_adapter_examples_dir(adapter)
+
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+        # 确定文件扩展名
+        ext = self._get_extension_for_lang(lang_id)
+
+        # 生成文件内容
+        content = _build_example_file(
+            title=title or name,
+            tags=tags or [],
+            difficulty=difficulty,
+            description=description,
+            author=author,
+            code=code,
+        )
+
+        # 写入文件
+        file_path = output_dir / f"{name}{ext}"
+        file_path.write_text(content, encoding="utf-8")
+
+        # 清除缓存以便重新发现
+        self.refresh()
+
+        return file_path
+
+    def _get_extension_for_lang(self, lang_id: str) -> str:
+        """获取语言的默认文件扩展名"""
+        registry = get_registry()
+        adapter = registry.get(lang_id)
+        if adapter is not None and adapter.file_extensions:
+            return adapter.file_extensions[0]
+        return ".txt"
+
+
+def validate_example_meta(
+    name: str,
+    title: str,
+    code: str,
+    lang_id: str,
+    tags: list[str] | None = None,
+    difficulty: str = "",
+) -> list[str]:
+    """验证示例元数据，返回问题列表（空列表表示验证通过）
+
+    检查项：
+    - name 非空且仅含安全字符
+    - title 非空
+    - code 非空
+    - lang_id 对应的语言已注册
+    - difficulty 取值合法
+    - tags 格式正确
+    """
+    issues: list[str] = []
+
+    if not name.strip():
+        issues.append("示例名称不能为空")
+    elif not all(c.isalnum() or c in ("_", "-") or "\u4e00" <= c <= "\u9fff" for c in name):
+        issues.append(f"示例名称包含不安全字符: {name!r}（仅允许字母、数字、下划线、连字符和中文）")
+
+    if not title.strip():
+        issues.append("标题不能为空")
+
+    if not code.strip():
+        issues.append("代码不能为空")
+
+    if lang_id:
+        registry = get_registry()
+        if lang_id not in registry:
+            available = ", ".join(sorted(registry.language_ids))
+            issues.append(f"未知语言: {lang_id}（可用语言: {available}）")
+
+    valid_difficulties = {"", "入门", "简单", "中等", "困难"}
+    if difficulty and difficulty not in valid_difficulties:
+        issues.append(f"难度取值不合法: {difficulty!r}（可选: 入门、简单、中等、困难）")
+
+    if tags:
+        for i, tag in enumerate(tags):
+            if not tag.strip():
+                issues.append(f"第 {i + 1} 个标签为空")
+
+    return issues
+
+
+def _build_example_file(
+    title: str,
+    tags: list[str],
+    difficulty: str,
+    description: str,
+    author: str,
+    code: str,
+) -> str:
+    """构建带 YAML front matter 的示例文件内容"""
+    import yaml
+
+    meta: dict = {"title": title}
+    if tags:
+        meta["tags"] = tags
+    if difficulty:
+        meta["difficulty"] = difficulty
+    if description:
+        meta["description"] = description
+    if author:
+        meta["author"] = author
+
+    yaml_str = yaml.dump(meta, allow_unicode=True, default_flow_style=False).strip()
+    return f"---\n{yaml_str}\n---\n{code.strip()}\n"
 
 
 # ---- 全局单例 ----
