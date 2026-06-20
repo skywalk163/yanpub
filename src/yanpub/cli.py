@@ -1555,6 +1555,187 @@ def _print_validation(name: str, adapter_id: str, result: dict):
         click.echo("  所有检查通过")
 
 
+@adapter.command("create")
+@click.option("--lang-id", prompt=True, help="语言英文ID（小写字母数字下划线）")
+@click.option("--name", prompt=True, help="语言中文名")
+@click.option("--version", default="0.1.0", help="语言版本号")
+@click.option("--extensions", default=None, help="文件扩展名（逗号分隔，如 .my,.mylang）")
+@click.option("--comment", default="#", help="注释语法")
+@click.option("--run", prompt=True, help="运行命令（用 {file} 表示文件路径）")
+@click.option("--eval", "eval_cmd", default=None, help="eval 命令（用 {code} 表示代码）")
+@click.option(
+    "--eval-mode", type=click.Choice(["stdin", "arg"]), default="stdin", help="eval 代码传递方式"
+)
+@click.option("--repl", default=None, help="REPL 命令")
+@click.option("--color", default="#2C3E50", help="品牌主色（十六进制）")
+@click.option("--keywords", default=None, help="关键字（逗号分隔）")
+@click.option("--description", default="", help="语言简介")
+@click.option("--author", default="", help="适配器维护者")
+@click.option("--dry-run", is_flag=True, help="只显示将生成的文件，不实际创建")
+def adapter_create(
+    lang_id: str,
+    name: str,
+    version: str,
+    extensions: str | None,
+    comment: str,
+    run: str,
+    eval_cmd: str | None,
+    eval_mode: str,
+    repl: str | None,
+    color: str,
+    keywords: str | None,
+    description: str,
+    author: str,
+    dry_run: bool,
+):
+    """创建新语言适配器 — 交互式生成完整的适配器目录
+
+    \b
+    yanpub adapter create                        # 交互式向导
+    yanpub adapter create --lang-id mylang --name 我语 --run "python mylang.py {file}"
+    yanpub adapter create --dry-run ...          # 只预览不创建
+    """
+    from yanpub.core.adapter_template import AdapterSpec, AdapterTemplateEngine
+
+    # 解析扩展名
+    ext_list = []
+    if extensions:
+        ext_list = [e.strip() for e in extensions.split(",") if e.strip()]
+
+    # 解析关键字
+    kw_list = []
+    if keywords:
+        kw_list = [k.strip() for k in keywords.split(",") if k.strip()]
+
+    spec = AdapterSpec(
+        lang_id=lang_id,
+        name=name,
+        version=version,
+        extensions=ext_list,
+        comment_syntax=comment,
+        primary_color=color,
+        run_command=run,
+        eval_command=eval_cmd or "",
+        eval_mode=eval_mode,
+        repl_command=repl or "",
+        keywords=kw_list,
+        description=description,
+        author=author,
+    )
+
+    engine = AdapterTemplateEngine()
+
+    # 验证
+    errors = engine.validate_spec(spec)
+    if errors:
+        click.echo("适配器规格验证失败：", err=True)
+        for err in errors:
+            click.echo(f"  ✗ {err}", err=True)
+        sys.exit(1)
+
+    if dry_run:
+        click.echo(f"\n将创建适配器: {name} ({lang_id}) v{version}")
+        click.echo(f"  目录: {engine.adapters_dir / lang_id}")
+        click.echo("  文件: adapter.py, adapter.yaml, CONTRIBUTING.md")
+        click.echo(
+            f"  示例: examples/hello{spec.extensions[0]}, examples/function{spec.extensions[0]}"
+        )
+        click.echo("\n规格摘要：")
+        click.echo(f"  ID:       {lang_id}")
+        click.echo(f"  名称:     {name}")
+        click.echo(f"  版本:     {version}")
+        click.echo(f"  扩展名:   {', '.join(spec.extensions)}")
+        click.echo(f"  注释:     {comment}")
+        click.echo(f"  运行:     {run}")
+        click.echo(f"  eval:     {eval_cmd or '(临时文件fallback)'}")
+        click.echo(f"  eval模式: {eval_mode}")
+        click.echo(f"  REPL:     {repl or '(无)'}")
+        click.echo(f"  主色:     {color}")
+        if kw_list:
+            click.echo(f"  关键字:   {', '.join(kw_list)}")
+        return
+
+    # 确认
+    click.echo(f"\n即将创建适配器: {name} ({lang_id})")
+    click.echo(f"  目标目录: {engine.adapters_dir / lang_id}")
+    if not click.confirm("确认创建？"):
+        click.echo("已取消。")
+        return
+
+    # 生成
+    output = engine.generate(spec)
+    click.echo(f"\n✅ 适配器已创建: {output}")
+    click.echo("\n生成的文件：")
+    for f in sorted(output.iterdir()):
+        if f.is_file():
+            click.echo(f"  {f.name}")
+    examples_dir = output / "examples"
+    if examples_dir.exists():
+        for f in sorted(examples_dir.iterdir()):
+            if f.is_file():
+                click.echo(f"  examples/{f.name}")
+
+    # 自动验证
+    click.echo("\n自动验证中...")
+    check_result = engine.check_adapter(lang_id)
+    if check_result["valid"]:
+        click.echo("✅ 适配器验证通过！")
+    else:
+        click.echo("⚠ 适配器已创建，但存在以下问题：")
+        for err in check_result["errors"]:
+            click.echo(f"  ✗ {err}")
+    for warn in check_result["warnings"]:
+        click.echo(f"  ⚠ {warn}")
+
+    click.echo("\n下一步：")
+    click.echo(f"  1. 编辑 {output / 'adapter.py'} 填入实际的语言后端路径")
+    click.echo("  2. 在 examples/ 目录添加更多示例")
+    click.echo(f"  3. 运行 yanpub adapter validate {lang_id} 验证兼容性")
+    click.echo(f"  4. 运行 yanpub examples {lang_id} 查看示例列表")
+
+
+@adapter.command("check")
+@click.argument("lang_id")
+def adapter_check(lang_id: str):
+    """检查适配器是否可被正确发现和注册
+
+    验证目录结构、文件格式、类定义、实例化等。
+    """
+    from yanpub.core.adapter_template import AdapterTemplateEngine
+
+    engine = AdapterTemplateEngine()
+
+    click.echo(f"检查适配器: {lang_id}\n")
+    click.echo(f"  目录: {engine.adapters_dir / lang_id}")
+
+    result = engine.check_adapter(lang_id)
+
+    # 文件列表
+    if result["files"]:
+        click.echo("\n  已发现文件：")
+        for f in result["files"]:
+            click.echo(f"    ✓ {f}")
+
+    # 错误
+    if result["errors"]:
+        click.echo("\n  ❌ 错误：")
+        for err in result["errors"]:
+            click.echo(f"    ✗ {err}")
+
+    # 警告
+    if result["warnings"]:
+        click.echo("\n  ⚠ 警告：")
+        for warn in result["warnings"]:
+            click.echo(f"    ⚠ {warn}")
+
+    # 结论
+    if result["valid"]:
+        click.echo(f"\n  ✅ 适配器 {lang_id} 检查通过，可被正常发现和注册。")
+    else:
+        click.echo(f"\n  ❌ 适配器 {lang_id} 检查未通过，请修复上述错误。")
+        sys.exit(1)
+
+
 @main.group()
 def workspace():
     """工作空间 — monorepo 多包统一管理"""
