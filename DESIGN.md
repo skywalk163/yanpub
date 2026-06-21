@@ -250,7 +250,7 @@ description = "段言Web开发框架"
 - TextMate 语法文件：duan / yan / moyan
 - 代码片段：duan（13个）
 
-## 五、项目目录结构（v0.6.0 实际）
+## 五、项目目录结构（v1.3.0 实际）
 
 ```
 yanpub/
@@ -261,7 +261,7 @@ yanpub/
 │
 ├── src/yanpub/
 │   ├── __init__.py              # 导出核心 API（9个符号）
-│   ├── cli.py                   # 统一 CLI 入口（28个子命令 + 适配器热重载 + 工作空间）
+│   ├── cli.py                   # 统一 CLI 入口（38个子命令 + 适配器热重载 + 工作空间）
 │   │
 │   ├── core/                    # 核心抽象
 │   │   ├── adapter.py           # LanguageAdapter ABC + SubprocessAdapter + hover() + format() + rename()
@@ -276,20 +276,24 @@ yanpub/
 │   │   ├── bench_viz.py         # 性能调优面板（v0.5.0 新增）
 │   │   ├── wasm.py              # WASM 执行器（v0.5.0 新增）
 │   │   ├── hotreload.py         # 适配器热重载（v0.6.0 新增）
-│   │   └── profiler.py          # 适配器性能分析器（v0.7.0 新增）
+│   │   ├── profiler.py          # 适配器性能分析器（v0.7.0 新增）
+│   │   ├── examples.py          # 示例管理 + 贡献流水线（v1.2.0/v1.3.0 新增）
+│   │   ├── syntax_matrix.py     # 语言语法对比矩阵（v1.2.0 新增）
+│   │   └── adapter_template.py  # 适配器开发模板（v1.3.0 新增）
+│   │   └── quality.py            # 适配器质量评分（v1.4.0 新增）
 │   │
 │   ├── adapters/                # 10个语言适配器
 │   │   ├── _keywords_cache.py   #   关键字缓存工具
-│   │   ├── duan/                #   adapter.yaml + adapter.py + keywords.json
-│   │   ├── yan/                 #   adapter.yaml + adapter.py + keywords.json
-│   │   ├── moyan/               #   adapter.yaml + adapter.py + keywords.json
-│   │   ├── xinyu/               #   adapter.yaml + adapter.py + keywords.json
-│   │   ├── zhixing/             #   adapter.yaml + adapter.py + keywords.json
-│   │   ├── yanlv/               #   adapter.yaml + adapter.py + keywords.json
-│   │   ├── yanzhi/              #   adapter.yaml + adapter.py + keywords.json
-│   │   ├── mingdao/             #   adapter.yaml + adapter.py + keywords.json
-│   │   ├── hanyu/               #   adapter.yaml + adapter.py + keywords.json
-│   │   └── traeyan/             #   adapter.yaml + adapter.py + keywords.json
+│   │   ├── duan/                #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   ├── yan/                 #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   ├── moyan/               #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   ├── xinyu/               #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   ├── zhixing/             #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   ├── yanlv/               #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   ├── yanzhi/              #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   ├── mingdao/             #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   ├── hanyu/               #   adapter.yaml + adapter.py + keywords.json + examples/
+│   │   └── traeyan/             #   adapter.yaml + adapter.py + keywords.json + examples/
 │   │
 │   ├── pkg/                     # 统一包管理器
 │   │   ├── registry.py          #   包注册中心
@@ -297,6 +301,7 @@ yanpub/
 │   │   ├── installer.py         #   安装器
 │   │   ├── cache.py             #   本地缓存
 │   │   ├── remote.py            #   远程注册中心
+│   │   └── private_registry.py  #   私有注册中心 + 镜像同步 + 权限管理（v1.4.0 新增）
 │   │   ├── lockfile.py          #   依赖锁定管理（v0.4.0 新增）
 │   │   ├── semantic_release.py  #   语义发布（v0.5.0 新增）
 │   │   ├── workspace.py         #   工作空间管理（v0.6.0 新增）
@@ -305,6 +310,7 @@ yanpub/
 │   ├── playground/              # 统一 Playground
 │   │   ├── server.py            #   FastAPI + WebSocket 后端（含分享API + WASM + 协作API）
 │   │   ├── collab.py            #   实时协作 CRDT + 房间管理（v0.6.0 新增）
+│   │   ├── challenge.py         #   代码挑战赛 + 评判 + 排行榜（v1.4.0 新增）
 │   │   ├── static/index.html    #   CodeMirror 5 前端（含对比+分享+WASM+协作模式）
 │   │   └── templates/           #   各语言示例模板
 │   │
@@ -328,7 +334,7 @@ yanpub/
 │       ├── snippets/duan.json   #   段言代码片段
 │       └── package.json         #   contributes 10种语言 + 10个语法
 │
-├── tests/                       # 494 个测试
+├── tests/                       # 974+ 个测试
 │   ├── test_adapter.py          #   16 个
 │   ├── test_integration.py      #   16 个
 │   ├── test_pkg.py              #   25 个
@@ -343,7 +349,11 @@ yanpub/
 │   ├── test_v040.py             #   40 个（v0.4.0 新增）
 │   ├── test_v050.py             #   68 个（v0.5.0 新增）
 │   ├── test_v060.py             #   38 个（v0.6.0 新增）
-│   └── test_v070.py             #   31 个（v0.7.0 新增）
+│   ├── test_v070.py             #   31 个（v0.7.0 新增）
+│   ├── test_examples.py         #   26 个（v1.2.0 新增）
+│   ├── test_syntax_matrix.py    #   27 个（v1.2.0 新增）
+│   └── test_adapter_template.py #   28 个（v1.3.0 新增）
+│   └── test_v140.py             #   65 个（v1.4.0 新增）
 │
 ├── scripts/                     # 工具脚本
 │   ├── cache_keywords.py        #   关键字预缓存
@@ -415,6 +425,13 @@ yanpub/
 | 语义高亮 | LSP Semantic Tokens + delta 编码 | TextMate 语法 | 更精细的语义分类，支持适配器自定义 token |
 | 性能分析器 | AdapterProfiler + FlameGraph + HotspotDetector | 纯计时 | 多维度统计 + 可视化 + 热点检测 |
 | 版本工作集 | VersionConstraint + WorkspaceLock + TOML | 单包锁定 | 工作空间级别统一版本管理 |
+| 示例系统 | ExampleManager + YAML front matter + 双来源 | 硬编码示例 | 社区贡献 + 适配器/模板双来源发现 |
+| 语法对比矩阵 | SyntaxMatrix + 15概念×10语言 + HTML 可视化 | 纯文本对比 | 结构化对比 + 自动语法风格分析 |
+| 适配器开发模板 | AdapterSpec + AdapterTemplateEngine | 手动创建 | 一键生成完整适配器目录 + 自动验证 |
+| 示例贡献 | contribute CLI + validate_example_meta | 手动编写示例 | 交互式向导 + 元数据验证 + dry-run 预览 |
+| 私有注册中心 | PrivateRegistry + Git 存储 + MirrorSync + PermissionManager | 公网远程注册表 | 私有仓库 + 公网镜像双向同步 + 4级角色权限 |
+| 代码挑战赛 | Challenge + ChallengeJudge + Leaderboard + 6内置题 | 无 | 在线评判 + 排行榜 + Playground API |
+| 适配器质量评分 | QualityChecker 5维度 + QualityReport + HTML 报告 | 手动检查 | 自动评分 S/A/B/C/D/F + 改进建议 |
 | 构建打包 | Hatch | 现代 Python 打包工具 |
 | CI/CD | GitHub Actions | 多平台（Ubuntu/Windows/macOS）多版本（3.10/3.11/3.12） |
 
@@ -597,11 +614,29 @@ yanpub/
 - [x] 适配器性能优化（LRUCache + AdapterCache 执行/补全/诊断三级缓存 + LazyAdapter 延迟加载 + ProcessPool 连接池 + cache CLI）
 - [x] 文档站 SEO 优化（SEOOptimizer + SitemapGenerator + OpenGraphBuilder + JSON-LD 结构化数据 + robots.txt + seo CLI）
 
-## 十六、下一步（v1.2.0 规划）
+## 十六、已完成（v1.2.0）
 
 - [x] LSP 代码风格检查（LintRuleEngine + 10 条内置规则 + 自动修复 + LSP 集成 + lint CLI）
 - [x] Playground 协作增强（DocumentHistory + ConflictResolution + OfflineEditBuffer + API 路由）
 - [x] 适配器热更新（HotUpdateManager + 状态保存/恢复 + 版本链 + 回退 + hot-update CLI）
 - [x] 文档站搜索增强（SearchIndex 倒排索引 + 前缀树联想 + DocsSearchEngine + search CLI + API）
+- [x] 示例系统（ExampleManager + ExampleInfo 双来源优先级 + YAML front matter + 关键字搜索 + examples CLI）
+- [x] 语言语法对比矩阵（SyntaxMatrix + 15概念×10语言=150片段 + 语法风格自动分析 + HTML可视化 + compare --matrix/--html）
+
+## 十七、已完成（v1.3.0）
+
+- [x] 适配器开发模板（AdapterSpec + AdapterTemplateEngine + validate_spec/check_adapter + adapter create/check CLI）
+- [x] 示例贡献流水线（ExampleInfo.author + validate_example_meta + _build_example_file + contribute_example + contribute/validate-examples CLI）
+
+## 十八、已完成（v1.4.0）
+
+- [x] 包管理器私有注册中心（PrivateRegistry + Git 仓库存储 + MirrorSync 公网镜像双向同步 + PermissionManager 4级角色权限 + private-registry/mirror/permission CLI）
+- [x] Playground 代码挑战赛系统（Challenge + TestCase + Submission + ChallengeJudge 评判器 + Leaderboard 排行榜 + 6道内置题 + /api/challenges/* + challenge CLI）
+- [x] 适配器质量评分（QualityChecker 5维度 + DimensionScore + QualityReport S/A/B/C/D/F 等级 + HTML 报告 + quality CLI）
+
+## 十九、下一步（v1.5.0 规划）
+
 - [ ] 桌面 GUI 封装（Electron/Tauri，离线桌面应用）
-- [ ] 包管理器私有注册中心（自建 Git 仓库 + 镜像同步 + 权限管理）
+- [ ] Playground 代码挑战赛增强（代码对比、提交历史、题解区）
+- [ ] 适配器质量评分 CI 集成（GitHub Actions 自动评分 + 评分徽章）
+- [ ] 私有注册中心 Web UI（包浏览、搜索、版本管理界面）

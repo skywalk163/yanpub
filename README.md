@@ -102,15 +102,50 @@ yanpub
 | `yanpub compare` | 语言对比（相似度排行 + 语法对比表） |
 | `yanpub compare --from X --to Y` | 迁移指南 |
 | `yanpub compare <concept>` | 特定概念对比 |
+| `yanpub compare --matrix` | 语法对比矩阵（15概念×10语言） |
+| `yanpub compare --html out.html` | 生成对比矩阵 HTML 页面 |
+| `yanpub examples [lang]` | 查看/运行各语言示例代码 |
+| `yanpub examples <lang> -r <name>` | 运行指定示例 |
+| `yanpub examples -S <keyword>` | 按关键字搜索示例 |
+| `yanpub contribute <lang>` | 贡献示例到指定语言（交互式向导） |
+| `yanpub validate-examples <lang>` | 验证示例元数据和代码 |
+| `yanpub adapter create` | 创建新语言适配器（交互式模板） |
+| `yanpub adapter check <lang>` | 检查适配器可发现性 |
+| `yanpub health` | 检查语言后端健康状态 |
+| `yanpub bench` | 运行性能基准测试 |
+| `yanpub lint` | 代码风格检查 |
+| `yanpub sandbox` | 沙箱执行代码 |
+| `yanpub sign / verify` | 代码签名/验证 |
+| `yanpub i18n` | 国际化管理 |
+| `yanpub quality [lang]` | 适配器质量评分（5维度，0-100分） |
+| `yanpub quality --html report.html` | 生成质量报告 HTML |
+| `yanpub challenge list` | 列出代码挑战赛题目 |
+| `yanpub challenge show <id>` | 查看挑战详情 |
+| `yanpub challenge submit <id> <lang>` | 提交解答 |
+| `yanpub challenge leaderboard` | 查看排行榜 |
+| `yanpub private-registry init` | 初始化私有注册中心 |
+| `yanpub private-registry publish <dir>` | 发布包 |
+| `yanpub private-registry mirror add <name> <url>` | 添加镜像 |
+| `yanpub private-registry mirror sync <name>` | 同步镜像 |
 
 ## 适配器开发
 
-创建一个新适配器只需 2 个文件：
+使用 `adapter create` 命令一键生成完整适配器目录：
+
+```bash
+yanpub adapter create              # 交互式创建
+yanpub adapter create mylang 0.1.0 .my  # 参数式创建
+yanpub adapter check mylang        # 验证适配器可发现性
+```
+
+或手动创建，最少只需 2 个文件：
 
 ```bash
 adapters/mylang/
 ├── adapter.yaml    # 语言元信息
-└── adapter.py      # 适配器实现（继承 SubprocessAdapter）
+├── adapter.py      # 适配器实现（继承 SubprocessAdapter）
+└── examples/       # 示例代码（可选）
+    └── hello.my    # 带 YAML front matter
 ```
 
 最小适配器示例：
@@ -131,13 +166,106 @@ class MyLangAdapter(SubprocessAdapter):
         )
 ```
 
-适配器会被自动发现和加载，无需额外注册。
+适配器会被自动发现和加载，无需额外注册。详见 [适配器开发指南](docs/adapter-guide.md)。
+
+## 示例贡献
+
+任何人都可以为已接入语言贡献示例代码：
+
+```bash
+# 交互式创建示例（推荐）
+yanpub contribute duan
+
+# 参数式创建
+yanpub contribute duan -n sort -t "排序" -c "打印('hi')"
+
+# 从文件读取代码
+yanpub contribute duan -n hello -f code.duan
+
+# 仅预览不写入
+yanpub contribute duan --dry-run
+
+# 验证已有示例
+yanpub validate-examples duan
+```
+
+## 私有注册中心
+
+支持私有 Git 仓库作为包索引存储，可与公网镜像（GitHub/Gitee/GitCode）双向同步：
+
+```bash
+# 初始化私有注册中心
+yanpub private-registry init --url https://git.example.com/registry.git
+
+# 发布包
+yanpub private-registry publish ./my-package
+
+# 添加公网镜像（自动同步）
+yanpub private-registry mirror add github https://github.com/org/registry.git --direction bidirectional
+yanpub private-registry mirror add gitee https://gitee.com/org/registry.git --auth ssh
+
+# 同步到所有镜像
+yanpub private-registry mirror sync --all
+
+# 权限管理（基于角色）
+yanpub private-registry permission grant alice owner
+yanpub private-registry permission grant bob developer --scope lang:duan
+```
+
+4 种角色：**owner**（全部权限）、**maintainer**（发布+镜像管理）、**developer**（发布）、**guest**（只读）。
+
+## 代码挑战赛
+
+内置 6 道挑战题，支持在线评判和排行榜：
+
+```bash
+# 列出挑战
+yanpub challenge list
+
+# 查看详情
+yanpub challenge show hello-world
+
+# 提交解答
+yanpub challenge submit hello-world duan --code '打印("你好，世界！")'
+yanpub challenge submit fibonacci duan -f fib.duan
+
+# 查看排行榜
+yanpub challenge leaderboard
+```
+
+Playground 也提供 Web API：`/api/challenges`、`/api/challenges/{id}/submit`、`/api/leaderboard`。
+
+## 适配器质量评分
+
+5 维度自动评分（总分 100），S/A/B/C/D/F 等级：
+
+| 维度 | 满分 | 检查项 |
+|------|------|--------|
+| 基础完整度 | 30 | adapter.py/yaml 存在、类定义、可实例化 |
+| 元数据质量 | 20 | 必需字段、版本号、扩展名、颜色 |
+| 示例丰富度 | 25 | 数量、front matter、多样性 |
+| 文档覆盖 | 15 | README、CONTRIBUTING、关键字文档、描述 |
+| 功能验证 | 10 | 关键字加载、capabilities、eval 命令 |
+
+```bash
+# 查看所有适配器评分
+yanpub quality
+
+# 查看特定适配器
+yanpub quality duan
+
+# 生成 HTML 报告
+yanpub quality --html quality-report.html
+
+# JSON 输出
+yanpub quality --json
+```
 
 ## 性能
 
 - 启动时间 ~0.24s（10个适配器懒加载）
 - 关键字首次访问 ~0.38s（动态从项目加载），缓存后 0s
-- 932 个测试全部通过
+- 974 个测试全部通过
 
 ## License
 

@@ -2,7 +2,41 @@
 
 本文档介绍如何为一种中文编程语言创建 yanpub 适配器。
 
-## 最小适配器（2 个文件）
+## 快速创建（推荐）
+
+使用 `adapter create` 命令一键生成完整适配器目录：
+
+```bash
+# 交互式创建（推荐新手使用）
+yanpub adapter create
+
+# 参数式创建
+yanpub adapter create mylang 0.1.0 .my
+
+# 预览生成的文件（不写入磁盘）
+yanpub adapter create mylang 0.1.0 .my --dry-run
+```
+
+自动生成完整目录结构：
+
+```
+adapters/mylang/
+├── adapter.py          # 适配器实现（继承 SubprocessAdapter）
+├── adapter.yaml        # 语言元信息
+├── examples/           # 示例代码
+│   └── hello.my        # 入门示例
+└── CONTRIBUTING.md     # 贡献指南
+```
+
+创建后验证适配器是否可被发现：
+
+```bash
+yanpub adapter check mylang
+```
+
+## 手动创建
+
+### 最小适配器（2 个文件）
 
 ### 1. adapter.yaml — 语言元信息
 
@@ -205,3 +239,107 @@ class AdvancedAdapter(LanguageAdapter):
 5. 类名遵循 `{LangId}Adapter` 命名约定（如 `DuanAdapter`、`YanAdapter`）
 
 无需手动注册，放入目录即可使用。
+
+## 示例代码
+
+每个适配器可在自己的 `examples/` 目录下放置示例代码文件，供 `yanpub examples` 命令查看和运行。
+
+### 目录结构
+
+```
+adapters/duan/
+├── adapter.py
+├── adapter.yaml
+└── examples/
+    ├── hello.duan        # 带 YAML front matter
+    ├── fibonacci.duan
+    ├── bubble.duan
+    └── hanoi.duan
+```
+
+### YAML Front Matter 格式
+
+每个示例文件开头可包含 YAML 元数据：
+
+```
+---
+title: '你好世界'
+tags: ['入门', '基础']
+difficulty: '入门'
+description: '最简单的入门示例'
+author: '张三'
+---
+打印("你好，段言！")
+```
+
+支持的字段：
+- `title`（必需）：显示标题
+- `tags`：标签列表
+- `difficulty`：难度（入门/简单/中等/困难）
+- `description`：简短描述
+- `author`：作者署名
+
+### 示例发现优先级
+
+示例有双来源发现机制：
+1. **适配器 examples/ 目录**（优先）：`adapters/<lang>/examples/`
+2. **Playground 模板**（回退）：`playground/templates/<lang>/`
+
+### 查看和运行示例
+
+```bash
+# 列出所有语言的示例
+yanpub examples
+
+# 列出段言的示例
+yanpub examples duan
+
+# 显示示例代码
+yanpub examples duan -s
+
+# 运行指定示例
+yanpub examples duan -r hello
+
+# 按关键字搜索示例
+yanpub examples -S 递归
+```
+
+## 示例贡献
+
+任何人都可以为已接入的语言贡献示例代码，无需修改适配器源码：
+
+```bash
+# 交互式创建示例（推荐）
+yanpub contribute duan
+
+# 参数式创建
+yanpub contribute duan -n sort -t "排序算法" --tags "算法,排序" -d 简单 -a "张三" -c "打印('hello')"
+
+# 从文件读取代码
+yanpub contribute duan -n hello -f code.duan
+
+# 仅预览不写入
+yanpub contribute duan --dry-run
+
+# 从 stdin 读取代码
+echo "打印('hi')" | yanpub contribute duan -n hello
+```
+
+贡献的示例会自动写入适配器的 `examples/` 目录，并附带 YAML front matter 元数据。
+
+### 验证示例
+
+```bash
+# 验证某语言所有示例的元数据
+yanpub validate-examples duan
+
+# 验证指定示例
+yanpub validate-examples duan hello
+```
+
+验证检查项：
+- 示例名称格式（安全字符）
+- 标题和代码非空
+- 语言 ID 存在
+- 难度取值合法
+- 标签格式正确

@@ -21,7 +21,7 @@ from yanpub.core.registry import get_registry
 
 
 @click.group()
-@click.version_option(version="1.2.0")
+@click.version_option(version="1.4.0")
 @click.option("--lang", "-L", "cli_lang", default=None, help="语言设置（zh/en）")
 def main(cli_lang: str | None):
     """言埠 YanPub -- 中文编程语言统一基础设施"""
@@ -3538,6 +3538,425 @@ def search_command(query, category, lang_id, suggest, as_json):
                     click.echo(f"    语言: {r.lang_name}")
                 for hl in r.highlights[:2]:
                     click.echo(f"    {hl}")
+
+
+# ---- v1.4.0: 私有注册中心 ----
+
+
+@main.group("private-registry")
+def private_registry():
+    """私有注册中心 — Git 仓库存储 + 镜像同步 + 权限管理"""
+
+
+@private_registry.command("init")
+@click.option("--url", default="", help="远程仓库 URL（不提供则在本地创建）")
+def private_registry_init(url):
+    """初始化私有注册中心"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry(repo_url=url)
+    result = reg.init_repo(url)
+    if result["success"]:
+        click.echo(f"私有注册中心初始化成功: {result['path']}")
+    else:
+        click.echo(f"初始化失败: {result['message']}", err=True)
+
+
+@private_registry.command("publish")
+@click.argument("package_dir")
+@click.option("--user", "-u", default="", help="发布者（权限检查用）")
+@click.option("--message", "-m", default="", help="提交信息")
+def private_registry_publish(package_dir, user, message):
+    """发布包到私有注册中心"""
+    import json as json_mod
+    from pathlib import Path as PathLib
+    from yanpub.pkg.private_registry import PrivateRegistry
+    from yanpub.pkg.registry import PackageInfo
+
+    pkg_path = PathLib(package_dir)
+    pkg_file = pkg_path / "package.json"
+    if not pkg_file.exists():
+        click.echo(f"未找到 package.json: {pkg_file}", err=True)
+        return
+
+    data = json_mod.loads(pkg_file.read_text(encoding="utf-8"))
+    pkg = PackageInfo.from_dict(data)
+
+    reg = PrivateRegistry()
+    result = reg.publish(pkg, user=user, commit_message=message)
+    if result["success"]:
+        click.echo(f"发布成功: {result['package']}@{result.get('version', '?')}")
+    else:
+        click.echo(f"发布失败: {result['message']}", err=True)
+
+
+@private_registry.command("unpublish")
+@click.argument("name")
+@click.option("--user", "-u", default="", help="操作者（权限检查用）")
+def private_registry_unpublish(name, user):
+    """撤销发布"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    result = reg.unpublish(name, user=user)
+    if result["success"]:
+        click.echo(f"撤销成功: {result['package']}")
+    else:
+        click.echo(f"撤销失败: {result['message']}", err=True)
+
+
+@private_registry.command("search")
+@click.argument("query")
+@click.option("--lang", "-L", default=None, help="限定语言")
+@click.option("--user", "-u", default="", help="用户（权限检查用）")
+def private_registry_search(query, lang, user):
+    """搜索私有注册中心的包"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    results = reg.search(query, lang=lang, user=user)
+    if not results:
+        click.echo(f"未找到与 '{query}' 相关的包")
+    else:
+        click.echo(f"搜索 '{query}' — 找到 {len(results)} 个包:")
+        for pkg in results:
+            click.echo(f"  {pkg.name} ({pkg.version}) — {pkg.description}")
+
+
+@private_registry.group("mirror")
+def pr_mirror():
+    """镜像同步管理"""
+
+
+@pr_mirror.command("add")
+@click.argument("name")
+@click.argument("url")
+@click.option("--direction", type=click.Choice(["push", "pull", "bidirectional"]), default="push", help="同步方向")
+@click.option("--auth", type=click.Choice(["ssh", "https", "token"]), default="https", help="认证方式")
+@click.option("--branch", default="main", help="分支名")
+def pr_mirror_add(name, url, direction, auth, branch):
+    """添加镜像仓库"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    mirror = reg.mirrors.add_mirror(name, url, sync_direction=direction, auth_type=auth, branch=branch)
+    click.echo(f"镜像已添加: {mirror.name} ({mirror.url}) 方向={mirror.sync_direction}")
+
+
+@pr_mirror.command("remove")
+@click.argument("name")
+def pr_mirror_remove(name):
+    """移除镜像"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    if reg.mirrors.remove_mirror(name):
+        click.echo(f"镜像已移除: {name}")
+    else:
+        click.echo(f"镜像不存在: {name}", err=True)
+
+
+@pr_mirror.command("list")
+def pr_mirror_list():
+    """列出所有镜像"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    mirrors = reg.mirrors.list_mirrors()
+    if not mirrors:
+        click.echo("暂无镜像配置")
+        return
+    click.echo(f"共 {len(mirrors)} 个镜像:")
+    for m in mirrors:
+        status = "启用" if m.enabled else "禁用"
+        click.echo(f"  {m.name}: {m.url} ({m.sync_direction}) [{status}]")
+        if m.last_sync:
+            click.echo(f"    上次同步: {m.last_sync} ({m.last_sync_status})")
+
+
+@pr_mirror.command("sync")
+@click.argument("name", required=False)
+@click.option("--all", "sync_all", is_flag=True, help="同步所有镜像")
+def pr_mirror_sync(name, sync_all):
+    """同步镜像"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    if sync_all:
+        results = reg.mirrors.sync_all()
+        for r in results:
+            status = "成功" if r["success"] else "失败"
+            click.echo(f"  {r['mirror']}: {status} — {r['message']} ({r['duration_ms']}ms)")
+    elif name:
+        result = reg.mirrors.sync_mirror(name)
+        status = "成功" if result["success"] else "失败"
+        click.echo(f"  {result['mirror']}: {status} — {result['message']} ({result['duration_ms']}ms)")
+    else:
+        click.echo("请指定镜像名称或使用 --all")
+
+
+@private_registry.group("permission")
+def pr_permission():
+    """权限管理"""
+
+
+@pr_permission.command("grant")
+@click.argument("user")
+@click.argument("role", type=click.Choice(["owner", "maintainer", "developer", "guest"]))
+@click.option("--scope", default="*", help="权限作用域（* 或 lang:xxx）")
+@click.option("--granted-by", default="", help="授权人")
+def pr_permission_grant(user, role, scope, granted_by):
+    """授予用户权限"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    entry = reg.permissions.grant(user, role, scope=scope, granted_by=granted_by)
+    click.echo(f"权限已授予: {entry.user} = {entry.role} (scope={entry.scope})")
+
+
+@pr_permission.command("revoke")
+@click.argument("user")
+@click.option("--scope", default="*", help="权限作用域")
+def pr_permission_revoke(user, scope):
+    """撤销用户权限"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    if reg.permissions.revoke(user, scope=scope):
+        click.echo(f"权限已撤销: {user} (scope={scope})")
+    else:
+        click.echo(f"未找到该权限: {user} (scope={scope})", err=True)
+
+
+@pr_permission.command("list")
+def pr_permission_list():
+    """列出所有权限"""
+    from yanpub.pkg.private_registry import PrivateRegistry
+
+    reg = PrivateRegistry()
+    entries = reg.permissions.list_all()
+    if not entries:
+        click.echo("暂无权限配置")
+        return
+    click.echo(f"共 {len(entries)} 条权限:")
+    for e in entries:
+        click.echo(f"  {e.user}: {e.role} (scope={e.scope})")
+
+
+# ---- v1.4.0: 代码挑战赛 ----
+
+
+@main.group("challenge")
+def challenge():
+    """代码挑战赛 — 题目/评判/排行榜"""
+
+
+@challenge.command("list")
+@click.option("--difficulty", "-d", default=None, help="按难度筛选")
+@click.option("--tag", "-t", default=None, help="按标签筛选")
+def challenge_list(difficulty, tag):
+    """列出所有挑战"""
+    from yanpub.playground.challenge import ChallengeManager
+
+    mgr = ChallengeManager()
+    challenges = mgr.list_challenges(difficulty=difficulty, tag=tag)
+    if not challenges:
+        click.echo("暂无挑战")
+        return
+    click.echo(f"共 {len(challenges)} 个挑战:")
+    for c in challenges:
+        rate = f"{c.pass_rate:.0%}" if c.pass_rate else "N/A"
+        click.echo(f"  [{c.difficulty}] {c.title} ({c.id}) — {c.score}分 通过率:{rate}")
+
+
+@challenge.command("show")
+@click.argument("challenge_id")
+def challenge_show(challenge_id):
+    """查看挑战详情"""
+    from yanpub.playground.challenge import ChallengeManager
+
+    mgr = ChallengeManager()
+    c = mgr.get_challenge(challenge_id)
+    if c is None:
+        click.echo(f"挑战不存在: {challenge_id}", err=True)
+        return
+    click.echo(f"标题: {c.title}")
+    click.echo(f"难度: {c.difficulty}  分值: {c.score}分")
+    click.echo(f"标签: {', '.join(c.tags) if c.tags else '无'}")
+    click.echo(f"描述: {c.description}")
+    click.echo(f"时间限制: {c.time_limit_ms}ms  内存限制: {c.memory_limit_mb}MB")
+    if c.supported_langs:
+        click.echo(f"支持语言: {', '.join(c.supported_langs)}")
+    else:
+        click.echo("支持语言: 全部")
+    click.echo(f"提交数: {c.submit_count}  通过数: {c.pass_count}")
+    if c.public_test_cases:
+        click.echo(f"公开测试用例: {len(c.public_test_cases)} 个")
+        for i, tc in enumerate(c.public_test_cases, 1):
+            click.echo(f"  用例{i}: 输入={tc.input!r} 期望输出={tc.expected_output!r}")
+
+
+@challenge.command("submit")
+@click.argument("challenge_id")
+@click.argument("lang_id")
+@click.option("--user", "-u", default="anonymous", help="用户名")
+@click.option("--file", "-f", default=None, help="代码文件路径")
+@click.option("--code", "-c", default=None, help="直接传入代码")
+def challenge_submit(challenge_id, lang_id, user, file, code):
+    """提交挑战解答"""
+    from yanpub.playground.challenge import ChallengeManager
+
+    if file:
+        from pathlib import Path as PathLib
+        code = PathLib(file).read_text(encoding="utf-8")
+    elif not code:
+        click.echo("请通过 --file 或 --code 提供代码", err=True)
+        return
+
+    mgr = ChallengeManager()
+    try:
+        submission = mgr.submit(challenge_id, user=user, lang_id=lang_id, code=code)
+    except ValueError as e:
+        click.echo(str(e), err=True)
+        return
+
+    status_icons = {
+        "passed": "通过", "failed": "未通过", "error": "错误",
+        "timeout": "超时", "pending": "等待中", "running": "运行中",
+    }
+    icon = status_icons.get(submission.status, submission.status)
+    click.echo(f"提交结果: {icon}")
+    click.echo(f"  通过用例: {submission.passed_cases}/{submission.total_cases}")
+    click.echo(f"  得分: {submission.score}")
+    click.echo(f"  执行时间: {submission.execution_time_ms:.1f}ms")
+    if submission.error_message:
+        click.echo(f"  错误: {submission.error_message}")
+
+
+@challenge.command("leaderboard")
+@click.argument("challenge_id", required=False)
+def challenge_leaderboard(challenge_id):
+    """查看排行榜"""
+    from yanpub.playground.challenge import ChallengeManager
+
+    mgr = ChallengeManager()
+    entries = mgr.get_leaderboard(challenge_id=challenge_id)
+    if not entries:
+        click.echo("暂无排行数据")
+        return
+    scope = f"挑战 {challenge_id}" if challenge_id else "总排行"
+    click.echo(f"{'='*50}")
+    click.echo(f"  {scope} 排行榜")
+    click.echo(f"{'='*50}")
+    click.echo(f"{'排名':>4}  {'用户':<12}  {'总分':>6}  {'通过':>4}  {'平均耗时':>10}  {'常用语言':<8}")
+    click.echo(f"{'-'*50}")
+    for e in entries:
+        click.echo(f"{e.rank:>4}  {e.user:<12}  {e.total_score:>6}  {e.challenges_passed:>4}  {e.avg_time_ms:>8.1f}ms  {e.best_lang:<8}")
+
+
+@challenge.command("create")
+@click.option("--id", "challenge_id", default=None, help="挑战ID")
+@click.option("--title", "-t", default=None, help="标题")
+@click.option("--difficulty", "-d", type=click.Choice(["入门", "简单", "中等", "困难", "地狱"]), default="中等", help="难度")
+@click.option("--description", "-D", default=None, help="描述")
+@click.option("--expected-output", "-o", default=None, help="期望输出（快速创建单测试用例）")
+@click.option("--score", "-s", default=100, type=int, help="满分")
+@click.option("--author", "-a", default="", help="作者")
+def challenge_create(challenge_id, title, difficulty, description, expected_output, score, author):
+    """创建新挑战"""
+    from yanpub.playground.challenge import Challenge, TestCase, ChallengeManager
+
+    if not title:
+        title = click.prompt("标题")
+    if not description:
+        description = click.prompt("描述")
+
+    if not challenge_id:
+        challenge_id = title.lower().replace(" ", "-").replace("，", "-")
+
+    test_cases = []
+    if expected_output:
+        test_cases.append(TestCase(input="", expected_output=expected_output))
+    else:
+        # 交互式添加测试用例
+        click.echo("添加测试用例（空行结束）:")
+        idx = 1
+        while True:
+            inp = click.prompt(f"  用例{idx} 输入", default="", show_default=False)
+            out = click.prompt(f"  用例{idx} 期望输出", default="", show_default=False)
+            if not out:
+                break
+            hidden = click.confirm(f"  用例{idx} 是否隐藏", default=False)
+            test_cases.append(TestCase(input=inp, expected_output=out, is_hidden=hidden))
+            idx += 1
+
+    c = Challenge(
+        id=challenge_id,
+        title=title,
+        description=description,
+        difficulty=difficulty,
+        test_cases=test_cases,
+        score=score,
+        author=author,
+    )
+
+    mgr = ChallengeManager()
+    mgr.create_challenge(c)
+    click.echo(f"挑战已创建: {c.id} ({c.title}), {len(c.test_cases)} 个测试用例")
+
+
+# ---- v1.4.0: 适配器质量评分 ----
+
+
+@main.command("quality")
+@click.argument("lang_id", required=False)
+@click.option("--html", "html_path", default=None, help="生成 HTML 报告")
+@click.option("--json", "as_json", is_flag=True, help="输出 JSON 格式")
+def quality_check(lang_id, html_path, as_json):
+    """适配器质量评分 — 自动化检查完整度、文档、示例"""
+    import json as json_mod
+    from yanpub.core.quality import QualityChecker
+
+    checker = QualityChecker()
+
+    if lang_id:
+        report = checker.check_one(lang_id)
+        if report is None:
+            click.echo(f"适配器不存在: {lang_id}", err=True)
+            return
+        reports = [report]
+    else:
+        reports = checker.check_all()
+
+    if not reports:
+        click.echo("未找到任何适配器", err=True)
+        return
+
+    if as_json:
+        click.echo(json_mod.dumps([r.to_dict() for r in reports], ensure_ascii=False, indent=2))
+        return
+
+    if html_path:
+        from pathlib import Path as PathLib
+        output = PathLib(html_path)
+        checker.generate_html(reports, output)
+        click.echo(f"HTML 报告已生成: {output}")
+        return
+
+    # 终端输出
+    for r in reports:
+        grade_color = {"S": "green", "A": "green", "B": "blue", "C": "yellow", "D": "red", "F": "red"}.get(r.grade, "white")
+        click.echo(click.style(f"  {r.grade}", fg=grade_color, bold=True), nl=False)
+        click.echo(f"  {r.lang_name} ({r.lang_id}) — {r.total_score}/{r.max_score} ({r.percentage:.1f}%)")
+        for d in r.dimensions:
+            bar_len = 20
+            filled = int(bar_len * d.score / d.max_score) if d.max_score > 0 else 0
+            bar = "█" * filled + "░" * (bar_len - filled)
+            click.echo(f"    {d.name:<8} {bar} {d.score}/{d.max_score}")
+        if any(d.suggestions for d in r.dimensions):
+            suggestions = [s for d in r.dimensions for s in d.suggestions[:2]]
+            click.echo(f"    建议: {'; '.join(suggestions[:3])}")
+        click.echo()
 
 
 if __name__ == "__main__":
