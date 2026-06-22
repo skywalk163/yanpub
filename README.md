@@ -2,6 +2,8 @@
 
 > 万言归埠，一站集成。
 
+![Adapter Quality](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/skywalk163/yanpub/gh-pages/quality-badge.json) ![CI](https://github.com/skywalk163/yanpub/actions/workflows/ci.yml/badge.svg)
+
 中文编程语言统一基础设施。一个框架，接入任意中文语言，即刻获得完整工具链。
 
 ## 问题
@@ -233,7 +235,12 @@ yanpub challenge submit fibonacci duan -f fib.duan
 yanpub challenge leaderboard
 ```
 
-Playground 也提供 Web API：`/api/challenges`、`/api/challenges/{id}/submit`、`/api/leaderboard`。
+Playground 也提供 Web 界面和 API：
+
+- `/challenges` — 挑战赛独立页面（题目浏览/提交/排行榜）
+- `/quality` — 适配器质量评分页面（5 维度进度条/等级/改进建议）
+- `/api/challenges`、`/api/challenges/{id}/submit`、`/api/leaderboard`
+- `/api/quality`
 
 ## 适配器质量评分
 
@@ -241,11 +248,11 @@ Playground 也提供 Web API：`/api/challenges`、`/api/challenges/{id}/submit`
 
 | 维度 | 满分 | 检查项 |
 |------|------|--------|
-| 基础完整度 | 30 | adapter.py/yaml 存在、类定义、可实例化 |
-| 元数据质量 | 20 | 必需字段、版本号、扩展名、颜色 |
-| 示例丰富度 | 25 | 数量、front matter、多样性 |
+| 基础完整度 | 25 | adapter.py/yaml 存在、类定义、可实例化 |
+| 元数据质量 | 20 | 必需字段、版本号成熟度、扩展名、颜色 |
+| 示例丰富度 | 20 | 数量、front matter、多样性 |
 | 文档覆盖 | 15 | README、CONTRIBUTING、关键字文档、描述 |
-| 功能验证 | 10 | 关键字加载、capabilities、eval 命令 |
+| 功能验证 | 20 | 关键字丰富度梯度、capabilities 覆盖、eval/run/repl 可用性 |
 
 ```bash
 # 查看所有适配器评分
@@ -259,13 +266,18 @@ yanpub quality --html quality-report.html
 
 # JSON 输出
 yanpub quality --json
+
+# CI 模式（生成报告文件 + 徽章数据 + PR 评论）
+yanpub quality --ci
 ```
+
+CI 集成：推送到 main 后自动评分并部署徽章到 gh-pages，PR 自动评论评分结果。独立 `quality.yml` workflow 监听适配器变更并检测质量回归。
 
 ## 性能
 
 - 启动时间 ~0.24s（10个适配器懒加载）
 - 关键字首次访问 ~0.38s（动态从项目加载），缓存后 0s
-- 974 个测试全部通过
+- 974 个测试全部通过（含明道示例语法修复）
 
 ## License
 

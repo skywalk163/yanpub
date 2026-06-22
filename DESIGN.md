@@ -312,6 +312,8 @@ yanpub/
 │   │   ├── collab.py            #   实时协作 CRDT + 房间管理（v0.6.0 新增）
 │   │   ├── challenge.py         #   代码挑战赛 + 评判 + 排行榜（v1.4.0 新增）
 │   │   ├── static/index.html    #   CodeMirror 5 前端（含对比+分享+WASM+协作模式）
+│   │   ├── static/challenges.html #  挑战赛独立页面（题目浏览/提交/排行榜）
+│   │   ├── static/quality.html  #   适配器质量评分页面（5维度进度条/等级/建议）
 │   │   └── templates/           #   各语言示例模板
 │   │
 │   ├── lsp/                     # 统一 LSP 服务
@@ -633,10 +635,14 @@ yanpub/
 - [x] 包管理器私有注册中心（PrivateRegistry + Git 仓库存储 + MirrorSync 公网镜像双向同步 + PermissionManager 4级角色权限 + private-registry/mirror/permission CLI）
 - [x] Playground 代码挑战赛系统（Challenge + TestCase + Submission + ChallengeJudge 评判器 + Leaderboard 排行榜 + 6道内置题 + /api/challenges/* + challenge CLI）
 - [x] 适配器质量评分（QualityChecker 5维度 + DimensionScore + QualityReport S/A/B/C/D/F 等级 + HTML 报告 + quality CLI）
+- [x] 挑战赛/质量评分前端页面（challenges.html 题目浏览/提交/排行榜 + quality.html 5维度进度条/等级/建议 + 三个页面互链导航）
+- [x] 适配器质量评分 CI 集成（quality --ci 模式 + quality.yml/ci.yml workflow + PR 自动评论 + gh-pages 徽章部署 + 质量回归检测）
+- [x] 明道示例语法修复（6个示例+6个模板从错误的 Python 风格重写为正确明道语法：定义…就是/就是函/缩进块/赋值…为/索引/列表修改）
+- [x] 段言 `__file__` 修复（code_generator.py stdlib 路径 try/except NameError + _run_src 传入 __file__ 到 exec 命名空间）
 
 ## 十九、下一步（v1.5.0 规划）
 
 - [ ] 桌面 GUI 封装（Electron/Tauri，离线桌面应用）
 - [ ] Playground 代码挑战赛增强（代码对比、提交历史、题解区）
-- [ ] 适配器质量评分 CI 集成（GitHub Actions 自动评分 + 评分徽章）
 - [ ] 私有注册中心 Web UI（包浏览、搜索、版本管理界面）
+- [ ] 其他语言示例语法审核与修复（moyan/hanyu/xinyu/yanzhi/yanlv/zhixing）

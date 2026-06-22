@@ -43,6 +43,16 @@ def create_app() -> FastAPI:
         """Playground 主页"""
         return FileResponse(_STATIC_DIR / "index.html")
 
+    @app.get("/challenges")
+    async def challenges_page():
+        """代码挑战赛页面"""
+        return FileResponse(_STATIC_DIR / "challenges.html")
+
+    @app.get("/quality")
+    async def quality_page():
+        """适配器质量评分页面"""
+        return FileResponse(_STATIC_DIR / "quality.html")
+
     # ---- REST API ----
 
     @app.get("/api/languages")
@@ -364,6 +374,9 @@ def create_app() -> FastAPI:
 
     # ---- 代码挑战赛 ----
     _register_challenge_routes(app)
+
+    # ---- 适配器质量评分 ----
+    _register_quality_routes(app)
 
     return app
 
@@ -1048,3 +1061,21 @@ def as_dict_tc(tc):
     """TestCase 转字典"""
     from dataclasses import asdict
     return asdict(tc)
+
+
+def _register_quality_routes(app: FastAPI) -> None:
+    """注册适配器质量评分路由"""
+
+    @app.get("/api/quality")
+    async def quality_reports(lang_id: str | None = None):
+        """适配器质量评分报告"""
+        from yanpub.core.quality import QualityChecker
+
+        checker = QualityChecker()
+        if lang_id:
+            report = checker.check_one(lang_id)
+            if report is None:
+                return JSONResponse({"error": f"适配器 {lang_id} 不存在"}, status_code=404)
+            return {"reports": [report.to_dict()]}
+        reports = checker.check_all()
+        return {"reports": [r.to_dict() for r in reports]}
