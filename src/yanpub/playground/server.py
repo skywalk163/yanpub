@@ -36,6 +36,11 @@ _TEMPLATES_DIR = Path(__file__).parent / "templates"
 def create_app() -> FastAPI:
     app = FastAPI(title="YanPlay - 中文编程语言 Playground")
 
+    # ---- 安全中间件 ----
+    from yanpub.playground.security import install_security_middleware
+
+    install_security_middleware(app)
+
     # ---- 页面路由 ----
 
     @app.get("/")
@@ -157,6 +162,15 @@ def create_app() -> FastAPI:
         lang_id = body.get("lang", "")
         code = body.get("code", "")
 
+        # 代码长度校验
+        from yanpub.playground.security import MAX_CODE_LENGTH
+
+        if len(code) > MAX_CODE_LENGTH:
+            return JSONResponse(
+                {"type": "error", "message": f"代码过长，最大允许 {MAX_CODE_LENGTH} 字符"},
+                status_code=413,
+            )
+
         registry = get_registry()
         adapter = registry.get(lang_id)
         if adapter is None:
@@ -188,12 +202,25 @@ def create_app() -> FastAPI:
         await websocket.accept()
         registry = get_registry()
 
+        from yanpub.playground.security import MAX_CODE_LENGTH
+
         try:
             while True:
                 data = await websocket.receive_json()
                 lang_id = data.get("lang", "")
                 code = data.get("code", "")
                 request_id = data.get("id", "")
+
+                # 代码长度校验
+                if len(code) > MAX_CODE_LENGTH:
+                    await websocket.send_json(
+                        {
+                            "type": "error",
+                            "message": f"代码过长，最大允许 {MAX_CODE_LENGTH} 字符",
+                            "id": request_id,
+                        }
+                    )
+                    continue
 
                 adapter = registry.get(lang_id)
                 if adapter is None:
@@ -311,6 +338,13 @@ def create_app() -> FastAPI:
                 },
                 status_code=400,
             )
+
+        # 安全校验 sandbox 参数
+        from yanpub.playground.security import validate_sandbox_params
+
+        param_error = validate_sandbox_params(body)
+        if param_error:
+            return JSONResponse({"type": "error", "message": param_error}, status_code=400)
 
         from yanpub.core.sandbox import SandboxManager, SandboxConfig
 

@@ -21,7 +21,7 @@ from yanpub.core.registry import get_registry
 
 
 @click.group()
-@click.version_option(version="1.4.0")
+@click.version_option(version="1.5.0")
 @click.option("--lang", "-L", "cli_lang", default=None, help="语言设置（zh/en）")
 def main(cli_lang: str | None):
     """言埠 YanPub -- 中文编程语言统一基础设施"""
