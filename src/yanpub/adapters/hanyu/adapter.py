@@ -28,7 +28,7 @@ class HanyuAdapter(SubprocessAdapter):
         super().__init__(
             name="翰语",
             lang_id="hanyu",
-            version="0.1.0",
+            version="0.5.0",
             extensions=[".翰", ".hanyu"],
             run_command=["python", "-m", "hanyu.compiler"],
             eval_command=None,  # 无 eval 选项

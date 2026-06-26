@@ -26,7 +26,7 @@ class ZhixingAdapter(SubprocessAdapter):
         super().__init__(
             name="知行",
             lang_id="zhixing",
-            version="0.1.0",
+            version="0.9.0",
             extensions=[".行", ".yan"],
             run_command=["python", _ZHIXING_CLI],
             eval_command=["python", _ZHIXING_CLI, "-c"],

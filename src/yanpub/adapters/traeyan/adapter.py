@@ -24,7 +24,7 @@ class TraeyanAdapter(SubprocessAdapter):
         super().__init__(
             name="趣言",
             lang_id="traeyan",
-            version="0.1.0",
+            version="0.8.0",
             extensions=[".行", ".yan"],
             run_command=["python", "-m", "traeyan.main"],
             eval_command=None,  # 无 -c 选项，使用临时文件 fallback

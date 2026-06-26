@@ -28,7 +28,7 @@ class MingdaoAdapter(SubprocessAdapter):
         super().__init__(
             name="明道",
             lang_id="mingdao",
-            version="0.1.0",
+            version="0.6.0",
             extensions=[".道", ".mingdao", ".rkt"],
             run_command=["racket", "-S", _MINGDAO_PROJECT_DIR],
             eval_command=None,  # Racket 无 eval 选项，使用临时文件 fallback（需 #lang 头）

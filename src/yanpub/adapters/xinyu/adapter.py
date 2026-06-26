@@ -25,7 +25,7 @@ class XinyuAdapter(SubprocessAdapter):
         super().__init__(
             name="心语",
             lang_id="xinyu",
-            version="0.1.0",
+            version="0.9.0",
             extensions=[".心", ".xinyu"],
             run_command=["python", _XINYU_CLI],
             eval_command=["python", _XINYU_CLI, "-c"],

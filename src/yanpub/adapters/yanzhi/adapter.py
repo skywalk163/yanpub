@@ -25,7 +25,7 @@ class YanzhiAdapter(SubprocessAdapter):
         super().__init__(
             name="言知",
             lang_id="yanzhi",
-            version="0.1.0",
+            version="1.0.0",
             extensions=[".知", ".yan"],
             run_command=["python", "-m", "yanzhi.cli"],
             eval_command=["python", "-m", "yanzhi.cli", "-c"],
