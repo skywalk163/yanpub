@@ -206,7 +206,7 @@ class TestExampleManager:
 
     def test_all_languages_have_examples(self, manager):
         """所有已注册语言都应有示例"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         all_examples = manager.list_all()

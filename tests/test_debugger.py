@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from yanpub.core.debugger import Breakpoint, DebugEvent, DebugSession, StackFrame, Variable
+from yanpub.core.dev.debugger import Breakpoint, DebugEvent, DebugSession, StackFrame, Variable
 
 from conftest import skip_if_no_backend
 
@@ -34,7 +34,7 @@ class TestBreakpoint:
 
     def test_breakpoint_creation(self):
         """基本断点创建"""
-        from yanpub.core.debugger import Breakpoint
+        from yanpub.core.dev.debugger import Breakpoint
 
         bp = Breakpoint(id=1, line=10)
         assert bp.id == 1
@@ -46,7 +46,7 @@ class TestBreakpoint:
 
     def test_breakpoint_with_condition(self):
         """条件断点"""
-        from yanpub.core.debugger import Breakpoint
+        from yanpub.core.dev.debugger import Breakpoint
 
         bp = Breakpoint(id=2, line=20, condition="x > 5", hit_count=3)
         assert bp.condition == "x > 5"
@@ -54,7 +54,7 @@ class TestBreakpoint:
 
     def test_breakpoint_with_column(self):
         """带列号的断点"""
-        from yanpub.core.debugger import Breakpoint
+        from yanpub.core.dev.debugger import Breakpoint
 
         bp = Breakpoint(id=3, line=15, column=8)
         assert bp.column == 8
@@ -170,7 +170,7 @@ class TestDebugSession:
 
     def _get_adapter(self):
         """获取测试适配器"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -180,7 +180,7 @@ class TestDebugSession:
 
     def test_session_creation(self):
         """调试会话创建"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -195,7 +195,7 @@ class TestDebugSession:
 
     def test_session_custom_id(self):
         """自定义会话 ID"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -207,7 +207,7 @@ class TestDebugSession:
 
     def test_set_breakpoints(self):
         """设置断点"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -235,7 +235,7 @@ class TestDebugSession:
 
     def test_set_breakpoints_replaces_previous(self):
         """设置断点会替换之前的断点"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -253,7 +253,7 @@ class TestDebugSession:
         """启动调试 — 在入口处暂停"""
         skip_if_no_backend("duan")
 
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -274,7 +274,7 @@ class TestDebugSession:
         """启动调试 — 直接运行"""
         skip_if_no_backend("duan")
 
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -291,7 +291,7 @@ class TestDebugSession:
 
     def test_session_terminate(self):
         """终止调试会话"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -304,7 +304,7 @@ class TestDebugSession:
 
     def test_get_stack_trace(self):
         """获取调用栈"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -321,7 +321,7 @@ class TestDebugSession:
 
     def test_get_variables(self):
         """获取变量"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -346,7 +346,7 @@ class TestDebugSession:
 
     def test_evaluate(self):
         """求值表达式"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -360,7 +360,7 @@ class TestDebugSession:
 
     def test_evaluate_not_stopped(self):
         """未暂停时求值"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -373,7 +373,7 @@ class TestDebugSession:
 
     def test_continue_not_stopped(self):
         """未暂停时 continue"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -386,7 +386,7 @@ class TestDebugSession:
 
     def test_step_not_stopped(self):
         """未暂停时单步"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -408,8 +408,8 @@ class TestLineTracer:
 
     def test_tracer_creation(self):
         """追踪器创建"""
-        from yanpub.core.debugger import LineTracer
-        from yanpub.core.registry import get_registry
+        from yanpub.core.dev.debugger import LineTracer
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -422,8 +422,8 @@ class TestLineTracer:
 
     def test_tracer_extract_error_line(self):
         """错误行号提取"""
-        from yanpub.core.debugger import LineTracer
-        from yanpub.core.registry import get_registry
+        from yanpub.core.dev.debugger import LineTracer
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -441,8 +441,8 @@ class TestLineTracer:
 
     def test_tracer_build_variables(self):
         """变量列表构建"""
-        from yanpub.core.debugger import LineTracer
-        from yanpub.core.registry import get_registry
+        from yanpub.core.dev.debugger import LineTracer
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -471,8 +471,8 @@ class TestLineTracer:
 
     def test_tracer_subprocess_run(self):
         """SubprocessAdapter 运行测试"""
-        from yanpub.core.debugger import LineTracer
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.dev.debugger import LineTracer
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试",
@@ -491,8 +491,8 @@ class TestLineTracer:
 
     def test_tracer_subprocess_with_breakpoint(self):
         """SubprocessAdapter 断点模式"""
-        from yanpub.core.debugger import LineTracer
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.dev.debugger import LineTracer
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试",
@@ -513,8 +513,8 @@ class TestLineTracer:
 
     def test_tracer_subprocess_error(self):
         """SubprocessAdapter 执行错误"""
-        from yanpub.core.debugger import LineTracer
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.dev.debugger import LineTracer
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试",
@@ -533,8 +533,8 @@ class TestLineTracer:
 
     def test_tracer_step_execution(self):
         """单步执行测试"""
-        from yanpub.core.debugger import LineTracer
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.dev.debugger import LineTracer
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试",
@@ -561,8 +561,8 @@ class TestDebugAdapter:
     """DAP 适配器"""
 
     def _create_adapter(self):
-        from yanpub.core.debugger import DebugAdapter
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.dev.debugger import DebugAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         da = DebugAdapter()
         lang_adapter = SubprocessAdapter(
@@ -697,8 +697,8 @@ class TestDAPServer:
 
     def _create_server(self, port: int = 0) -> tuple:
         """创建测试服务器"""
-        from yanpub.core.dap_server import DAPServer
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.dev.dap_server import DAPServer
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         lang_adapter = SubprocessAdapter(
             name="测试",
@@ -1180,7 +1180,7 @@ class TestInProcessDebugging:
 
     def _make_inprocess_adapter(self, lang_id: str = "test_ip"):
         """创建测试用 InProcessAdapter"""
-        from yanpub.core.adapter import InProcessAdapter
+        from yanpub.core.adapter.adapter import InProcessAdapter
 
         class TestInProcessAdapter(InProcessAdapter):
             @property
@@ -1206,7 +1206,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_code_no_breakpoints(self):
         """追踪 Python 代码 — 无断点正常退出"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter()
         session = DebugSession(adapter)
@@ -1219,7 +1219,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_with_breakpoint(self):
         """追踪 Python 代码 — 断点命中"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_bp")
         session = DebugSession(adapter)
@@ -1236,7 +1236,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_step(self):
         """追踪 Python 代码 — 单步执行"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_step")
         session = DebugSession(adapter)
@@ -1251,7 +1251,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_conditional_breakpoint_skip(self):
         """追踪 Python 代码 — 条件断点不满足"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_cond")
         session = DebugSession(adapter)
@@ -1266,7 +1266,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_conditional_breakpoint_hit(self):
         """追踪 Python 代码 — 条件断点命中"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_cond2")
         session = DebugSession(adapter)
@@ -1282,7 +1282,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_error(self):
         """追踪 Python 代码 — 执行错误"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_err")
         session = DebugSession(adapter)
@@ -1296,7 +1296,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_variables_capture(self):
         """追踪 Python 代码 — 变量捕获"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_vars")
         session = DebugSession(adapter)
@@ -1316,7 +1316,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_multiple_breakpoints(self):
         """追踪 Python 代码 — 多个断点，命中第一个"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_multi_bp")
         session = DebugSession(adapter)
@@ -1334,7 +1334,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_step_into(self):
         """追踪 Python 代码 — step into"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_step_into")
         session = DebugSession(adapter)
@@ -1349,7 +1349,7 @@ class TestInProcessDebugging:
 
     def test_trace_python_step_out(self):
         """追踪 Python 代码 — step out（顶层代码中会直接执行完毕）"""
-        from yanpub.core.debugger import LineTracer
+        from yanpub.core.dev.debugger import LineTracer
 
         adapter = self._make_inprocess_adapter("test_step_out")
         session = DebugSession(adapter)

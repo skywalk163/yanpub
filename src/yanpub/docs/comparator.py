@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from yanpub.core.keyword_docs import KEYWORD_CATEGORIES
-from yanpub.core.registry import LanguageRegistry, get_registry
+from yanpub.core.adapter.registry import LanguageRegistry, get_registry
 from yanpub.docs.generator import DocsGenerator
 
 

@@ -23,7 +23,7 @@ from yanpub.cli import main
 def sign_file(file: str, key: str, signer: str, algorithm: str):
     """对源代码文件进行签名"""
     from pathlib import Path as P
-    from yanpub.core.signing import CodeSigner
+    from yanpub.core.security.signing import CodeSigner
 
     # 读取私钥
     key_path = P(key)
@@ -52,7 +52,7 @@ def sign_file(file: str, key: str, signer: str, algorithm: str):
 @click.argument("file", type=click.Path(exists=True))
 def verify_file(file: str):
     """验证源代码文件签名"""
-    from yanpub.core.signing import CodeSigner
+    from yanpub.core.security.signing import CodeSigner
 
     code_signer = CodeSigner()
     valid, message = code_signer.verify_file(file)
@@ -76,7 +76,7 @@ def trust_add(key_file: str, signer: str, level: str):
     """添加受信任的密钥"""
     import json
     from pathlib import Path as P
-    from yanpub.core.signing import SigningKey, TrustStore
+    from yanpub.core.security.signing import SigningKey, TrustStore
 
     # 读取密钥文件（JSON 格式）
     key_path = P(key_file)
@@ -98,7 +98,7 @@ def trust_add(key_file: str, signer: str, level: str):
 @trust_group.command("list")
 def trust_list():
     """列出受信任的密钥"""
-    from yanpub.core.signing import TrustStore
+    from yanpub.core.security.signing import TrustStore
 
     store = TrustStore()
     keys = store.list_keys()
@@ -115,7 +115,7 @@ def trust_list():
 @click.argument("key_id")
 def trust_remove(key_id: str):
     """移除受信任的密钥"""
-    from yanpub.core.signing import TrustStore
+    from yanpub.core.security.signing import TrustStore
 
     store = TrustStore()
     trusted, level = store.is_trusted(key_id)
@@ -135,7 +135,7 @@ def generate_key(algorithm: str, output: str):
     """生成签名密钥对"""
     import json
     from pathlib import Path as P
-    from yanpub.core.signing import SigningKey
+    from yanpub.core.security.signing import SigningKey
 
     key, private_key = SigningKey.generate(algorithm)
 
@@ -170,7 +170,7 @@ def generate_key(algorithm: str, output: str):
 @click.option("--format", "fmt", type=click.Choice(["json", "csv"]), default="json")
 def audit_log(action: str, fmt: str):
     """查看安全审计日志"""
-    from yanpub.core.audit import AuditLog
+    from yanpub.core.security.audit import AuditLog
 
     log = AuditLog()
 

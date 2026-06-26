@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 
 # ---- 辅助函数 ----

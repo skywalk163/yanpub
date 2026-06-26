@@ -18,7 +18,7 @@ import shutil
 import time
 from dataclasses import dataclass, field
 
-from yanpub.core.adapter import LanguageAdapter, SubprocessAdapter
+from yanpub.core.adapter.adapter import LanguageAdapter, SubprocessAdapter
 
 
 @dataclass

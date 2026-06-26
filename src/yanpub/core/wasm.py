@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter, ExecutionResult
+from yanpub.core.adapter.adapter import LanguageAdapter, ExecutionResult
 
 
 @dataclass

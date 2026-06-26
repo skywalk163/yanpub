@@ -33,7 +33,7 @@ class TestSandboxConfig:
 
     def test_default_config(self):
         """默认配置值"""
-        from yanpub.core.sandbox import SandboxConfig
+        from yanpub.core.security.sandbox import SandboxConfig
 
         config = SandboxConfig()
         assert config.backend == "auto"
@@ -49,7 +49,7 @@ class TestSandboxConfig:
 
     def test_custom_config(self):
         """自定义配置"""
-        from yanpub.core.sandbox import SandboxConfig
+        from yanpub.core.security.sandbox import SandboxConfig
 
         config = SandboxConfig(
             backend="docker",
@@ -70,7 +70,7 @@ class TestSandboxConfig:
 
     def test_memory_limit_bytes(self):
         """内存限制转换为字节数"""
-        from yanpub.core.sandbox import SandboxConfig
+        from yanpub.core.security.sandbox import SandboxConfig
 
         assert SandboxConfig(memory_limit="512m").memory_limit_bytes() == 512 * 1024 ** 2
         assert SandboxConfig(memory_limit="1g").memory_limit_bytes() == 1024 ** 3
@@ -78,7 +78,7 @@ class TestSandboxConfig:
 
     def test_max_file_size_bytes(self):
         """文件大小限制转换为字节数"""
-        from yanpub.core.sandbox import SandboxConfig
+        from yanpub.core.security.sandbox import SandboxConfig
 
         assert SandboxConfig(max_file_size="10m").max_file_size_bytes() == 10 * 1024 ** 2
         assert SandboxConfig(max_file_size="100k").max_file_size_bytes() == 100 * 1024
@@ -88,7 +88,7 @@ class TestSandboxResult:
     """SandboxResult 结果数据结构"""
 
     def test_success_result(self):
-        from yanpub.core.sandbox import SandboxResult
+        from yanpub.core.security.sandbox import SandboxResult
 
         result = SandboxResult(
             stdout="hello\n",
@@ -102,7 +102,7 @@ class TestSandboxResult:
         assert result.exit_code == 0
 
     def test_failure_result(self):
-        from yanpub.core.sandbox import SandboxResult
+        from yanpub.core.security.sandbox import SandboxResult
 
         result = SandboxResult(
             stderr="error",
@@ -113,7 +113,7 @@ class TestSandboxResult:
         assert not result.success
 
     def test_to_dict(self):
-        from yanpub.core.sandbox import SandboxResult
+        from yanpub.core.security.sandbox import SandboxResult
 
         result = SandboxResult(
             stdout="out",
@@ -143,34 +143,34 @@ class TestParseSize:
     """_parse_size 大小解析函数"""
 
     def test_kilobytes(self):
-        from yanpub.core.sandbox import _parse_size
+        from yanpub.core.security.sandbox import _parse_size
         assert _parse_size("10k") == 10 * 1024
         assert _parse_size("10K") == 10 * 1024
 
     def test_megabytes(self):
-        from yanpub.core.sandbox import _parse_size
+        from yanpub.core.security.sandbox import _parse_size
         assert _parse_size("512m") == 512 * 1024 ** 2
         assert _parse_size("1M") == 1024 ** 2
 
     def test_gigabytes(self):
-        from yanpub.core.sandbox import _parse_size
+        from yanpub.core.security.sandbox import _parse_size
         assert _parse_size("2g") == 2 * 1024 ** 3
         assert _parse_size("1G") == 1024 ** 3
 
     def test_terabytes(self):
-        from yanpub.core.sandbox import _parse_size
+        from yanpub.core.security.sandbox import _parse_size
         assert _parse_size("1t") == 1024 ** 4
 
     def test_plain_number(self):
-        from yanpub.core.sandbox import _parse_size
+        from yanpub.core.security.sandbox import _parse_size
         assert _parse_size("1024") == 1024
 
     def test_empty_string(self):
-        from yanpub.core.sandbox import _parse_size
+        from yanpub.core.security.sandbox import _parse_size
         assert _parse_size("") == 0
 
     def test_whitespace(self):
-        from yanpub.core.sandbox import _parse_size
+        from yanpub.core.security.sandbox import _parse_size
         assert _parse_size(" 512m ") == 512 * 1024 ** 2
 
 
@@ -184,12 +184,12 @@ class TestProcessSandbox:
 
     @pytest.fixture
     def sandbox(self):
-        from yanpub.core.sandbox import ProcessSandbox
+        from yanpub.core.security.sandbox import ProcessSandbox
         return ProcessSandbox()
 
     @pytest.fixture
     def config(self):
-        from yanpub.core.sandbox import SandboxConfig
+        from yanpub.core.security.sandbox import SandboxConfig
         return SandboxConfig(backend="process", timeout=10.0)
 
     def test_is_available(self, sandbox):
@@ -226,7 +226,7 @@ class TestProcessSandbox:
 
     def test_execute_timeout(self, sandbox):
         """超时终止执行"""
-        from yanpub.core.sandbox import SandboxConfig
+        from yanpub.core.security.sandbox import SandboxConfig
         short_config = SandboxConfig(backend="process", timeout=2.0)
         sid = sandbox.create(short_config)
         py = "python" if sys.platform == "win32" else "python3"
@@ -273,7 +273,7 @@ class TestFreeBSDJailSandbox:
         """非 FreeBSD 系统不可用"""
         if sys.platform == "freebsd":
             pytest.skip("Running on FreeBSD")
-        from yanpub.core.sandbox import FreeBSDJailSandbox
+        from yanpub.core.security.sandbox import FreeBSDJailSandbox
         jail = FreeBSDJailSandbox()
         assert not jail.is_available()
 
@@ -288,7 +288,7 @@ class TestDockerSandbox:
 
     def test_is_available_check(self):
         """检测 Docker/Podman 可用性（不依赖实际安装）"""
-        from yanpub.core.sandbox import DockerSandbox
+        from yanpub.core.security.sandbox import DockerSandbox
         ds = DockerSandbox()
         result = ds.is_available()
         assert isinstance(result, bool)
@@ -304,14 +304,14 @@ class TestSandboxManager:
 
     def test_detect_available_backends(self):
         """检测可用后端"""
-        from yanpub.core.sandbox import SandboxManager
+        from yanpub.core.security.sandbox import SandboxManager
         backends = SandboxManager.detect_available_backends()
         assert isinstance(backends, list)
         assert "process" in backends  # 始终可用
 
     def test_detect_backend(self):
         """自动检测后端"""
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
         mgr = SandboxManager(SandboxConfig(backend="auto"))
         backend = mgr.detect_backend()
         assert isinstance(backend, str)
@@ -319,21 +319,21 @@ class TestSandboxManager:
 
     def test_resolve_backend_auto(self):
         """auto 模式解析后端"""
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
         mgr = SandboxManager(SandboxConfig(backend="auto"))
         resolved = mgr._resolve_backend_name()
         assert resolved != "auto"
 
     def test_resolve_backend_explicit(self):
         """显式指定后端"""
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
         mgr = SandboxManager(SandboxConfig(backend="process"))
         resolved = mgr._resolve_backend_name()
         assert resolved == "process"
 
     def test_get_backend_status(self):
         """获取后端状态"""
-        from yanpub.core.sandbox import SandboxManager
+        from yanpub.core.security.sandbox import SandboxManager
         status = SandboxManager.get_backend_status()
         assert isinstance(status, dict)
         assert "process" in status
@@ -343,8 +343,8 @@ class TestSandboxManager:
 
     def test_execute_code_with_process(self):
         """使用 ProcessSandbox 执行代码"""
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试语言",
@@ -363,8 +363,8 @@ class TestSandboxManager:
 
     def test_execute_file_with_process(self):
         """使用 ProcessSandbox 执行文件"""
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试语言",
@@ -393,7 +393,7 @@ class TestSandboxManager:
 
     def test_cleanup(self):
         """清理管理器"""
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
         mgr = SandboxManager(SandboxConfig(backend="process"))
         mgr.cleanup()  # 应该不崩溃
 
@@ -409,8 +409,8 @@ class TestSandboxAdapterIntegration:
     def test_duan_adapter_sandbox_execute(self):
         """段言适配器沙箱执行"""
         skip_if_no_backend("duan")
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         try:
             from yanpub.adapters.duan.adapter import DuanAdapter
@@ -432,8 +432,8 @@ class TestSandboxAdapterIntegration:
     def test_duan_adapter_sandbox_file(self):
         """段言适配器沙箱文件执行"""
         skip_if_no_backend("duan")
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         try:
             from yanpub.adapters.duan.adapter import DuanAdapter
@@ -545,14 +545,14 @@ class TestSandboxBackendABC:
 
     def test_abstract_methods(self):
         """验证抽象方法必须实现"""
-        from yanpub.core.sandbox import SandboxBackend
+        from yanpub.core.security.sandbox import SandboxBackend
 
         with pytest.raises(TypeError):
             SandboxBackend()  # type: ignore
 
     def test_concrete_implementation(self):
         """验证具体实现可实例化"""
-        from yanpub.core.sandbox import SandboxBackend, SandboxConfig, SandboxResult
+        from yanpub.core.security.sandbox import SandboxBackend, SandboxConfig, SandboxResult
 
         class TestBackend(SandboxBackend):
             def create(self, config: SandboxConfig) -> str:

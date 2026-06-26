@@ -141,7 +141,7 @@ class LanguageAdapter(ABC):
         """代码补全。默认基于关键字列表。支持缓存。"""
         # 缓存检查
         if self._enable_cache:
-            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            from yanpub.core.adapter.cache import get_adapter_cache, AdapterCache
 
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
@@ -153,7 +153,7 @@ class LanguageAdapter(ABC):
 
         # 写入缓存
         if self._enable_cache and items:
-            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            from yanpub.core.adapter.cache import get_adapter_cache, AdapterCache
 
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
@@ -165,7 +165,7 @@ class LanguageAdapter(ABC):
         """代码诊断。默认实现尝试 eval 并捕获错误。支持缓存。"""
         # 缓存检查
         if self._enable_cache:
-            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            from yanpub.core.adapter.cache import get_adapter_cache, AdapterCache
 
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
@@ -190,7 +190,7 @@ class LanguageAdapter(ABC):
 
         # 写入缓存
         if self._enable_cache:
-            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            from yanpub.core.adapter.cache import get_adapter_cache, AdapterCache
 
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
@@ -593,7 +593,7 @@ class SubprocessAdapter(LanguageAdapter):
     def eval(self, code: str) -> ExecutionResult:
         # 缓存检查
         if self._enable_cache:
-            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            from yanpub.core.adapter.cache import get_adapter_cache, AdapterCache
 
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)
@@ -633,7 +633,7 @@ class SubprocessAdapter(LanguageAdapter):
 
         # 写入缓存（仅成功结果缓存，失败结果不缓存）
         if self._enable_cache and result.success:
-            from yanpub.core.cache import get_adapter_cache, AdapterCache
+            from yanpub.core.adapter.cache import get_adapter_cache, AdapterCache
 
             cache = get_adapter_cache()
             code_hash = AdapterCache.compute_code_hash(code)

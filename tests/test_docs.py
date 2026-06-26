@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from yanpub.core.registry import LanguageRegistry
-from yanpub.core.adapter import SubprocessAdapter
+from yanpub.core.adapter.registry import LanguageRegistry
+from yanpub.core.adapter.adapter import SubprocessAdapter
 from yanpub.docs.generator import (
     DocsGenerator,
     _categorize_keyword,
@@ -365,7 +365,7 @@ class TestSiteBuilder:
 class TestDocsIntegration:
     def test_real_registry_has_languages(self):
         """验证全局注册中心包含语言（CI 上可能少于10种）"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         gen = DocsGenerator(get_registry())
         languages = gen.list_all_languages()
@@ -373,7 +373,7 @@ class TestDocsIntegration:
 
     def test_real_comparison_table(self):
         """验证全局注册中心的对比表可以生成"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         gen = DocsGenerator(get_registry())
         table = gen.generate_comparison_table()
@@ -381,7 +381,7 @@ class TestDocsIntegration:
 
     def test_real_keyword_search(self):
         """验证跨语言关键字搜索"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         gen = DocsGenerator(get_registry())
         results = gen.search_keywords("定义")
@@ -390,7 +390,7 @@ class TestDocsIntegration:
 
     def test_real_similarity(self):
         """验证语言相似度计算"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         comp = LanguageComparator(get_registry())
         similarities = comp.compute_all_similarities()

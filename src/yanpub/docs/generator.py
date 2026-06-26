@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from yanpub.core.keyword_docs import categorize_keyword, KEYWORD_CATEGORIES
-from yanpub.core.registry import LanguageRegistry, get_registry
+from yanpub.core.adapter.registry import LanguageRegistry, get_registry
 
 
 @dataclass

@@ -5,8 +5,8 @@ import tempfile
 from pathlib import Path
 
 
-from yanpub.core.adapter import SubprocessAdapter
-from yanpub.core.registry import LanguageRegistry
+from yanpub.core.adapter.adapter import SubprocessAdapter
+from yanpub.core.adapter.registry import LanguageRegistry
 from yanpub.core.adapter_test import (
     AdapterTestCase,
     AdapterTestResult,

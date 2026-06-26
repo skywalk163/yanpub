@@ -17,8 +17,8 @@ import socket
 import threading
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter
-from yanpub.core.debugger import DebugAdapter, DebugEvent
+from yanpub.core.adapter.adapter import LanguageAdapter
+from yanpub.core.dev.debugger import DebugAdapter, DebugEvent
 
 logger = logging.getLogger(__name__)
 

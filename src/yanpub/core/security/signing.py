@@ -609,7 +609,7 @@ class CodeSigner:
     ) -> None:
         """记录审计日志"""
         try:
-            from yanpub.core.audit import AuditLog, AuditEntry
+            from yanpub.core.security.audit import AuditLog, AuditEntry
 
             log = AuditLog()
             entry = AuditEntry(

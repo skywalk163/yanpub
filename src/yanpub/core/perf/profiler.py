@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from string import Template
 
-from yanpub.core.adapter import LanguageAdapter
+from yanpub.core.adapter.adapter import LanguageAdapter
 
 
 # ---- 性能记录 ----

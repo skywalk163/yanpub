@@ -29,8 +29,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter
-from yanpub.core.benchmark import run_benchmarks
+from yanpub.core.adapter.adapter import LanguageAdapter
+from yanpub.core.perf.benchmark import run_benchmarks
 
 
 # ---- 环境信息采集 ----

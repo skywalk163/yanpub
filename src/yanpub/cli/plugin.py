@@ -16,7 +16,7 @@ def plugin():
 @plugin.command("list")
 def plugin_list():
     """列出已安装的插件"""
-    from yanpub.core.plugin import get_plugin_manager, format_plugin_list
+    from yanpub.core.lifecycle.plugin import get_plugin_manager, format_plugin_list
 
     pm = get_plugin_manager()
     plugins = pm.list_plugins()
@@ -27,7 +27,7 @@ def plugin_list():
 @click.option("--name", "-n", default=None, help="插件名称（覆盖 plugin.json）")
 def plugin_install(source_path: str, name: str | None):
     """安装插件（指定插件源目录）"""
-    from yanpub.core.plugin import get_plugin_manager
+    from yanpub.core.lifecycle.plugin import get_plugin_manager
 
     pm = get_plugin_manager()
     try:
@@ -41,7 +41,7 @@ def plugin_install(source_path: str, name: str | None):
 @click.argument("name")
 def plugin_uninstall(name: str):
     """卸载插件"""
-    from yanpub.core.plugin import get_plugin_manager
+    from yanpub.core.lifecycle.plugin import get_plugin_manager
 
     pm = get_plugin_manager()
     if pm.uninstall(name):
@@ -54,7 +54,7 @@ def plugin_uninstall(name: str):
 @click.argument("name")
 def plugin_enable(name: str):
     """启用插件"""
-    from yanpub.core.plugin import get_plugin_manager
+    from yanpub.core.lifecycle.plugin import get_plugin_manager
 
     pm = get_plugin_manager()
     if pm.enable(name):
@@ -67,7 +67,7 @@ def plugin_enable(name: str):
 @click.argument("name")
 def plugin_disable(name: str):
     """禁用插件"""
-    from yanpub.core.plugin import get_plugin_manager
+    from yanpub.core.lifecycle.plugin import get_plugin_manager
 
     pm = get_plugin_manager()
     if pm.disable(name):

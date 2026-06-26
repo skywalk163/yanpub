@@ -9,7 +9,7 @@ import pytest
 if sys.platform == "win32":
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 from yanpub.adapters.duan.adapter import DuanAdapter
 
 from conftest import skip_if_no_backend

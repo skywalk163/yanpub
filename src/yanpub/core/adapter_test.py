@@ -21,11 +21,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
 
-from yanpub.core.adapter import (
+from yanpub.core.adapter.adapter import (
     ExecutionResult,
     LanguageAdapter,
 )
-from yanpub.core.registry import LanguageRegistry
+from yanpub.core.adapter.registry import LanguageRegistry
 
 
 # ============================================================

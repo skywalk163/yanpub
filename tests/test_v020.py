@@ -26,7 +26,7 @@ class TestKeywordsCache:
 
     def test_cache_file_exists_for_all_adapters(self):
         """所有适配器都有 keywords.json 缓存"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
         adapters_dir = Path(__file__).resolve().parent.parent / "src" / "yanpub" / "adapters"
         registry = get_registry()
         for adapter in registry:
@@ -36,7 +36,7 @@ class TestKeywordsCache:
     def test_cache_file_is_valid_json(self):
         """缓存文件是合法 JSON"""
         adapters_dir = Path(__file__).resolve().parent.parent / "src" / "yanpub" / "adapters"
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
         registry = get_registry()
         for adapter in registry:
             cache_file = adapters_dir / adapter.id / "keywords.json"
@@ -67,7 +67,7 @@ class TestKeywordsCache:
 
     def test_adapter_keywords_match_cache(self):
         """适配器关键字与缓存一致"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
         adapters_dir = Path(__file__).resolve().parent.parent / "src" / "yanpub" / "adapters"
         registry = get_registry()
         for adapter in registry:
@@ -122,7 +122,7 @@ class TestLSPHover:
 
     def test_adapter_hover_on_keyword(self):
         """适配器 hover 返回关键字文档"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
         registry = get_registry()
         # 使用段言测试
         adapter = registry.get("duan")
@@ -133,7 +133,7 @@ class TestLSPHover:
 
     def test_adapter_hover_on_non_keyword(self):
         """非关键字位置返回 None"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
         registry = get_registry()
         adapter = registry.get("duan")
         if adapter:
@@ -143,7 +143,7 @@ class TestLSPHover:
 
     def test_adapter_hover_out_of_range(self):
         """超出范围返回 None"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
         registry = get_registry()
         adapter = registry.get("duan")
         if adapter:

@@ -300,7 +300,7 @@ class TestRegistryIntegration:
 
     def test_all_adapters_load(self):
         """所有适配器都能加载"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         reg = get_registry()
         # CI 环境可能无法加载所有适配器，至少应有1个
@@ -326,7 +326,7 @@ class TestRegistryIntegration:
 
     def test_all_adapters_have_keywords(self):
         """所有适配器都有关键字"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         reg = get_registry()
         for lang_id in reg.language_ids:
@@ -336,8 +336,8 @@ class TestRegistryIntegration:
 
     def test_all_adapters_have_run_command(self):
         """所有适配器都有运行命令"""
-        from yanpub.core.registry import get_registry
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.registry import get_registry
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         reg = get_registry()
         for lang_id in reg.language_ids:
@@ -351,7 +351,7 @@ class TestRegistryIntegration:
 
     def test_all_adapters_have_metadata(self):
         """所有适配器都有完整元数据"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         reg = get_registry()
         for lang_id in reg.language_ids:
@@ -365,7 +365,7 @@ class TestRegistryIntegration:
 
     def test_adapter_colors_are_valid(self):
         """所有适配器颜色格式正确"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         reg = get_registry()
         for lang_id in reg.language_ids:
@@ -377,7 +377,7 @@ class TestRegistryIntegration:
 
     def test_extension_uniqueness(self):
         """扩展名在不同适配器间不冲突（.yan 和 .行 是多语言共享，允许）"""
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         reg = get_registry()
         ext_map: dict[str, list[str]] = {}
@@ -404,7 +404,7 @@ class TestDocsIntegrationE2E:
     def test_site_builds_with_real_data(self, tmp_path):
         """使用真实数据构建文档站"""
         from yanpub.docs.site_builder import build_site
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         output = build_site(tmp_path / "site", get_registry())
         assert output.exists()
@@ -422,7 +422,7 @@ class TestDocsIntegrationE2E:
     def test_comparison_table_complete(self):
         """对比表数据完整"""
         from yanpub.docs.generator import DocsGenerator
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         gen = DocsGenerator(get_registry())
         table = gen.generate_comparison_table()
@@ -435,7 +435,7 @@ class TestDocsIntegrationE2E:
     def test_cross_language_search(self):
         """跨语言搜索可用"""
         from yanpub.docs.generator import DocsGenerator
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         gen = DocsGenerator(get_registry())
         results = gen.search_keywords("定义")
@@ -446,7 +446,7 @@ class TestDocsIntegrationE2E:
     def test_similarity_matrix_symmetric(self):
         """相似度矩阵对称"""
         from yanpub.docs.comparator import LanguageComparator
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         comp = LanguageComparator(get_registry())
         matrix = comp.generate_similarity_matrix()
@@ -471,10 +471,10 @@ class TestPerformance:
         # 清除缓存
         import importlib
 
-        if "yanpub.core.registry" in __import__("sys").modules:
-            importlib.reload(__import__("yanpub.core.registry", fromlist=["get_registry"]))
+        if "yanpub.core.adapter.registry" in __import__("sys").modules:
+            importlib.reload(__import__("yanpub.core.adapter.registry", fromlist=["get_registry"]))
         else:
-            __import__("yanpub.core.registry", fromlist=["get_registry"])
+            __import__("yanpub.core.adapter.registry", fromlist=["get_registry"])
         t1 = time.perf_counter()
         # 首次导入可能慢，后续导入应更快
         assert t1 - t0 < 5.0, f"导入耗时 {t1 - t0:.2f}s 过长"
@@ -484,7 +484,7 @@ class TestPerformance:
         import time
 
         t0 = time.perf_counter()
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         reg = get_registry()
         t1 = time.perf_counter()

@@ -7,14 +7,14 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command()
 @click.argument("lang_id", required=False)
 @click.option("--json", "as_json", is_flag=True, help="输出 JSON 格式")
 def compat(lang_id: str | None, as_json: bool):
     """检查适配器版本兼容性"""
-    from yanpub.core.compat import (
+    from yanpub.core.adapter.compat import (
         check_compatibility,
         check_all_compatibility,
         format_compat_matrix,
@@ -57,7 +57,7 @@ def adapter():
 @click.option("--adapter", "-a", default=None, help="适配器 ID（invalidate 时指定）")
 def cache_command(action: str, adapter: str | None):
     """缓存管理 — 统计/清除/失效"""
-    from yanpub.core.cache import get_adapter_cache
+    from yanpub.core.adapter.cache import get_adapter_cache
 
     cache = get_adapter_cache()
 
@@ -88,7 +88,7 @@ def cache_command(action: str, adapter: str | None):
 @click.option("--interval", "-i", default=2.0, type=float, help="轮询间隔（秒）")
 def adapter_watch(poll: bool, interval: float):
     """监控适配器文件变更，自动热重载"""
-    from yanpub.core.hotreload import AdapterWatcher
+    from yanpub.core.lifecycle.hotreload import AdapterWatcher
 
     registry = get_registry()
     click.echo(f"已注册 {len(registry)} 种适配器，开始监控...")
@@ -118,7 +118,7 @@ def adapter_watch(poll: bool, interval: float):
 @click.argument("lang_id", required=False)
 def adapter_reload(lang_id: str | None):
     """手动重载适配器"""
-    from yanpub.core.hotreload import HotReloader
+    from yanpub.core.lifecycle.hotreload import HotReloader
 
     registry = get_registry()
     reloader = HotReloader(registry)
@@ -155,7 +155,7 @@ def adapter_profile(
     lang_id: str, iterations: int, code: str | None, output: str | None, fmt: str, hotspots: bool
 ):
     """性能分析适配器"""
-    from yanpub.core.profiler import (
+    from yanpub.core.perf.profiler import (
         AdapterProfiler,
         FlameGraphGenerator,
         HotspotDetector,
@@ -231,7 +231,7 @@ def adapter_profile(
 )
 def adapter_navigate(lang_id: str, symbol: str, nav_type: str):
     """导航 — 查找定义/引用/调用者/被调用者"""
-    from yanpub.core.navigator import SymbolNavigator
+    from yanpub.core.dev.navigator import SymbolNavigator
 
     registry = get_registry()
     adapter = registry.get(lang_id)

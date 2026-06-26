@@ -37,7 +37,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter, SubprocessAdapter
+from yanpub.core.adapter.adapter import LanguageAdapter, SubprocessAdapter
 
 logger = logging.getLogger("yanpub.sandbox")
 

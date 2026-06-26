@@ -7,7 +7,7 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command("i18n")
 @click.option(

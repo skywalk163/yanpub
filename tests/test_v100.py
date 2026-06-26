@@ -20,7 +20,7 @@ class TestSigningKey:
 
     def test_generate_hmac(self):
         """生成 HMAC-SHA256 密钥对"""
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
 
         key, priv = SigningKey.generate("hmac-sha256")
         assert key.algorithm == "hmac-sha256"
@@ -31,7 +31,7 @@ class TestSigningKey:
 
     def test_generate_default(self):
         """默认算法生成密钥"""
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
 
         key, priv = SigningKey.generate()
         assert key.algorithm in ("ed25519", "hmac-sha256")
@@ -39,7 +39,7 @@ class TestSigningKey:
 
     def test_to_dict_from_dict(self):
         """密钥序列化/反序列化"""
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
 
         key, _ = SigningKey.generate("hmac-sha256")
         d = key.to_dict()
@@ -50,7 +50,7 @@ class TestSigningKey:
 
     def test_key_id_deterministic(self):
         """同一密钥对的 key_id 是确定的"""
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
 
         key, _ = SigningKey.generate("hmac-sha256")
         # 再次从相同数据构造应得到相同 key_id
@@ -60,7 +60,7 @@ class TestSigningKey:
 
     def test_different_keys_have_different_ids(self):
         """不同密钥的 ID 不同"""
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
 
         key1, _ = SigningKey.generate("hmac-sha256")
         key2, _ = SigningKey.generate("hmac-sha256")
@@ -77,7 +77,7 @@ class TestCodeSignature:
 
     def test_to_dict_from_dict(self):
         """签名序列化/反序列化"""
-        from yanpub.core.signing import CodeSignature
+        from yanpub.core.security.signing import CodeSignature
 
         sig = CodeSignature(
             signer="alice",
@@ -112,12 +112,12 @@ class TestTrustStore:
 
     @pytest.fixture
     def store(self, tmpdir):
-        from yanpub.core.signing import TrustStore
+        from yanpub.core.security.signing import TrustStore
         return TrustStore(store_dir=tmpdir / "trust")
 
     @pytest.fixture
     def key(self):
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
         return SigningKey.generate("hmac-sha256")[0]
 
     def test_add_trusted_key(self, store, key):
@@ -150,7 +150,7 @@ class TestTrustStore:
 
     def test_trust_levels(self, store):
         """不同信任级别"""
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
 
         key_full, _ = SigningKey.generate("hmac-sha256")
         key_ca, _ = SigningKey.generate("hmac-sha256")
@@ -178,7 +178,7 @@ class TestTrustStore:
 
     def test_verify_chain_ca_to_root(self, store):
         """CA → 根信任链"""
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
 
         root_key, _ = SigningKey.generate("hmac-sha256")
         ca_key, _ = SigningKey.generate("hmac-sha256")
@@ -193,7 +193,7 @@ class TestTrustStore:
 
     def test_verify_chain_broken(self, store):
         """断裂的信任链"""
-        from yanpub.core.signing import SigningKey
+        from yanpub.core.security.signing import SigningKey
 
         user_key, _ = SigningKey.generate("hmac-sha256")
         store.add_trusted_key(user_key, "user", "user", signed_by="missing_key")
@@ -208,7 +208,7 @@ class TestTrustStore:
         store.add_trusted_key(key, "alice", "full")
         exported = store.export_store()
 
-        from yanpub.core.signing import TrustStore
+        from yanpub.core.security.signing import TrustStore
         store2 = TrustStore(store_dir=store.store_dir.parent / "trust2")
         store2.import_store(exported)
         trusted, _ = store2.is_trusted(key.key_id)
@@ -221,7 +221,7 @@ class TestTrustStore:
 
     def test_persistence(self, tmpdir, key):
         """信任存储持久化"""
-        from yanpub.core.signing import TrustStore
+        from yanpub.core.security.signing import TrustStore
 
         store1 = TrustStore(store_dir=tmpdir / "trust")
         store1.add_trusted_key(key, "alice", "full")
@@ -250,7 +250,7 @@ class TestCodeSigner:
     @pytest.fixture
     def signer_with_key(self, tmpdir):
         """创建签名器和密钥"""
-        from yanpub.core.signing import SigningKey, TrustStore, CodeSigner
+        from yanpub.core.security.signing import SigningKey, TrustStore, CodeSigner
 
         key, priv = SigningKey.generate("hmac-sha256")
         store = TrustStore(store_dir=tmpdir / "trust")
@@ -260,7 +260,7 @@ class TestCodeSigner:
 
     def test_compute_hash(self):
         """计算内容哈希"""
-        from yanpub.core.signing import CodeSigner
+        from yanpub.core.security.signing import CodeSigner
 
         h1 = CodeSigner.compute_hash("hello")
         h2 = CodeSigner.compute_hash("hello")
@@ -271,7 +271,7 @@ class TestCodeSigner:
 
     def test_sign_and_verify(self, signer_with_key):
         """签名和验证"""
-        from yanpub.core.signing import CodeSigner
+        from yanpub.core.security.signing import CodeSigner
 
         signer, key, priv = signer_with_key
         sig = signer.sign("hello world", priv, "alice", algorithm=key.algorithm)
@@ -292,7 +292,7 @@ class TestCodeSigner:
 
     def test_verify_untrusted_key(self, signer_with_key):
         """验证不受信任的密钥"""
-        from yanpub.core.signing import CodeSignature, CodeSigner
+        from yanpub.core.security.signing import CodeSignature, CodeSigner
 
         signer, key, priv = signer_with_key
         sig = CodeSignature(
@@ -307,7 +307,7 @@ class TestCodeSigner:
 
     def test_verify_invalid_signature(self, signer_with_key):
         """验证无效签名"""
-        from yanpub.core.signing import CodeSignature, CodeSigner
+        from yanpub.core.security.signing import CodeSignature, CodeSigner
 
         signer, key, priv = signer_with_key
         sig = CodeSignature(
@@ -374,12 +374,12 @@ class TestAuditLog:
 
     @pytest.fixture
     def audit_log(self, tmpdir):
-        from yanpub.core.audit import AuditLog
+        from yanpub.core.security.audit import AuditLog
         return AuditLog(log_dir=tmpdir / "audit")
 
     def test_log_entry(self, audit_log):
         """记录审计条目"""
-        from yanpub.core.audit import AuditEntry
+        from yanpub.core.security.audit import AuditEntry
 
         entry = AuditEntry(action="sign", signer="alice", key_id="abcd1234")
         audit_log.log(entry)
@@ -390,7 +390,7 @@ class TestAuditLog:
 
     def test_query_by_action(self, audit_log):
         """按操作类型查询"""
-        from yanpub.core.audit import AuditEntry
+        from yanpub.core.security.audit import AuditEntry
 
         audit_log.log(AuditEntry(action="sign", signer="alice", key_id="a"))
         audit_log.log(AuditEntry(action="verify", signer="alice", key_id="a"))
@@ -401,7 +401,7 @@ class TestAuditLog:
 
     def test_query_by_signer(self, audit_log):
         """按签名者查询"""
-        from yanpub.core.audit import AuditEntry
+        from yanpub.core.security.audit import AuditEntry
 
         audit_log.log(AuditEntry(action="sign", signer="alice", key_id="a"))
         audit_log.log(AuditEntry(action="sign", signer="bob", key_id="b"))
@@ -412,7 +412,7 @@ class TestAuditLog:
 
     def test_get_stats(self, audit_log):
         """获取统计信息"""
-        from yanpub.core.audit import AuditEntry
+        from yanpub.core.security.audit import AuditEntry
 
         audit_log.log(AuditEntry(action="sign", signer="alice", key_id="a"))
         audit_log.log(AuditEntry(action="verify", signer="alice", key_id="a"))
@@ -428,7 +428,7 @@ class TestAuditLog:
 
     def test_export_json(self, audit_log):
         """导出 JSON 格式"""
-        from yanpub.core.audit import AuditEntry
+        from yanpub.core.security.audit import AuditEntry
 
         audit_log.log(AuditEntry(action="sign", signer="alice", key_id="a"))
         exported = audit_log.export(format="json")
@@ -437,7 +437,7 @@ class TestAuditLog:
 
     def test_export_csv(self, audit_log):
         """导出 CSV 格式"""
-        from yanpub.core.audit import AuditEntry
+        from yanpub.core.security.audit import AuditEntry
 
         audit_log.log(AuditEntry(action="sign", signer="alice", key_id="a"))
         exported = audit_log.export(format="csv")
@@ -453,7 +453,7 @@ class TestAuditLog:
 
     def test_entry_serialization(self):
         """审计条目序列化"""
-        from yanpub.core.audit import AuditEntry
+        from yanpub.core.security.audit import AuditEntry
 
         entry = AuditEntry(action="sign", signer="alice", key_id="abcd1234", details={"file": "test.duan"})
         d = entry.to_dict()
@@ -479,7 +479,7 @@ class TestSignedPackageRegistry:
 
     @pytest.fixture
     def signed_registry(self, tmpdir):
-        from yanpub.core.signing import SigningKey, TrustStore, CodeSigner
+        from yanpub.core.security.signing import SigningKey, TrustStore, CodeSigner
         from yanpub.pkg.registry import PackageRegistry
         from yanpub.pkg.signed_registry import SignedPackageRegistry
 
@@ -541,8 +541,8 @@ class TestLSPSignatureDiagnostics:
 
     def test_import(self):
         """模块可导入"""
-        from yanpub.core.signing import CodeSigner
-        from yanpub.core.audit import AuditLog
+        from yanpub.core.security.signing import CodeSigner
+        from yanpub.core.security.audit import AuditLog
         assert CodeSigner is not None
         assert AuditLog is not None
 
@@ -574,7 +574,7 @@ class TestEdgeCases:
 
     def test_empty_content_signing(self, tmpdir):
         """签名空内容"""
-        from yanpub.core.signing import SigningKey, TrustStore, CodeSigner
+        from yanpub.core.security.signing import SigningKey, TrustStore, CodeSigner
 
         key, priv = SigningKey.generate("hmac-sha256")
         store = TrustStore(store_dir=tmpdir / "trust")
@@ -587,7 +587,7 @@ class TestEdgeCases:
 
     def test_unicode_content_signing(self, tmpdir):
         """签名 Unicode 内容"""
-        from yanpub.core.signing import SigningKey, TrustStore, CodeSigner
+        from yanpub.core.security.signing import SigningKey, TrustStore, CodeSigner
 
         key, priv = SigningKey.generate("hmac-sha256")
         store = TrustStore(store_dir=tmpdir / "trust")
@@ -601,7 +601,7 @@ class TestEdgeCases:
 
     def test_large_content_signing(self, tmpdir):
         """签名大内容"""
-        from yanpub.core.signing import SigningKey, TrustStore, CodeSigner
+        from yanpub.core.security.signing import SigningKey, TrustStore, CodeSigner
 
         key, priv = SigningKey.generate("hmac-sha256")
         store = TrustStore(store_dir=tmpdir / "trust")
@@ -615,7 +615,7 @@ class TestEdgeCases:
 
     def test_signature_file_format(self, tmpdir):
         """签名文件格式验证"""
-        from yanpub.core.signing import SigningKey, TrustStore, CodeSigner
+        from yanpub.core.security.signing import SigningKey, TrustStore, CodeSigner
 
         key, priv = SigningKey.generate("hmac-sha256")
         store = TrustStore(store_dir=tmpdir / "trust")
@@ -639,7 +639,7 @@ class TestEdgeCases:
 
     def test_trust_store_concurrent_import(self, tmpdir):
         """信任存储合并导入"""
-        from yanpub.core.signing import SigningKey, TrustStore
+        from yanpub.core.security.signing import SigningKey, TrustStore
 
         key1, _ = SigningKey.generate("hmac-sha256")
         key2, _ = SigningKey.generate("hmac-sha256")
@@ -661,7 +661,7 @@ class TestEdgeCases:
 
     def test_audit_log_persistence(self, tmpdir):
         """审计日志持久化"""
-        from yanpub.core.audit import AuditLog, AuditEntry
+        from yanpub.core.security.audit import AuditLog, AuditEntry
 
         log1 = AuditLog(log_dir=tmpdir / "audit")
         log1.log(AuditEntry(action="sign", signer="alice", key_id="abcd1234"))

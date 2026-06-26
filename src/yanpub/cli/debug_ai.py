@@ -7,7 +7,7 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command("debug")
 @click.argument("lang_id")
@@ -17,7 +17,7 @@ from yanpub.core.registry import get_registry
 @click.option("--stop-on-entry", is_flag=True, help="在入口处暂停")
 def debug_file(lang_id: str, file: str, host: str, port: int, stop_on_entry: bool):
     """启动调试会话（DAP 协议）"""
-    from yanpub.core.debugger import DebugSession
+    from yanpub.core.dev.debugger import DebugSession
 
     registry = get_registry()
     adapter = registry.get_or_raise(lang_id)
@@ -41,7 +41,7 @@ def debug_file(lang_id: str, file: str, host: str, port: int, stop_on_entry: boo
         click.echo(f"调试事件: {event.type}")
 
     # 启动 DAP 服务器
-    from yanpub.core.dap_server import DAPServer
+    from yanpub.core.dev.dap_server import DAPServer
 
     server = DAPServer(adapter, host=host, port=port)
     server._debug_adapter._session = session  # 复用已有会话
@@ -60,7 +60,7 @@ def debug_file(lang_id: str, file: str, host: str, port: int, stop_on_entry: boo
 @click.option("--port", default=4711, type=int)
 def start_dap_server(lang_id: str, host: str, port: int):
     """启动 DAP 调试适配器服务器"""
-    from yanpub.core.dap_server import DAPServer
+    from yanpub.core.dev.dap_server import DAPServer
 
     registry = get_registry()
     adapter = registry.get_or_raise(lang_id)

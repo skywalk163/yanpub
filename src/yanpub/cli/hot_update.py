@@ -16,7 +16,7 @@ from yanpub.cli import main
 @click.option("--check", is_flag=True, help="检查是否有代码变更")
 def hot_update_command(lang_id, target_version, list_versions, check):
     """适配器热更新 — 运行时代码替换 + 版本回退"""
-    from yanpub.core.hotupdate import HotUpdateManager
+    from yanpub.core.lifecycle.hotupdate import HotUpdateManager
 
     manager = HotUpdateManager()
 

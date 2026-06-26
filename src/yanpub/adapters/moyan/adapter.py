@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
-from yanpub.core.adapter import SubprocessAdapter
+from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
 # 墨言项目根目录（与言共享，使用 VM 后端）

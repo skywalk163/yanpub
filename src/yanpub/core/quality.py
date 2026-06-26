@@ -176,7 +176,7 @@ class QualityChecker:
 
         # 可实例化 (10)
         try:
-            from yanpub.core.registry import _load_adapter
+            from yanpub.core.adapter.registry import _load_adapter
             adapter = _load_adapter(adapter_dir)
             if adapter is not None:
                 dim.score += 10
@@ -485,7 +485,7 @@ class QualityChecker:
         dim = DimensionScore(name="功能验证", max_score=20, score=0)
 
         try:
-            from yanpub.core.registry import _load_adapter
+            from yanpub.core.adapter.registry import _load_adapter
             adapter = _load_adapter(adapter_dir)
         except Exception:
             dim.suggestions.append("适配器无法加载")

@@ -7,7 +7,7 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @click.group()
 def sandbox():
@@ -28,7 +28,7 @@ def sandbox():
 @click.option("--network", is_flag=True, help="允许网络访问")
 def sandbox_run(lang_id: str, file: str, backend: str, memory: str, timeout: float, network: bool):
     """在沙箱中安全执行代码"""
-    from yanpub.core.sandbox import SandboxManager, SandboxConfig
+    from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
 
     registry = get_registry()
     adapter = registry.get(lang_id)
@@ -64,7 +64,7 @@ def sandbox_run(lang_id: str, file: str, backend: str, memory: str, timeout: flo
 @sandbox.command("check")
 def sandbox_check():
     """检测可用的沙箱后端"""
-    from yanpub.core.sandbox import SandboxManager
+    from yanpub.core.security.sandbox import SandboxManager
 
     status = SandboxManager.get_backend_status()
 

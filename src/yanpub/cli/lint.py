@@ -7,7 +7,7 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command("lint")
 @click.argument("path", type=click.Path(exists=True))
@@ -20,7 +20,7 @@ def lint_command(path, lang_id, fix, rule, as_json):
     import json as json_mod
     from pathlib import Path as PathLib
 
-    from yanpub.core.linter import LintRuleEngine
+    from yanpub.core.dev.linter import LintRuleEngine
 
     file_path = PathLib(path)
     if not file_path.is_file():

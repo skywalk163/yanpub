@@ -174,7 +174,7 @@ class TestSyntaxMatrix:
     def test_html_contains_all_languages(self, matrix):
         html = matrix.generate_html()
         # 应包含所有语言的名称
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         for adapter in registry:
@@ -190,7 +190,7 @@ class TestSyntaxMatrixIntegration:
     """集成测试 — 验证矩阵与注册中心的协作"""
 
     def test_all_registered_langs_in_matrix(self):
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         matrix = SyntaxMatrix()
@@ -215,7 +215,7 @@ class TestSyntaxMatrixIntegration:
     def test_style_analysis_covers_all_langs(self):
         matrix = SyntaxMatrix()
         styles = matrix.compute_syntax_style()
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         for adapter in registry:

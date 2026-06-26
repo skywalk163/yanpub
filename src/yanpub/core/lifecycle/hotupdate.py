@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from yanpub.core.registry import LanguageRegistry, get_registry
+from yanpub.core.adapter.registry import LanguageRegistry, get_registry
 
 
 @dataclass
@@ -249,7 +249,7 @@ class HotUpdateManager:
                 new_module = importlib.import_module(module_name)
 
                 # 查找 LanguageAdapter 子类
-                from yanpub.core.adapter import (
+                from yanpub.core.adapter.adapter import (
                     LanguageAdapter as BaseAdapter,
                     SubprocessAdapter,
                     InProcessAdapter,
@@ -367,7 +367,7 @@ class HotUpdateManager:
 
     def check_for_updates(self) -> list[dict]:
         """检查所有适配器是否有代码变更"""
-        from yanpub.core.hotreload import HotReloader
+        from yanpub.core.lifecycle.hotreload import HotReloader
 
         reloader = HotReloader(self._registry)
         events = reloader.check_and_reload()

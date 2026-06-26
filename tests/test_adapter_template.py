@@ -202,7 +202,7 @@ class TestAdapterTemplateEngine:
 
         # 只创建必需文件
         (adapters_dir / "adapter.py").write_text(
-            "from yanpub.core.adapter import SubprocessAdapter\n"
+            "from yanpub.core.adapter.adapter import SubprocessAdapter\n"
             "class NoexamplesAdapter(SubprocessAdapter):\n"
             "    def __init__(self):\n"
             '        super().__init__(name="无示例", lang_id="noexamples", version="0.1.0", extensions=[".ne"], run_command=["echo"])\n'
@@ -224,7 +224,7 @@ class TestAdapterTemplateEngine:
         adapters_dir.mkdir(parents=True)
 
         (adapters_dir / "adapter.py").write_text(
-            "from yanpub.core.adapter import SubprocessAdapter\n"
+            "from yanpub.core.adapter.adapter import SubprocessAdapter\n"
             "class MismatchAdapter(SubprocessAdapter):\n"
             "    def __init__(self):\n"
             '        super().__init__(name="不匹配", lang_id="mismatch", version="0.1.0", extensions=[".mm"], run_command=["echo"])\n'

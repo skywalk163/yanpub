@@ -23,7 +23,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 logger = logging.getLogger("yanpub.playground")
 
@@ -346,7 +346,7 @@ def create_app() -> FastAPI:
         if param_error:
             return JSONResponse({"type": "error", "message": param_error}, status_code=400)
 
-        from yanpub.core.sandbox import SandboxManager, SandboxConfig
+        from yanpub.core.security.sandbox import SandboxManager, SandboxConfig
 
         config = SandboxConfig(
             backend=backend,
@@ -379,7 +379,7 @@ def create_app() -> FastAPI:
     @app.get("/api/sandbox/status")
     async def sandbox_status():
         """查询沙箱后端状态"""
-        from yanpub.core.sandbox import SandboxManager
+        from yanpub.core.security.sandbox import SandboxManager
 
         status = SandboxManager.get_backend_status()
         available = [name for name, info in status.items() if info["available"]]
@@ -677,7 +677,7 @@ def _register_collab(app: FastAPI) -> None:
 
 def _register_monitor_routes(app: FastAPI) -> None:
     """注册性能监控路由"""
-    from yanpub.core.monitor import get_monitor
+    from yanpub.core.perf.monitor import get_monitor
 
     @app.get("/monitor")
     async def monitor_page():

@@ -6,7 +6,7 @@
 
 __version__ = "1.5.0"
 
-from yanpub.core.adapter import (
+from yanpub.core.adapter.adapter import (
     LanguageAdapter,
     SubprocessAdapter,
     InProcessAdapter,
@@ -15,7 +15,7 @@ from yanpub.core.adapter import (
     CompletionItem,
     Diagnostic,
 )
-from yanpub.core.registry import LanguageRegistry, get_registry
+from yanpub.core.adapter.registry import LanguageRegistry, get_registry
 from yanpub.i18n import t, get_lang, set_lang
 
 __all__ = [

@@ -247,7 +247,7 @@ class TestProjectManager:
 
     def test_execute_project(self):
         from yanpub.playground.project import ProjectManager
-        from yanpub.core.adapter import LanguageAdapter, ExecutionResult
+        from yanpub.core.adapter.adapter import LanguageAdapter, ExecutionResult
 
         class MockAdapter(LanguageAdapter):
             @property
@@ -275,7 +275,7 @@ class TestProjectManager:
 
     def test_execute_project_multi_file(self):
         from yanpub.playground.project import ProjectManager
-        from yanpub.core.adapter import LanguageAdapter, ExecutionResult
+        from yanpub.core.adapter.adapter import LanguageAdapter, ExecutionResult
 
         class MockAdapter(LanguageAdapter):
             @property

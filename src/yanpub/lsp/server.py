@@ -27,8 +27,8 @@ from typing import Callable, Optional, Union
 from lsprotocol import types as lsp
 from pygls.lsp.server import LanguageServer
 
-from yanpub.core.adapter import LanguageAdapter, CompletionItem, Diagnostic
-from yanpub.core.registry import get_registry, LanguageRegistry
+from yanpub.core.adapter.adapter import LanguageAdapter, CompletionItem, Diagnostic
+from yanpub.core.adapter.registry import get_registry, LanguageRegistry
 
 logger = logging.getLogger("yanpub.lsp")
 
@@ -1074,7 +1074,7 @@ class YanLanguageServer:
                 )
 
             # 7. Inline Variable — 当光标在变量上时可用
-            from yanpub.core.refactor import RefactoringEngine
+            from yanpub.core.dev.refactor import RefactoringEngine
 
             engine = RefactoringEngine(adapter)
             ident = engine._is_identifier_at(code, line, column)
@@ -1109,7 +1109,7 @@ class YanLanguageServer:
             code = self._documents.get(uri, "")
 
             if action == "extract-function":
-                from yanpub.core.refactor import RefactoringEngine
+                from yanpub.core.dev.refactor import RefactoringEngine
 
                 engine = RefactoringEngine(self._get_adapter_for_uri(uri))
                 start_line = data.get("start_line", 1)
@@ -1172,7 +1172,7 @@ class YanLanguageServer:
                 params.edit = lsp.WorkspaceEdit(changes={uri: edits})
 
             elif action == "inline-variable":
-                from yanpub.core.refactor import RefactoringEngine
+                from yanpub.core.dev.refactor import RefactoringEngine
 
                 engine = RefactoringEngine(self._get_adapter_for_uri(uri))
                 line = data.get("line", 1)
@@ -1230,7 +1230,7 @@ class YanLanguageServer:
 
     def _register_navigation_handlers(self, server) -> None:
         """注册代码导航处理器（在 _setup_handlers 中调用）"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         # ---- Go to Definition ----
         @server.feature(lsp.TEXT_DOCUMENT_DEFINITION)
@@ -1511,7 +1511,7 @@ class YanLanguageServer:
             return []
 
         try:
-            from yanpub.core.signing import CodeSigner, CodeSignature
+            from yanpub.core.security.signing import CodeSigner, CodeSignature
 
             signer = CodeSigner()
             sig_data = json.loads(sig_path.read_text(encoding="utf-8"))
@@ -1560,7 +1560,7 @@ class YanLanguageServer:
     def _run_lint_diagnostics(self, uri: str, code: str) -> list[lsp.Diagnostic]:
         """运行 Lint 规则引擎，返回代码风格诊断"""
         try:
-            from yanpub.core.linter import LintRuleEngine
+            from yanpub.core.dev.linter import LintRuleEngine
 
             engine = LintRuleEngine()
             adapter = self._get_adapter_for_uri(uri)
@@ -1622,7 +1622,7 @@ def create_lsp_server(
 
     # 如果指定了适配器，创建只含该适配器的注册中心
     if adapter is not None:
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         single_registry = LanguageRegistry()
         single_registry.register(adapter)

@@ -19,8 +19,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter
-from yanpub.core.registry import LanguageRegistry
+from yanpub.core.adapter.adapter import LanguageAdapter
+from yanpub.core.adapter.registry import LanguageRegistry
 
 
 @dataclass

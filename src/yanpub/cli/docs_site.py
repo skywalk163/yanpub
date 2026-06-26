@@ -7,7 +7,7 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command()
 @click.option("--output", "-o", default="yandocs_site", help="输出目录")

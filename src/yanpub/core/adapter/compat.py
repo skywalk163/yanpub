@@ -17,8 +17,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from yanpub import __version__
-from yanpub.core.adapter import LanguageAdapter
-from yanpub.core.registry import LanguageRegistry
+from yanpub.core.adapter.adapter import LanguageAdapter
+from yanpub.core.adapter.registry import LanguageRegistry
 
 
 @dataclass

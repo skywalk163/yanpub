@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from yanpub.core.adapter import ExecutionResult, LanguageAdapter
+from yanpub.core.adapter.adapter import ExecutionResult, LanguageAdapter
 
 
 def _validate_path(path: str) -> str:

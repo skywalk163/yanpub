@@ -16,7 +16,7 @@ import threading
 import time
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter, ExecutionResult, CompletionItem, Diagnostic
+from yanpub.core.adapter.adapter import LanguageAdapter, ExecutionResult, CompletionItem, Diagnostic
 
 
 class LazyAdapter(LanguageAdapter):

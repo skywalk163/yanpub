@@ -18,8 +18,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional
 
-from yanpub.core.adapter import LanguageAdapter
-from yanpub.core.registry import LanguageRegistry, get_registry
+from yanpub.core.adapter.adapter import LanguageAdapter
+from yanpub.core.adapter.registry import LanguageRegistry, get_registry
 
 logger = logging.getLogger("yanpub.adapter.hotreload")
 
@@ -59,7 +59,7 @@ class HotReloader:
 
     def _snapshot_current_adapters(self) -> None:
         """快照当前适配器状态"""
-        adapters_dir = Path(__file__).parent.parent / "adapters"
+        adapters_dir = Path(__file__).resolve().parent.parent.parent / "adapters"
         if not adapters_dir.exists():
             return
 
@@ -91,7 +91,7 @@ class HotReloader:
             本轮检查中发生的重载事件列表
         """
         events: list[ReloadEvent] = []
-        adapters_dir = Path(__file__).parent.parent / "adapters"
+        adapters_dir = Path(__file__).resolve().parent.parent.parent / "adapters"
         if not adapters_dir.exists():
             return events
 
@@ -164,7 +164,7 @@ class HotReloader:
             spec.loader.exec_module(module)
 
             # 查找适配器子类
-            from yanpub.core.adapter import (
+            from yanpub.core.adapter.adapter import (
                 LanguageAdapter as BaseAdapter,
                 SubprocessAdapter,
                 InProcessAdapter,
@@ -257,7 +257,7 @@ class AdapterWatcher:
             import watchdog.observers
             import watchdog.events
 
-            adapters_dir = Path(__file__).parent.parent / "adapters"
+            adapters_dir = Path(__file__).resolve().parent.parent.parent / "adapters"
 
             class AdapterEventHandler(watchdog.events.FileSystemEventHandler):
                 def __init__(self, watcher: AdapterWatcher):

@@ -11,7 +11,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from yanpub.core.adapter import SubprocessAdapter
+from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
 _XINYU_PROJECT_DIR = r"G:\dumategithub\chineseprogram"

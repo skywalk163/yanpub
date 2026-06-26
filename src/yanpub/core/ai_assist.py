@@ -10,7 +10,7 @@ import difflib
 import re
 from dataclasses import dataclass
 
-from yanpub.core.adapter import LanguageAdapter
+from yanpub.core.adapter.adapter import LanguageAdapter
 from yanpub.core.keyword_docs import categorize_keyword
 
 

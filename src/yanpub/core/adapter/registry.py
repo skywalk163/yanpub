@@ -7,7 +7,7 @@ from typing import Optional
 
 import yaml
 
-from yanpub.core.adapter import LanguageAdapter
+from yanpub.core.adapter.adapter import LanguageAdapter
 
 
 class LanguageRegistry:
@@ -83,7 +83,7 @@ def get_registry() -> LanguageRegistry:
 
 def _auto_discover(registry: LanguageRegistry) -> None:
     """自动发现并加载内置适配器"""
-    adapters_dir = Path(__file__).parent.parent / "adapters"
+    adapters_dir = Path(__file__).resolve().parent.parent.parent / "adapters"
     if not adapters_dir.exists():
         return
 
@@ -134,7 +134,7 @@ def _load_adapter(adapter_dir: Path) -> Optional[LanguageAdapter]:
     spec.loader.exec_module(module)
 
     # 查找 LanguageAdapter 子类（排除框架内置基类，只取用户适配器）
-    from yanpub.core.adapter import (
+    from yanpub.core.adapter.adapter import (
         LanguageAdapter as BaseAdapter,
         SubprocessAdapter,
         InProcessAdapter,

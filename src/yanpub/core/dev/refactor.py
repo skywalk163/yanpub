@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter
+from yanpub.core.adapter.adapter import LanguageAdapter
 
 
 # ---- 标识符工具函数 ----
@@ -440,7 +440,7 @@ class RefactoringEngine:
 
         # 6. 如果使用 SymbolNavigator 可用，检查跨文件引用
         try:
-            from yanpub.core.navigator import SymbolNavigator
+            from yanpub.core.dev.navigator import SymbolNavigator
 
             navigator = SymbolNavigator(keywords=self.adapter.keywords if self.adapter else None)
             # 使用 navigator 的引用搜索验证完整性

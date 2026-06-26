@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
-from yanpub.core.adapter import SubprocessAdapter
+from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
 # 段言项目根目录

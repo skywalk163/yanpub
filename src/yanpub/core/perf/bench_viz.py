@@ -21,8 +21,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from yanpub.core.benchmark import run_all_benchmarks, AdapterBenchResult
-from yanpub.core.registry import LanguageRegistry
+from yanpub.core.perf.benchmark import run_all_benchmarks, AdapterBenchResult
+from yanpub.core.adapter.registry import LanguageRegistry
 
 
 # ---- 历史数据存储 ----

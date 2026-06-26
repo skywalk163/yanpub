@@ -7,10 +7,10 @@ import time
 
 import pytest
 
-from yanpub.core.adapter import CompletionItem, Diagnostic, ExecutionResult, SubprocessAdapter
-from yanpub.core.cache import AdapterCache, CacheEntry, LRUCache, get_adapter_cache
-from yanpub.core.lazy_loader import LazyAdapter, LazyRegistry
-from yanpub.core.pool import PooledProcess, ProcessPool, get_process_pool
+from yanpub.core.adapter.adapter import CompletionItem, Diagnostic, ExecutionResult, SubprocessAdapter
+from yanpub.core.adapter.cache import AdapterCache, CacheEntry, LRUCache, get_adapter_cache
+from yanpub.core.adapter.lazy_loader import LazyAdapter, LazyRegistry
+from yanpub.core.lifecycle.pool import PooledProcess, ProcessPool, get_process_pool
 
 
 # ============================================================
@@ -244,7 +244,7 @@ class TestAdapterCache:
 
     def test_get_adapter_cache_singleton(self):
         """全局缓存单例"""
-        import yanpub.core.cache as cache_mod
+        import yanpub.core.adapter.cache as cache_mod
         cache_mod._global_adapter_cache = None  # 重置
         c1 = get_adapter_cache()
         c2 = get_adapter_cache()
@@ -291,7 +291,7 @@ class TestLazyAdapter:
         assert lazy.is_loaded
 
     def test_isinstance_check(self):
-        from yanpub.core.adapter import LanguageAdapter
+        from yanpub.core.adapter.adapter import LanguageAdapter
         lazy = LazyAdapter(SubprocessAdapter, "测试", "t", "1.0", [".t"], ["python"])
         assert isinstance(lazy, LanguageAdapter)
 
@@ -501,7 +501,7 @@ class TestProcessPool:
         pool.shutdown()
 
     def test_get_process_pool_singleton(self):
-        import yanpub.core.pool as pool_mod
+        import yanpub.core.lifecycle.pool as pool_mod
         pool_mod._global_process_pool = None  # 重置
         p1 = get_process_pool()
         p2 = get_process_pool()
@@ -519,7 +519,7 @@ class TestSubprocessAdapterCacheIntegration:
 
     def setup_method(self):
         """每个测试前重置全局缓存"""
-        import yanpub.core.cache as cache_mod
+        import yanpub.core.adapter.cache as cache_mod
         cache_mod._global_adapter_cache = None
 
     def test_eval_cache_hit(self):

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 
-from yanpub.core.signing import CodeSigner, CodeSignature
+from yanpub.core.security.signing import CodeSigner, CodeSignature
 from yanpub.pkg.registry import PackageRegistry, PackageInfo
 
 

@@ -19,8 +19,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.adapter import LanguageAdapter
+from yanpub.core.adapter.registry import get_registry
 
 
 @dataclass

@@ -30,7 +30,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 
 @dataclass

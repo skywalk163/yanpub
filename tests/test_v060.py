@@ -20,7 +20,7 @@ class TestLSPFoldingRange:
         """基本块折叠 — 段落/函数定义"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         # 使用段言适配器
         registry = LanguageRegistry()
@@ -42,7 +42,7 @@ class TestLSPFoldingRange:
         """嵌套块折叠 — 当/如果内嵌在段落中"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -61,7 +61,7 @@ class TestLSPFoldingRange:
         """缩进推断折叠 — 无显式结束关键字的代码"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.xinyu.adapter import XinyuAdapter
@@ -81,7 +81,7 @@ class TestLSPFoldingRange:
         """空代码无折叠范围"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -97,7 +97,7 @@ class TestLSPFoldingRange:
         """注释行不影响折叠"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -116,7 +116,7 @@ class TestLSPFoldingRange:
         """冒号结尾的行视为块开始"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.yan.adapter import YanAdapter
@@ -142,14 +142,14 @@ class TestAdapterHotReload:
 
     def test_hot_reloader_creation(self):
         """HotReloader 创建"""
-        from yanpub.core.hotreload import HotReloader
+        from yanpub.core.lifecycle.hotreload import HotReloader
 
         reloader = HotReloader()
         assert reloader.history == []
 
     def test_hot_reloader_callback(self):
         """重载回调注册和通知"""
-        from yanpub.core.hotreload import HotReloader, ReloadEvent
+        from yanpub.core.lifecycle.hotreload import HotReloader, ReloadEvent
 
         reloader = HotReloader()
         received = []
@@ -174,7 +174,7 @@ class TestAdapterHotReload:
 
     def test_hot_reloader_check_no_changes(self):
         """检查无变更的适配器"""
-        from yanpub.core.hotreload import HotReloader
+        from yanpub.core.lifecycle.hotreload import HotReloader
 
         reloader = HotReloader()
         events = reloader.check_and_reload()
@@ -184,7 +184,7 @@ class TestAdapterHotReload:
 
     def test_reload_event_dataclass(self):
         """ReloadEvent 数据类"""
-        from yanpub.core.hotreload import ReloadEvent
+        from yanpub.core.lifecycle.hotreload import ReloadEvent
 
         event = ReloadEvent(
             adapter_id="yan",
@@ -202,14 +202,14 @@ class TestAdapterHotReload:
 
     def test_adapter_watcher_creation(self):
         """AdapterWatcher 创建"""
-        from yanpub.core.hotreload import AdapterWatcher
+        from yanpub.core.lifecycle.hotreload import AdapterWatcher
 
         watcher = AdapterWatcher(poll_interval=0.5)
         assert watcher.reloader is not None
 
     def test_adapter_watcher_check_now(self):
         """AdapterWatcher 立即检查"""
-        from yanpub.core.hotreload import AdapterWatcher
+        from yanpub.core.lifecycle.hotreload import AdapterWatcher
 
         watcher = AdapterWatcher()
         events = watcher.check_now()

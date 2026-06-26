@@ -16,7 +16,6 @@ from yanpub.playground.security import (
     SANDBOX_MAX_TIMEOUT,
     SANDBOX_MAX_MEMORY_MB,
     WSOriginValidator,
-    WSConnectionLimiter,
     install_security_middleware,
 )
 

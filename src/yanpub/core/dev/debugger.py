@@ -14,7 +14,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-from yanpub.core.adapter import InProcessAdapter, LanguageAdapter
+from yanpub.core.adapter.adapter import InProcessAdapter, LanguageAdapter
 
 
 # ============================================================

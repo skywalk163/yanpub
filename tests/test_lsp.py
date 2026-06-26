@@ -1,8 +1,8 @@
 """LSP 服务测试"""
 
 
-from yanpub.core.adapter import CompletionItem, Diagnostic, SubprocessAdapter
-from yanpub.core.registry import LanguageRegistry
+from yanpub.core.adapter.adapter import CompletionItem, Diagnostic, SubprocessAdapter
+from yanpub.core.adapter.registry import LanguageRegistry
 from yanpub.lsp.server import YanLanguageServer, _completion_item_to_lsp, _diagnostic_to_lsp
 
 
@@ -259,7 +259,7 @@ class TestLSPNavigation:
 
     def test_symbol_navigator_definition(self):
         """SymbolNavigator — Go to Definition"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。"
         nav = SymbolNavigator(keywords=["段落", "返回", "结束"])
@@ -270,7 +270,7 @@ class TestLSPNavigation:
 
     def test_symbol_navigator_references(self):
         """SymbolNavigator — Find All References"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。\n\n设 结果 为 加法(三, 四)。"
         nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
@@ -280,7 +280,7 @@ class TestLSPNavigation:
 
     def test_symbol_navigator_call_hierarchy(self):
         """SymbolNavigator — Call Hierarchy"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。\n\n段落 计算结果(甲, 乙)。\n  设 合 为 加法(甲, 乙)。\n  返回 合。\n结束。"
         nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
@@ -296,7 +296,7 @@ class TestLSPNavigation:
 
     def test_symbol_navigator_cross_document_definition(self):
         """SymbolNavigator — 跨文档定义查找"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         code1 = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。"
         code2 = "设 结果 为 加法(三, 四)。"
@@ -309,7 +309,7 @@ class TestLSPNavigation:
 
     def test_symbol_navigator_variable_definition(self):
         """SymbolNavigator — 变量定义查找"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         code = "段落 测试()。\n  设 甲 为 42。\n  设 乙 为 甲 加 1。\n  返回 乙。\n结束。"
         nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
@@ -320,7 +320,7 @@ class TestLSPNavigation:
 
     def test_symbol_navigator_outgoing_calls(self):
         """SymbolNavigator — 出调用（callees）"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。\n\n段落 计算结果(甲, 乙)。\n  设 合 为 加法(甲, 乙)。\n  返回 合。\n结束。"
         nav = SymbolNavigator(keywords=["段落", "设", "为", "返回", "结束"])
@@ -334,7 +334,7 @@ class TestLSPNavigation:
 
     def test_symbol_navigator_no_definition_found(self):
         """SymbolNavigator — 无匹配定义"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         code = "段落 加法()。结束。"
         nav = SymbolNavigator(keywords=["段落", "结束"])
@@ -345,7 +345,7 @@ class TestLSPNavigation:
 
     def test_symbol_navigator_references_include_declaration(self):
         """SymbolNavigator — 引用查找包含/排除定义"""
-        from yanpub.core.navigator import SymbolNavigator
+        from yanpub.core.dev.navigator import SymbolNavigator
 
         code = "段落 加法(甲, 乙)。\n  返回 甲 加 乙。\n结束。"
         nav = SymbolNavigator(keywords=["段落", "返回", "结束"])
@@ -357,7 +357,7 @@ class TestLSPNavigation:
 
     def test_adapter_navigation_defaults(self):
         """适配器导航方法默认返回 None"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1.0",

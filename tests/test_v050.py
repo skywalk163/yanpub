@@ -68,7 +68,7 @@ class TestLSPCodeLens:
     def test_codelens_run_file(self):
         """CodeLens 应在文件顶部添加运行文件按钮"""
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         mock_adapter = MagicMock()
@@ -342,7 +342,7 @@ class TestBenchHistory:
     """测试基准测试历史管理"""
 
     def test_save_and_load(self):
-        from yanpub.core.bench_viz import BenchHistory, AdapterBenchResult
+        from yanpub.core.perf.bench_viz import BenchHistory, AdapterBenchResult
         with tempfile.TemporaryDirectory() as tmpdir:
             history = BenchHistory(history_dir=Path(tmpdir))
             results = [AdapterBenchResult(adapter_id="test", adapter_name="测试")]
@@ -356,13 +356,13 @@ class TestBenchHistory:
             assert latest.adapter_id == "all"
 
     def test_load_previous_none(self):
-        from yanpub.core.bench_viz import BenchHistory
+        from yanpub.core.perf.bench_viz import BenchHistory
         with tempfile.TemporaryDirectory() as tmpdir:
             history = BenchHistory(history_dir=Path(tmpdir))
             assert history.load_previous() is None
 
     def test_load_latest_empty(self):
-        from yanpub.core.bench_viz import BenchHistory
+        from yanpub.core.perf.bench_viz import BenchHistory
         with tempfile.TemporaryDirectory() as tmpdir:
             history = BenchHistory(history_dir=Path(tmpdir))
             assert history.load_latest() is None
@@ -372,15 +372,15 @@ class TestRegressionDetector:
     """测试性能回归检测"""
 
     def test_detect_no_previous(self):
-        from yanpub.core.bench_viz import RegressionDetector
+        from yanpub.core.perf.bench_viz import RegressionDetector
         detector = RegressionDetector()
         results = []
         regressions = detector.detect(results, None)
         assert len(regressions) == 0
 
     def test_detect_with_previous(self):
-        from yanpub.core.bench_viz import RegressionDetector, BenchSnapshot
-        from yanpub.core.benchmark import AdapterBenchResult, BenchResult
+        from yanpub.core.perf.bench_viz import RegressionDetector, BenchSnapshot
+        from yanpub.core.perf.benchmark import AdapterBenchResult, BenchResult
 
         # 构造之前的数据（更快）
         previous = BenchSnapshot(
@@ -415,8 +415,8 @@ class TestRegressionDetector:
         assert execution_reg[0].is_regression is True
 
     def test_detect_no_regression(self):
-        from yanpub.core.bench_viz import RegressionDetector, BenchSnapshot
-        from yanpub.core.benchmark import AdapterBenchResult, BenchResult
+        from yanpub.core.perf.bench_viz import RegressionDetector, BenchSnapshot
+        from yanpub.core.perf.benchmark import AdapterBenchResult, BenchResult
 
         previous = BenchSnapshot(
             timestamp="2026-06-16T00:00:00",
@@ -451,14 +451,14 @@ class TestBenchVisualizer:
     """测试性能可视化报告"""
 
     def test_generate_html_empty(self):
-        from yanpub.core.bench_viz import BenchVisualizer
+        from yanpub.core.perf.bench_viz import BenchVisualizer
         html = BenchVisualizer.generate_html([])
         assert "<!DOCTYPE html>" in html
         assert "性能调优面板" in html
 
     def test_generate_html_with_data(self):
-        from yanpub.core.bench_viz import BenchVisualizer
-        from yanpub.core.benchmark import AdapterBenchResult, BenchResult
+        from yanpub.core.perf.bench_viz import BenchVisualizer
+        from yanpub.core.perf.benchmark import AdapterBenchResult, BenchResult
         results = [AdapterBenchResult(
             adapter_id="duan",
             adapter_name="段言",
@@ -470,7 +470,7 @@ class TestBenchVisualizer:
         assert "bar-chart" in html
 
     def test_save_html(self):
-        from yanpub.core.bench_viz import BenchVisualizer
+        from yanpub.core.perf.bench_viz import BenchVisualizer
         with tempfile.TemporaryDirectory() as tmpdir:
             output = os.path.join(tmpdir, "report.html")
             path = BenchVisualizer.save_html([], output)
@@ -479,7 +479,7 @@ class TestBenchVisualizer:
             assert "<!DOCTYPE html>" in content
 
     def test_html_with_regressions(self):
-        from yanpub.core.bench_viz import BenchVisualizer, RegressionInfo
+        from yanpub.core.perf.bench_viz import BenchVisualizer, RegressionInfo
         regressions = [
             RegressionInfo(
                 adapter_id="duan",
@@ -540,7 +540,7 @@ class TestWasmExecutor:
         executor = WasmExecutor(runtime=no_runtime)
 
         # Mock adapter
-        from yanpub.core.adapter import ExecutionResult
+        from yanpub.core.adapter.adapter import ExecutionResult
         mock_adapter = MagicMock()
         mock_adapter.id = "duan"
         mock_adapter.eval.return_value = ExecutionResult(stdout="hello", exit_code=0)

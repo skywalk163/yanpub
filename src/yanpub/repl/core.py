@@ -21,8 +21,8 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.lexers import Lexer
 
-from yanpub.core.adapter import LanguageAdapter
-from yanpub.core.registry import get_registry, LanguageRegistry
+from yanpub.core.adapter.adapter import LanguageAdapter
+from yanpub.core.adapter.registry import get_registry, LanguageRegistry
 
 
 # ---- 多行输入智能续行 ----

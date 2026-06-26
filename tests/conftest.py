@@ -11,7 +11,7 @@ def lang_backend_available(lang_id: str) -> bool:
     CI 环境中没有本地语言项目，这些测试应自动 skip。
     """
     try:
-        from yanpub.core.registry import get_registry
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get(lang_id)

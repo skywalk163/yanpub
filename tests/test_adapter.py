@@ -2,12 +2,12 @@
 
 import pytest
 
-from yanpub.core.adapter import (
+from yanpub.core.adapter.adapter import (
     ExecutionResult,
     CompletionItem,
     SubprocessAdapter,
 )
-from yanpub.core.registry import LanguageRegistry
+from yanpub.core.adapter.registry import LanguageRegistry
 
 
 # ---- 测试用简单适配器 ----

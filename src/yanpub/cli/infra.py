@@ -8,7 +8,7 @@ import time
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command("project")
 @click.argument("action", type=click.Choice(["create", "list", "run", "delete"]))
@@ -106,7 +106,7 @@ def baseline_command(
     action: str, lang_id: str | None, label: str, threshold: float, snapshot_id: str | None
 ):
     """性能基线管理 — 捕获/列出/对比/删除"""
-    from yanpub.core.baseline import BaselineManager
+    from yanpub.core.perf.baseline import BaselineManager
 
     mgr = BaselineManager()
 
@@ -224,7 +224,7 @@ def baseline_command(
 @click.option("--metric", "-m", multiple=True, help="指标名=预算值（如 eval_mean_ms=100）")
 def budget_command(action: str, lang_id: str | None, metric: tuple[str, ...]):
     """性能预算管理 — 设置/检查/列出"""
-    from yanpub.core.baseline import BaselineManager, PerformanceBudget
+    from yanpub.core.perf.baseline import BaselineManager, PerformanceBudget
 
     mgr = BaselineManager()
 

@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Callable
 
-from yanpub.core.adapter import Diagnostic
+from yanpub.core.adapter.adapter import Diagnostic
 
 
 class LintSeverity(str, Enum):

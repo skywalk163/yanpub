@@ -2,13 +2,13 @@
 
 import pytest
 
-from yanpub.core.refactor import (
+from yanpub.core.dev.refactor import (
     RefactoringEngine,
     _is_ident_char,
     _is_cjk,
     _is_word_boundary,
 )
-from yanpub.core.adapter import LanguageAdapter
+from yanpub.core.adapter.adapter import LanguageAdapter
 
 
 # ---- 辅助：Mock 适配器 ----
@@ -34,11 +34,11 @@ class MockAdapter(LanguageAdapter):
         return [".mock"]
 
     def run(self, file_path, args=None):
-        from yanpub.core.adapter import ExecutionResult
+        from yanpub.core.adapter.adapter import ExecutionResult
         return ExecutionResult(stdout="ok")
 
     def eval(self, code):
-        from yanpub.core.adapter import ExecutionResult
+        from yanpub.core.adapter.adapter import ExecutionResult
         return ExecutionResult(stdout="ok")
 
     @property
@@ -418,7 +418,7 @@ class TestLSPRefactorIntegration:
         """LSP 服务器创建包含重构功能"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         registry.register(MockAdapter())
@@ -430,7 +430,7 @@ class TestLSPRefactorIntegration:
         """Code Action 包含 Extract Function"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         registry.register(MockAdapter())
@@ -443,7 +443,7 @@ class TestLSPRefactorIntegration:
 
     def test_refactor_engine_import(self):
         """验证 RefactoringEngine 可正确导入"""
-        from yanpub.core.refactor import RefactoringEngine
+        from yanpub.core.dev.refactor import RefactoringEngine
         engine = RefactoringEngine()
         assert engine is not None
         assert engine.adapter is None

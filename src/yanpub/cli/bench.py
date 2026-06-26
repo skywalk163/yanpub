@@ -7,13 +7,13 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command()
 @click.argument("lang_id", required=False)
 def health(lang_id: str | None):
     """检查语言后端健康状态"""
-    from yanpub.core.health import check_adapter_health, check_all_adapters, format_health_report
+    from yanpub.core.adapter.health import check_adapter_health, check_all_adapters, format_health_report
 
     registry = get_registry()
 
@@ -39,7 +39,7 @@ def health(lang_id: str | None):
 @click.option("--json", "as_json", is_flag=True, help="输出 JSON 格式")
 def bench(lang_id: str | None, iterations: int, as_json: bool):
     """运行性能基准测试"""
-    from yanpub.core.benchmark import run_all_benchmarks, format_bench_report
+    from yanpub.core.perf.benchmark import run_all_benchmarks, format_bench_report
 
     registry = get_registry()
 
@@ -66,7 +66,7 @@ def bench(lang_id: str | None, iterations: int, as_json: bool):
 @click.option("--output", "-o", default="bench_report.html", help="输出 HTML 文件路径")
 def bench_visualize(lang_id: str | None, iterations: int, output: str):
     """生成性能基准测试可视化报告"""
-    from yanpub.core.bench_viz import BenchVisualizer, run_bench_with_regression
+    from yanpub.core.perf.bench_viz import BenchVisualizer, run_bench_with_regression
 
     registry = get_registry()
 
@@ -96,7 +96,7 @@ def bench_visualize(lang_id: str | None, iterations: int, output: str):
 @click.option("--threshold", "-t", default=0.20, type=float, help="回归阈值（默认 20%%）")
 def bench_regress(lang_id: str | None, threshold: float):
     """检测性能回归"""
-    from yanpub.core.bench_viz import run_bench_with_regression
+    from yanpub.core.perf.bench_viz import run_bench_with_regression
 
     registry = get_registry()
 
@@ -126,7 +126,7 @@ def bench_regress(lang_id: str | None, threshold: float):
 @click.option("--limit", "-n", default=5, type=int, help="显示最近 N 条")
 def bench_history(limit: int):
     """查看历史基准数据"""
-    from yanpub.core.bench_viz import BenchHistory
+    from yanpub.core.perf.bench_viz import BenchHistory
     import json
 
     history = BenchHistory()

@@ -7,7 +7,7 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command()
 @click.option("--host", default="0.0.0.0", help="监听地址")
@@ -76,7 +76,7 @@ def share_code(lang_id: str, file: str, title: str, ttl: int | None):
 @click.option("--interval", default=5.0, type=float, help="采样间隔（秒）")
 def start_monitor(host: str, port: int, interval: float):
     """启动性能监控仪表板"""
-    from yanpub.core.monitor import get_monitor
+    from yanpub.core.perf.monitor import get_monitor
 
     click.echo(f"启动性能监控仪表板: http://{host}:{port}")
     click.echo(f"采样间隔: {interval}秒")

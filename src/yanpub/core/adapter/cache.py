@@ -20,7 +20,7 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from yanpub.core.adapter import CompletionItem, Diagnostic, ExecutionResult
+from yanpub.core.adapter.adapter import CompletionItem, Diagnostic, ExecutionResult
 
 
 # ---- 缓存条目 ----

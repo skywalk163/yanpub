@@ -17,8 +17,8 @@ import time
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 
-from yanpub.core.adapter import LanguageAdapter
-from yanpub.core.profiler import ProfileReport
+from yanpub.core.adapter.adapter import LanguageAdapter
+from yanpub.core.perf.profiler import ProfileReport
 
 logger = logging.getLogger("yanpub.monitor")
 

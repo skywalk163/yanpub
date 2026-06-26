@@ -86,7 +86,7 @@ class TestCodeFormatter:
 
     def test_adapter_format_trailing_whitespace(self):
         """测试行尾空格清理"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -101,7 +101,7 @@ class TestCodeFormatter:
 
     def test_adapter_format_excessive_blank_lines(self):
         """测试多余空行合并"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -114,7 +114,7 @@ class TestCodeFormatter:
 
     def test_adapter_format_tab_to_spaces(self):
         """测试 Tab 转空格"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -126,7 +126,7 @@ class TestCodeFormatter:
 
     def test_adapter_format_final_newline(self):
         """测试末尾换行"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -138,7 +138,7 @@ class TestCodeFormatter:
 
     def test_formatter_config(self):
         """测试 ChineseCodeFormatter 配置"""
-        from yanpub.core.formatter import ChineseCodeFormatter, FormatterConfig
+        from yanpub.core.dev.formatter import ChineseCodeFormatter, FormatterConfig
 
         config = FormatterConfig(indent_size=2, max_blank_lines=1)
         formatter = ChineseCodeFormatter(config)
@@ -151,7 +151,7 @@ class TestCodeFormatter:
 
     def test_formatter_indent_normalization(self):
         """测试缩进规范化"""
-        from yanpub.core.formatter import ChineseCodeFormatter
+        from yanpub.core.dev.formatter import ChineseCodeFormatter
 
         formatter = ChineseCodeFormatter()
         code = "如果 甲：\n打印(甲)。\n结束。"
@@ -162,7 +162,7 @@ class TestCodeFormatter:
 
     def test_formatter_preserves_strings(self):
         """测试字符串内容不被格式化修改"""
-        from yanpub.core.formatter import ChineseCodeFormatter
+        from yanpub.core.dev.formatter import ChineseCodeFormatter
 
         formatter = ChineseCodeFormatter()
         code = '打印("  hello  ")。'
@@ -326,8 +326,8 @@ class TestAdapterHealth:
 
     def test_health_check_subprocess_adapter(self):
         """测试子进程适配器健康检查"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.health import check_adapter_health
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.health import check_adapter_health
 
         # 使用一个存在的命令（python）
         adapter = SubprocessAdapter(
@@ -340,8 +340,8 @@ class TestAdapterHealth:
 
     def test_health_check_unreachable_command(self):
         """测试不可达命令的健康检查"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.health import check_adapter_health
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.health import check_adapter_health
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test_unreachable", version="0.1",
@@ -352,8 +352,8 @@ class TestAdapterHealth:
 
     def test_health_check_keywords(self):
         """测试关键字加载检查"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.health import check_adapter_health
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.health import check_adapter_health
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test_kw", version="0.1",
@@ -366,8 +366,8 @@ class TestAdapterHealth:
 
     def test_health_result_to_dict(self):
         """测试健康检查结果序列化"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.health import check_adapter_health
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.health import check_adapter_health
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test_dict", version="0.1",
@@ -381,9 +381,9 @@ class TestAdapterHealth:
 
     def test_health_check_all(self):
         """测试批量健康检查"""
-        from yanpub.core.registry import LanguageRegistry
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.health import check_all_adapters
+        from yanpub.core.adapter.registry import LanguageRegistry
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.health import check_all_adapters
 
         registry = LanguageRegistry()
         registry.register(SubprocessAdapter(
@@ -400,8 +400,8 @@ class TestAdapterHealth:
 
     def test_format_health_report(self):
         """测试健康报告格式化"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.health import check_adapter_health, format_health_report
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.health import check_adapter_health, format_health_report
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test_report", version="0.1",
@@ -422,7 +422,7 @@ class TestBenchmark:
 
     def test_bench_result_stats(self):
         """测试基准测试结果统计"""
-        from yanpub.core.benchmark import BenchResult
+        from yanpub.core.perf.benchmark import BenchResult
 
         bench = BenchResult(name="test", iterations=5, times_ms=[10.0, 12.0, 11.0, 13.0, 9.0])
         assert bench.mean_ms == pytest.approx(11.0)
@@ -432,7 +432,7 @@ class TestBenchmark:
 
     def test_bench_result_to_dict(self):
         """测试基准测试结果序列化"""
-        from yanpub.core.benchmark import BenchResult
+        from yanpub.core.perf.benchmark import BenchResult
 
         bench = BenchResult(name="test", iterations=3, times_ms=[10.0, 12.0, 11.0])
         d = bench.to_dict()
@@ -442,8 +442,8 @@ class TestBenchmark:
 
     def test_bench_single_adapter(self):
         """测试单个适配器基准测试"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.benchmark import run_benchmarks
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.perf.benchmark import run_benchmarks
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="bench_test", version="0.1",
@@ -456,9 +456,9 @@ class TestBenchmark:
 
     def test_bench_all_adapters(self):
         """测试批量基准测试"""
-        from yanpub.core.registry import LanguageRegistry
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.benchmark import run_all_benchmarks
+        from yanpub.core.adapter.registry import LanguageRegistry
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.perf.benchmark import run_all_benchmarks
 
         registry = LanguageRegistry()
         registry.register(SubprocessAdapter(
@@ -471,8 +471,8 @@ class TestBenchmark:
 
     def test_bench_format_report(self):
         """测试基准报告格式化"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.benchmark import run_benchmarks, format_bench_report
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.perf.benchmark import run_benchmarks, format_bench_report
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="bench_fmt", version="0.1",
@@ -624,19 +624,19 @@ class TestVersionAndExports:
 
     def test_formatter_module_importable(self):
         """测试 formatter 模块可导入"""
-        from yanpub.core.formatter import ChineseCodeFormatter, FormatterConfig
+        from yanpub.core.dev.formatter import ChineseCodeFormatter, FormatterConfig
         assert ChineseCodeFormatter is not None
         assert FormatterConfig is not None
 
     def test_health_module_importable(self):
         """测试 health 模块可导入"""
-        from yanpub.core.health import check_adapter_health, HealthCheckResult
+        from yanpub.core.adapter.health import check_adapter_health, HealthCheckResult
         assert check_adapter_health is not None
         assert HealthCheckResult is not None
 
     def test_benchmark_module_importable(self):
         """测试 benchmark 模块可导入"""
-        from yanpub.core.benchmark import run_benchmarks, BenchResult
+        from yanpub.core.perf.benchmark import run_benchmarks, BenchResult
         assert run_benchmarks is not None
         assert BenchResult is not None
 

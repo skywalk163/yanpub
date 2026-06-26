@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from yanpub.core.keyword_docs import CATEGORY_DESCRIPTIONS, KEYWORD_EXAMPLES
-from yanpub.core.registry import LanguageRegistry, get_registry
+from yanpub.core.adapter.registry import LanguageRegistry, get_registry
 from yanpub.docs.generator import DocsGenerator, KeywordDoc
 from yanpub.docs.translator import RuleBasedTranslator
 from yanpub.i18n import I18nManager, SUPPORTED_LANGS, t

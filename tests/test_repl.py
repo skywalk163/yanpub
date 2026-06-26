@@ -2,8 +2,8 @@
 
 import pytest
 
-from yanpub.core.adapter import SubprocessAdapter
-from yanpub.core.registry import LanguageRegistry
+from yanpub.core.adapter.adapter import SubprocessAdapter
+from yanpub.core.adapter.registry import LanguageRegistry
 from yanpub.repl.core import ChineseLangLexer, REPLCompleter, YanREPL
 
 

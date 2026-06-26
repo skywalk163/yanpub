@@ -170,7 +170,7 @@ class TestAdapterRename:
 
     def test_rename_simple_identifier(self):
         """测试简单标识符重命名"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -186,7 +186,7 @@ class TestAdapterRename:
 
     def test_rename_preserves_others(self):
         """测试重命名不影响其他标识符"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -201,7 +201,7 @@ class TestAdapterRename:
 
     def test_rename_no_identifier_at_cursor(self):
         """测试光标不在标识符上时返回 None"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -213,7 +213,7 @@ class TestAdapterRename:
 
     def test_rename_out_of_range(self):
         """测试光标越界返回 None"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -225,7 +225,7 @@ class TestAdapterRename:
 
     def test_rename_multiple_occurrences(self):
         """测试多处出现全部替换"""
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test", version="0.1",
@@ -246,8 +246,8 @@ class TestLSPRename:
         """测试 LSP rename 集成"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
-        from yanpub.core.adapter import SubprocessAdapter
+        from yanpub.core.adapter.registry import LanguageRegistry
+        from yanpub.core.adapter.adapter import SubprocessAdapter
 
         registry = LanguageRegistry()
         registry.register(SubprocessAdapter(
@@ -268,8 +268,8 @@ class TestCompatMatrix:
 
     def test_check_compatibility_subprocess(self):
         """测试子进程适配器兼容性"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.compat import check_compatibility
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.compat import check_compatibility
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test_compat", version="0.1.0",
@@ -284,8 +284,8 @@ class TestCompatMatrix:
 
     def test_check_compatibility_keywords(self):
         """测试关键字覆盖检查"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.compat import check_compatibility
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.compat import check_compatibility
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test_kw_compat", version="0.1.0",
@@ -298,8 +298,8 @@ class TestCompatMatrix:
 
     def test_check_compatibility_lsp(self):
         """测试 LSP 能力检查"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.compat import check_compatibility
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.compat import check_compatibility
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test_lsp_compat", version="0.1.0",
@@ -313,8 +313,8 @@ class TestCompatMatrix:
 
     def test_check_compatibility_version_format(self):
         """测试版本号格式检查"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.compat import check_compatibility
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.compat import check_compatibility
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="test_ver", version="1.0.0",
@@ -325,9 +325,9 @@ class TestCompatMatrix:
 
     def test_check_all_compatibility(self):
         """测试批量兼容性检查"""
-        from yanpub.core.registry import LanguageRegistry
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.compat import check_all_compatibility
+        from yanpub.core.adapter.registry import LanguageRegistry
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.compat import check_all_compatibility
 
         registry = LanguageRegistry()
         registry.register(SubprocessAdapter(
@@ -345,8 +345,8 @@ class TestCompatMatrix:
 
     def test_format_compat_matrix(self):
         """测试兼容性矩阵格式化"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.compat import check_compatibility, format_compat_matrix
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.compat import check_compatibility, format_compat_matrix
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="fmt_compat", version="0.1.0",
@@ -360,8 +360,8 @@ class TestCompatMatrix:
 
     def test_format_compat_detail(self):
         """测试详细兼容性报告"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.compat import check_compatibility, format_compat_detail
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.compat import check_compatibility, format_compat_detail
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="detail_compat", version="0.1.0",
@@ -375,8 +375,8 @@ class TestCompatMatrix:
 
     def test_compat_result_to_dict(self):
         """测试兼容性结果序列化"""
-        from yanpub.core.adapter import SubprocessAdapter
-        from yanpub.core.compat import check_compatibility
+        from yanpub.core.adapter.adapter import SubprocessAdapter
+        from yanpub.core.adapter.compat import check_compatibility
 
         adapter = SubprocessAdapter(
             name="测试", lang_id="dict_compat", version="0.1.0",
@@ -397,7 +397,7 @@ class TestPluginSystem:
 
     def test_plugin_info_creation(self):
         """测试 PluginInfo 创建"""
-        from yanpub.core.plugin import PluginInfo
+        from yanpub.core.lifecycle.plugin import PluginInfo
 
         info = PluginInfo(
             name="test-plugin",
@@ -410,7 +410,7 @@ class TestPluginSystem:
 
     def test_plugin_info_serialization(self):
         """测试 PluginInfo 序列化"""
-        from yanpub.core.plugin import PluginInfo
+        from yanpub.core.lifecycle.plugin import PluginInfo
 
         info = PluginInfo(name="test", version="1.0.0", hooks=["pre_eval"])
         d = info.to_dict()
@@ -423,14 +423,14 @@ class TestPluginSystem:
 
     def test_plugin_manager_discover_empty(self, tmp_path):
         """测试空目录插件发现"""
-        from yanpub.core.plugin import PluginManager
+        from yanpub.core.lifecycle.plugin import PluginManager
 
         pm = PluginManager(plugins_dir=tmp_path)
         assert pm.list_plugins() == []
 
     def test_plugin_manager_install(self, tmp_path):
         """测试插件安装"""
-        from yanpub.core.plugin import PluginManager, PluginInfo
+        from yanpub.core.lifecycle.plugin import PluginManager, PluginInfo
 
         # 创建源插件目录
         source = tmp_path / "source" / "my-plugin"
@@ -457,7 +457,7 @@ class TestPluginSystem:
 
     def test_plugin_manager_uninstall(self, tmp_path):
         """测试插件卸载"""
-        from yanpub.core.plugin import PluginManager, PluginInfo
+        from yanpub.core.lifecycle.plugin import PluginManager, PluginInfo
 
         source = tmp_path / "source" / "uninstall-test"
         source.mkdir(parents=True)
@@ -476,7 +476,7 @@ class TestPluginSystem:
 
     def test_plugin_manager_enable_disable(self, tmp_path):
         """测试插件启用/禁用"""
-        from yanpub.core.plugin import PluginManager, PluginInfo
+        from yanpub.core.lifecycle.plugin import PluginManager, PluginInfo
 
         source = tmp_path / "source" / "toggle-test"
         source.mkdir(parents=True)
@@ -502,7 +502,7 @@ class TestPluginSystem:
 
     def test_plugin_manager_call_hook(self, tmp_path):
         """测试钩子调用"""
-        from yanpub.core.plugin import PluginManager
+        from yanpub.core.lifecycle.plugin import PluginManager
 
         pm = PluginManager(plugins_dir=tmp_path)
         # 无插件时调用钩子
@@ -511,21 +511,21 @@ class TestPluginSystem:
 
     def test_plugin_manager_has_hook(self, tmp_path):
         """测试钩子检查"""
-        from yanpub.core.plugin import PluginManager
+        from yanpub.core.lifecycle.plugin import PluginManager
 
         pm = PluginManager(plugins_dir=tmp_path)
         assert not pm.has_hook("pre_eval")
 
     def test_format_plugin_list_empty(self):
         """测试空插件列表格式化"""
-        from yanpub.core.plugin import format_plugin_list
+        from yanpub.core.lifecycle.plugin import format_plugin_list
 
         result = format_plugin_list([])
         assert "没有" in result
 
     def test_format_plugin_list_with_plugins(self):
         """测试插件列表格式化"""
-        from yanpub.core.plugin import PluginInfo, format_plugin_list
+        from yanpub.core.lifecycle.plugin import PluginInfo, format_plugin_list
 
         plugins = [
             PluginInfo(name="test", version="1.0.0", description="测试", hooks=["pre_eval"]),
@@ -536,7 +536,7 @@ class TestPluginSystem:
 
     def test_supported_hooks(self):
         """测试支持的钩子列表"""
-        from yanpub.core.plugin import SUPPORTED_HOOKS
+        from yanpub.core.lifecycle.plugin import SUPPORTED_HOOKS
 
         assert "pre_eval" in SUPPORTED_HOOKS
         assert "post_eval" in SUPPORTED_HOOKS
@@ -566,19 +566,19 @@ class TestVersionAndExports:
 
     def test_compat_module_importable(self):
         """测试 compat 模块可导入"""
-        from yanpub.core.compat import check_compatibility, CompatResult, format_compat_matrix
+        from yanpub.core.adapter.compat import check_compatibility, CompatResult, format_compat_matrix
         assert check_compatibility is not None
         assert CompatResult is not None
         assert format_compat_matrix is not None
 
     def test_plugin_module_importable(self):
         """测试 plugin 模块可导入"""
-        from yanpub.core.plugin import PluginManager, PluginInfo, get_plugin_manager
+        from yanpub.core.lifecycle.plugin import PluginManager, PluginInfo, get_plugin_manager
         assert PluginManager is not None
         assert PluginInfo is not None
         assert get_plugin_manager is not None
 
     def test_adapter_has_rename(self):
         """测试 LanguageAdapter 有 rename 方法"""
-        from yanpub.core.adapter import LanguageAdapter
+        from yanpub.core.adapter.adapter import LanguageAdapter
         assert hasattr(LanguageAdapter, "rename")

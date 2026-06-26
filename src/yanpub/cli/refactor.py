@@ -7,7 +7,7 @@ import sys
 import click
 
 from yanpub.cli import main
-from yanpub.core.registry import get_registry
+from yanpub.core.adapter.registry import get_registry
 
 @main.command("refactor")
 @click.argument("action", type=click.Choice(["extract", "inline", "rename"]))
@@ -30,7 +30,7 @@ def refactor_command(
 ):
     """代码重构 — 提取函数/内联变量/安全重命名"""
     from pathlib import Path as P
-    from yanpub.core.refactor import RefactoringEngine
+    from yanpub.core.dev.refactor import RefactoringEngine
 
     registry = get_registry()
     adapter = registry.get(lang_id)

@@ -20,7 +20,7 @@ class TestLSPSemanticTokens:
         """基本语义 token 生成"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -40,7 +40,7 @@ class TestLSPSemanticTokens:
         """空代码无语义 token"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -56,7 +56,7 @@ class TestLSPSemanticTokens:
         """关键字检测"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -76,7 +76,7 @@ class TestLSPSemanticTokens:
         """字符串字面量检测"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -93,7 +93,7 @@ class TestLSPSemanticTokens:
         """数字字面量检测"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -110,7 +110,7 @@ class TestLSPSemanticTokens:
         """注释检测"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -127,7 +127,7 @@ class TestLSPSemanticTokens:
         """Delta 编码验证"""
         pytest.importorskip("pygls")
         from yanpub.lsp.server import YanLanguageServer
-        from yanpub.core.registry import LanguageRegistry
+        from yanpub.core.adapter.registry import LanguageRegistry
 
         registry = LanguageRegistry()
         from yanpub.adapters.duan.adapter import DuanAdapter
@@ -156,7 +156,7 @@ class TestAdapterProfiler:
 
     def test_profile_record_creation(self):
         """ProfileRecord 创建"""
-        from yanpub.core.profiler import ProfileRecord
+        from yanpub.core.perf.profiler import ProfileRecord
 
         record = ProfileRecord(
             name="eval",
@@ -172,7 +172,7 @@ class TestAdapterProfiler:
 
     def test_profile_report_creation(self):
         """ProfileReport 创建"""
-        from yanpub.core.profiler import ProfileReport, ProfileRecord
+        from yanpub.core.perf.profiler import ProfileReport, ProfileRecord
 
         records = [
             ProfileRecord(name="eval", adapter_id="duan", duration_ms=10.0, timestamp=time.time(), success=True),
@@ -198,7 +198,7 @@ class TestAdapterProfiler:
 
     def test_profile_report_to_dict(self):
         """ProfileReport 序列化"""
-        from yanpub.core.profiler import ProfileReport
+        from yanpub.core.perf.profiler import ProfileReport
 
         report = ProfileReport(
             name="eval",
@@ -218,7 +218,7 @@ class TestAdapterProfiler:
 
     def test_profile_report_to_table(self):
         """ProfileReport 文本表格"""
-        from yanpub.core.profiler import ProfileReport
+        from yanpub.core.perf.profiler import ProfileReport
 
         report = ProfileReport(
             name="eval",
@@ -238,8 +238,8 @@ class TestAdapterProfiler:
 
     def test_adapter_profiler_creation(self):
         """AdapterProfiler 创建"""
-        from yanpub.core.profiler import AdapterProfiler
-        from yanpub.core.registry import get_registry
+        from yanpub.core.perf.profiler import AdapterProfiler
+        from yanpub.core.adapter.registry import get_registry
 
         registry = get_registry()
         adapter = registry.get("duan")
@@ -251,7 +251,7 @@ class TestAdapterProfiler:
 
     def test_hotspot_detector(self):
         """热点检测"""
-        from yanpub.core.profiler import HotspotDetector, ProfileReport
+        from yanpub.core.perf.profiler import HotspotDetector, ProfileReport
 
         reports = {
             "eval": ProfileReport(
@@ -291,7 +291,7 @@ class TestAdapterProfiler:
 
     def test_flame_graph_generator(self):
         """火焰图生成"""
-        from yanpub.core.profiler import FlameGraphGenerator, ProfileReport
+        from yanpub.core.perf.profiler import FlameGraphGenerator, ProfileReport
 
         reports = {
             "eval": ProfileReport(
@@ -315,7 +315,7 @@ class TestAdapterProfiler:
 
     def test_flame_graph_svg(self):
         """SVG 火焰图生成"""
-        from yanpub.core.profiler import FlameGraphGenerator, ProfileReport
+        from yanpub.core.perf.profiler import FlameGraphGenerator, ProfileReport
 
         reports = {
             "eval": ProfileReport(

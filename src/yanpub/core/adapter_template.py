@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
 
-from yanpub.core.adapter import SubprocessAdapter
+from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
 @dataclass
@@ -56,7 +56,7 @@ ${description_line}
 from __future__ import annotations
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
-from yanpub.core.adapter import SubprocessAdapter
+from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
 class ${class_name}(SubprocessAdapter):
@@ -512,7 +512,7 @@ class AdapterTemplateEngine:
                 spec.loader.exec_module(mod)
 
                 # 查找适配器类
-                from yanpub.core.adapter import LanguageAdapter
+                from yanpub.core.adapter.adapter import LanguageAdapter
 
                 found_class = None
                 for attr_name in dir(mod):
