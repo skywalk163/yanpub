@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-06-27
+
+### Fixed
+
+- Fix 7 test failures on Windows where `echo` is a cmd builtin (not a standalone executable): `shutil.which("echo")` unreachable, `subprocess.run(["echo", "mock"])` behavior inconsistent
+- Test adapters (`MockAdapter`, `EmptyKeywordsAdapter`) now override `eval()`/`run()` to return in-memory results, no longer depend on real subprocess execution
+- Health test adapters (`FailingEvalAdapter`, `CrashingAdapter`, `NoLSPAdapter`, `SlashCommentAdapter`) changed from `SubprocessAdapter` to `LanguageAdapter`, avoiding command reachability check interference
+
 ## [1.5.0] - 2026-06-18
 
 ### Security
