@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 
-from yanpub.core.adapter.adapter import SubprocessAdapter
+from yanpub.core.adapter.adapter import ExecutionResult, LanguageAdapter, SubprocessAdapter
 from yanpub.core.adapter.registry import LanguageRegistry
 from yanpub.core.adapter_test import (
     AdapterTestCase,
@@ -23,6 +23,8 @@ from yanpub.core.adapter_test import (
 
 
 class MockAdapter(SubprocessAdapter):
+    """测试用适配器 — 覆盖 eval/run 避免依赖真实子进程"""
+
     def __init__(self):
         super().__init__(
             name="测试语言",
@@ -35,9 +37,15 @@ class MockAdapter(SubprocessAdapter):
             primary_color="#000000",
         )
 
+    def eval(self, code: str) -> ExecutionResult:
+        return ExecutionResult(stdout="mock\n", exit_code=0, duration_ms=1.0)
+
+    def run(self, file_path: str, args: list[str] | None = None) -> ExecutionResult:
+        return ExecutionResult(stdout="mock\n", exit_code=0, duration_ms=1.0)
+
 
 class EmptyKeywordsAdapter(SubprocessAdapter):
-    """无关键字的适配器"""
+    """无关键字的适配器 — 覆盖 eval/run 避免依赖真实子进程"""
 
     def __init__(self):
         super().__init__(
@@ -49,6 +57,12 @@ class EmptyKeywordsAdapter(SubprocessAdapter):
             eval_command=["echo", "ekw"],
             keywords=[],
         )
+
+    def eval(self, code: str) -> ExecutionResult:
+        return ExecutionResult(stdout="ekw\n", exit_code=0, duration_ms=1.0)
+
+    def run(self, file_path: str, args: list[str] | None = None) -> ExecutionResult:
+        return ExecutionResult(stdout="ekw\n", exit_code=0, duration_ms=1.0)
 
 
 # ---- AdapterTestCase 测试 ----

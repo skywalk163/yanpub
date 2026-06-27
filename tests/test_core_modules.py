@@ -63,6 +63,8 @@ from yanpub.core.quality import DimensionScore, QualityChecker, QualityReport
 
 
 class MockAdapter(SubprocessAdapter):
+    """测试用适配器 — 覆盖 eval/run 避免依赖真实子进程"""
+
     def __init__(self, **kwargs):
         defaults = dict(
             name="测试语言",
@@ -76,6 +78,12 @@ class MockAdapter(SubprocessAdapter):
         )
         defaults.update(kwargs)
         super().__init__(**defaults)
+
+    def eval(self, code: str) -> ExecutionResult:
+        return ExecutionResult(stdout="mock\n", exit_code=0, duration_ms=1.0)
+
+    def run(self, file_path: str, args: list[str] | None = None) -> ExecutionResult:
+        return ExecutionResult(stdout="mock\n", exit_code=0, duration_ms=1.0)
 
 
 # ---- 单例重置 fixture ----
@@ -1091,14 +1099,30 @@ class TestHealthExecutionDegraded:
     def test_execution_nonzero_exit_code(self):
         """exit_code != 0 应导致 degraded"""
 
-        class FailingEvalAdapter(SubprocessAdapter):
+        class FailingEvalAdapter(LanguageAdapter):
+            @property
+            def name(self):
+                return "失败语言"
+
+            @property
+            def id(self):
+                return "fail_health"
+
+            @property
+            def version(self):
+                return "0.1"
+
+            @property
+            def file_extensions(self):
+                return [".fh"]
+
+            def run(self, file_path, args=None):
+                return ExecutionResult(stderr="error", exit_code=1)
+
             def eval(self, code):
                 return ExecutionResult(stderr="error", exit_code=1)
 
-        adapter = FailingEvalAdapter(
-            name="失败语言", lang_id="fail_health", version="0.1",
-            extensions=[".fh"], run_command=["echo"],
-        )
+        adapter = FailingEvalAdapter()
         result = check_adapter_health(adapter)
         assert result.status == "degraded"
         assert result.checks["execution"]["status"] == "fail"
@@ -1110,14 +1134,30 @@ class TestHealthExecutionUnhealthy:
     def test_execution_raises_exception(self):
         """执行异常应导致 unhealthy"""
 
-        class CrashingAdapter(SubprocessAdapter):
+        class CrashingAdapter(LanguageAdapter):
+            @property
+            def name(self):
+                return "崩溃语言"
+
+            @property
+            def id(self):
+                return "crash_health"
+
+            @property
+            def version(self):
+                return "0.1"
+
+            @property
+            def file_extensions(self):
+                return [".ch"]
+
+            def run(self, file_path, args=None):
+                raise RuntimeError("崩溃了")
+
             def eval(self, code):
                 raise RuntimeError("崩溃了")
 
-        adapter = CrashingAdapter(
-            name="崩溃语言", lang_id="crash_health", version="0.1",
-            extensions=[".ch"], run_command=["echo"],
-        )
+        adapter = CrashingAdapter()
         result = check_adapter_health(adapter)
         assert result.status == "unhealthy"
         assert result.checks["execution"]["status"] == "fail"
@@ -1136,15 +1176,34 @@ class TestGetTestCodeCustomComment:
     def test_custom_double_slash_comment(self):
         """双斜杠注释语法"""
 
-        class SlashCommentAdapter(SubprocessAdapter):
+        class SlashCommentAdapter(LanguageAdapter):
+            @property
+            def name(self):
+                return "斜杠注释"
+
+            @property
+            def id(self):
+                return "slash_cmt"
+
+            @property
+            def version(self):
+                return "0.1"
+
+            @property
+            def file_extensions(self):
+                return [".sc"]
+
             @property
             def comment_syntax(self):
                 return "//"
 
-        adapter = SlashCommentAdapter(
-            name="斜杠注释", lang_id="slash_cmt", version="0.1",
-            extensions=[".sc"], run_command=["echo"],
-        )
+            def run(self, file_path, args=None):
+                return ExecutionResult(stdout="", exit_code=0)
+
+            def eval(self, code):
+                return ExecutionResult(stdout="", exit_code=0)
+
+        adapter = SlashCommentAdapter()
         code = _get_test_code(adapter)
         assert code.startswith("// health check")
 
@@ -1160,17 +1219,35 @@ class TestHealthLSPCapability:
 
     def test_lsp_capability_false(self):
         """LSP 能力为 False 时状态为 skip"""
-        # SubprocessAdapter with no keywords -> lsp=False in capabilities
 
-        class NoLSPAdapter(SubprocessAdapter):
+        class NoLSPAdapter(LanguageAdapter):
+            @property
+            def name(self):
+                return "无LSP语言"
+
+            @property
+            def id(self):
+                return "nolsp_health"
+
+            @property
+            def version(self):
+                return "0.1"
+
+            @property
+            def file_extensions(self):
+                return [".nl"]
+
             @property
             def keywords(self):
                 return []
 
-        adapter = NoLSPAdapter(
-            name="无LSP语言", lang_id="nolsp_health", version="0.1",
-            extensions=[".nl"], run_command=["echo"],
-        )
+            def run(self, file_path, args=None):
+                return ExecutionResult(stdout="", exit_code=0)
+
+            def eval(self, code):
+                return ExecutionResult(stdout="", exit_code=0)
+
+        adapter = NoLSPAdapter()
         result = check_adapter_health(adapter)
         assert result.checks["lsp"]["status"] == "skip"
 
