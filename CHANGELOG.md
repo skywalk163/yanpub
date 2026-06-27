@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-06-28
+
+### Added
+
+- 新增华语（华码/Hua）语言适配器：`adapters/hua/`
+  - 适配器 `HuaAdapter` 继承 `SubprocessAdapter`，调用 `华码.py` 后端
+  - 69 个关键字从 `词法.py` 动态加载 + 缓存 fallback
+  - 支持 run（文件执行）、eval（临时文件）、repl（交互模式）
+  - 注释语法 `//`，扩展名 `.华` / `.hua`
+  - 主色 `#E67E22`
+- 6 个示例文件：hello、variables、condition、loop、function、data
+- 7 个 Playground 模板（6 个专题 + default）
+- 语法对比矩阵新增华语 15 个概念条目（hello → higher_order）
+- Playground 多文件项目新增华语默认模板
+
 ## [1.6.1] - 2026-06-27
 
 ### Fixed

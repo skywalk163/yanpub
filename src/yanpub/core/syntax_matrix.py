@@ -73,6 +73,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", '打印("你好，世界！")', "C 风格语法"),
         "yanlv": SnippetEntry("yanlv", '输出("你好，世界！")', "用「输出」而非「打印」"),
         "yanzhi": SnippetEntry("yanzhi", '打印("你好，世界！")', "C 风格语法"),
+        "hua": SnippetEntry("hua", '输出 "你好，世界！"', "无括号输出，空格分隔"),
     },
     # === 变量声明 ===
     "var_declare": {
@@ -86,8 +87,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "定义 甲 = 42", "定义 + 等号赋值"),
         "yanlv": SnippetEntry("yanlv", "定 甲 = 42", "「定」缩写形式"),
         "yanzhi": SnippetEntry("yanzhi", "定义 甲 = 42", "定义 + 等号赋值"),
+        "hua": SnippetEntry("hua", "变量甲 为 42", "「变量…为…」声明"),
     },
-    # === 变量赋值/修改 ===
     "var_assign": {
         "duan": SnippetEntry("duan", "设甲为甲加一。", "重新设值（中文运算符）"),
         "yan": SnippetEntry("yan", "赋值 甲 = 甲 + 1", "显式「赋值」关键字"),
@@ -99,6 +100,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "为 甲 = 甲 加 1", "「为」赋值 + 中文运算"),
         "yanlv": SnippetEntry("yanlv", "设置 甲 = 甲 + 1", "「设置」关键字"),
         "yanzhi": SnippetEntry("yanzhi", "赋值 甲 = 甲 + 1", "显式「赋值」关键字"),
+        "hua": SnippetEntry("hua", "甲 += 1", "复合赋值运算符"),
     },
     # === 函数定义 ===
     "func_def": {
@@ -118,8 +120,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}", "C 风格花括号"),
         "yanlv": SnippetEntry("yanlv", "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}", "C 风格花括号"),
         "yanzhi": SnippetEntry("yanzhi", "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}", "C 风格花括号"),
+        "hua": SnippetEntry("hua", "函数 求和\n  参数 甲 为 整数\n  参数 乙 为 整数\n  返回 甲 + 乙", "函数…参数…为类型…返回 + 缩进块"),
     },
-    # === 函数调用 ===
     "func_call": {
         "duan": SnippetEntry("duan", "设结果为 求和(三, 五)。", "括号调用 + 中文运算"),
         "yan": SnippetEntry("yan", "定义 结果 = 求和 3 5", "空格分隔参数（前缀风格）"),
@@ -131,8 +133,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "定义 结果 = 求和(3, 5)", "括号调用"),
         "yanlv": SnippetEntry("yanlv", "定 结果 = 求和(3, 5)", "括号调用"),
         "yanzhi": SnippetEntry("yanzhi", "定义 结果 = 求和(3, 5)", "括号调用"),
+        "hua": SnippetEntry("hua", "变量结果 为 (求和 3 5)", "无括号调用 + 空格分隔参数"),
     },
-    # === 条件语句 ===
     "if_else": {
         "duan": SnippetEntry(
             "duan",
@@ -183,6 +185,11 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             "yanzhi",
             '如果 甲 大于 乙 那么 {\n  打印("甲大")\n} 否则 {\n  打印("乙大")\n}',
             "中文运算符",
+        ),
+        "hua": SnippetEntry(
+            "hua",
+            '如果 甲 大于 乙\n  输出 "甲大"\n否则\n  输出 "乙大"',
+            "如果…否则 + 缩进块 + 中文比较",
         ),
     },
     # === while 循环 ===
@@ -237,6 +244,11 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             "循环当 甲 < 10 {\n  打印(甲)\n  甲 = 甲 + 1\n}",
             "循环当 + 花括号",
         ),
+        "hua": SnippetEntry(
+            "hua",
+            "当 甲 小于 10 循环\n  输出 甲\n  甲 += 1",
+            "当…循环 + 缩进块",
+        ),
     },
     # === 遍历循环 ===
     "for_loop": {
@@ -289,6 +301,11 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             "yanzhi",
             "遍历 甲 于中 列表 {\n  打印(甲)\n}",
             "遍历…于中 + 花括号",
+        ),
+        "hua": SnippetEntry(
+            "hua",
+            "对于 值 在 列表\n  输出 值",
+            "对于…在 + 缩进块",
         ),
     },
     # === 列表操作 ===
@@ -343,6 +360,11 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             "定义 甲 = [3, 5, 8]\n定义 乙 = 甲[0]\n定义 丙 = 长度(甲)",
             "C 风格",
         ),
+        "hua": SnippetEntry(
+            "hua",
+            "变量甲 为 [3, 5, 8]\n变量乙 为 (索引 甲 0)\n变量丙 为 (大小 甲)",
+            "变量…为 + 内置函数无括号",
+        ),
     },
     # === 字典操作 ===
     "dict_ops": {
@@ -396,8 +418,12 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             '定义 甲 = {"名": "张三"}\n定义 乙 = 甲["名"]',
             "花括号字面量",
         ),
+        "hua": SnippetEntry(
+            "hua",
+            '变量甲 为 ["名" 映射到 "张三"]\n变量乙 为 (获取 甲 "名")',
+            "「映射到」字面量 + 获取",
+        ),
     },
-    # === 类定义 ===
     "class_def": {
         "duan": SnippetEntry(
             "duan",
@@ -449,8 +475,12 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             "# 言知暂不支持类定义",
             "暂不支持",
         ),
+        "hua": SnippetEntry(
+            "hua",
+            '类 动物\n  方法 说话\n    输出(自己.名字 + "叫了一声")',
+            "类…方法… + 缩进块",
+        ),
     },
-    # === 异常处理 ===
     "try_catch": {
         "duan": SnippetEntry(
             "duan",
@@ -502,8 +532,12 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             "尝试 {\n  定义 甲 = 危险操作()\n} 捕获 错误 {\n  打印(错误)\n}",
             "尝试…捕获 + 花括号",
         ),
+        "hua": SnippetEntry(
+            "hua",
+            "尝试\n  变量甲 为 危险操作()\n捕获 错误\n  输出 错误\n最终\n  输出 \"完成\"",
+            "尝试…捕获…最终 + 缩进块",
+        ),
     },
-    # === 模块导入 ===
     "import_mod": {
         "duan": SnippetEntry("duan", "导入《数学》。", "书名号模块名"),
         "yan": SnippetEntry("yan", "导入 数学", "空格分隔"),
@@ -515,8 +549,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "导入 数学", "空格分隔"),
         "yanlv": SnippetEntry("yanlv", "导入 数学", "空格分隔"),
         "yanzhi": SnippetEntry("yanzhi", "导入 数学", "空格分隔"),
+        "hua": SnippetEntry("hua", "导入 从 数学库 中的 [平方根]", "选择性导入 + 从…中的"),
     },
-    # === 递归函数 ===
     "recursion": {
         "duan": SnippetEntry(
             "duan",
@@ -567,6 +601,11 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             "yanzhi",
             "函数 斐波那契(甲) {\n  如果 甲 小于 2 那么 返回 甲\n  返回 斐波那契(甲-1) + 斐波那契(甲-2)\n}",
             "中文运算递归",
+        ),
+        "hua": SnippetEntry(
+            "hua",
+            "函数 斐波那契\n  参数 甲 为 整数\n  如果 甲 小于等于 1\n    返回 1\n  返回 甲 * (斐波那契 (甲 - 1))",
+            "函数递归 + 缩进块",
         ),
     },
     # === 高阶函数 ===
@@ -620,6 +659,11 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
             "yanzhi",
             "定义 结果 = 皆 列表 函数 甲 那么 甲 乘 2",
             "「皆」映射",
+        ),
+        "hua": SnippetEntry(
+            "hua",
+            "# 华语暂不支持高阶函数语法糖",
+            "暂不支持",
         ),
     },
 }

@@ -1,0 +1,17 @@
+name: 华语
+lang_id: hua
+version: "0.5.0"
+extensions:
+  - .华
+  - .hua
+cli_entry: python G:\mimowork\hua\华码.py
+comment_syntax: "//"
+primary_color: "#E67E22"
+has_repl: true
+has_lsp: false
+has_eval: true
+eval_mode: stdin
+description: |
+  华语/华码 — 无括号、无结束符、缩进块的中文编程语言。
+  语法特点：变量声明用"变量...为"，函数定义用"函数...参数...返回"，
+  控制流用"如果/否则如果/否则"、"对于/在"、"当...循环"，注释用 //。
