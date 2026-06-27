@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix 7 test failures on Windows where `echo` is a cmd builtin (not a standalone executable): `shutil.which("echo")` unreachable, `subprocess.run(["echo", "mock"])` behavior inconsistent
 - Test adapters (`MockAdapter`, `EmptyKeywordsAdapter`) now override `eval()`/`run()` to return in-memory results, no longer depend on real subprocess execution
 - Health test adapters (`FailingEvalAdapter`, `CrashingAdapter`, `NoLSPAdapter`, `SlashCommentAdapter`) changed from `SubprocessAdapter` to `LanguageAdapter`, avoiding command reachability check interference
+- Fix Playground CSS/JS 404: HTML files referenced `index.css`/`index.js` (relative path), but static files are mounted at `/static/` — changed all 4 HTML files to use `/static/` prefix
 
 ## [1.5.0] - 2026-06-18
 
