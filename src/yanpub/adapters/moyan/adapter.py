@@ -1,9 +1,9 @@
 r"""墨言 (Moyan) 语言适配器
 
-墨言项目位于 G:\atomcode\atomyan（与言共享同一后端，使用 --vm 选项）
-CLI 入口: python yan.py --vm <file>
-Eval: python yan.py --vm -e '代码'
-REPL: python yan.py --vm -i
+墨言项目位于 G:\atomcode\atomyan
+CLI 入口: python moyan.py <file>
+Eval: python moyan.py -e '代码'
+REPL: python moyan.py -i
 """
 
 from __future__ import annotations
@@ -14,13 +14,13 @@ from yanpub.adapters._keywords_cache import load_cached_keywords
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
-# 墨言项目根目录（与言共享，使用 VM 后端）
-_ATOMYAN_PROJECT_DIR = r"G:\atomcode\atomyan"
-_YAN_CLI = str(Path(_ATOMYAN_PROJECT_DIR) / "yan.py")
+# 墨言项目根目录
+_MOYAN_PROJECT_DIR = r"G:\atomcode\atomyan"
+_MOYAN_CLI = str(Path(_MOYAN_PROJECT_DIR) / "moyan.py")
 
 
 class MoyanAdapter(SubprocessAdapter):
-    """墨言适配器 — 通过子进程调用墨言 VM 后端"""
+    """墨言适配器 — 通过子进程调用墨言后端"""
 
     def __init__(self):
         super().__init__(
@@ -28,10 +28,10 @@ class MoyanAdapter(SubprocessAdapter):
             lang_id="moyan",
             version="3.0.0",
             extensions=[".墨", ".moyan"],
-            run_command=["python", _YAN_CLI, "--vm"],
-            eval_command=["python", _YAN_CLI, "--vm", "-e"],
+            run_command=["python", _MOYAN_CLI],
+            eval_command=["python", _MOYAN_CLI, "-e"],
             eval_mode="arg",
-            repl_command=["python", _YAN_CLI, "--vm", "-i"],
+            repl_command=["python", _MOYAN_CLI, "-i"],
             keywords_loader=_load_moyan_keywords,
             primary_color="#8E44AD",
         )
@@ -60,7 +60,7 @@ def _load_moyan_keywords() -> list[str]:
 
 def _load_moyan_keywords_dynamic() -> list[str]:
     """从墨言项目的 lexer.py 动态加载关键字列表"""
-    keywords_file = Path(_ATOMYAN_PROJECT_DIR) / "lexer.py"
+    keywords_file = Path(_MOYAN_PROJECT_DIR) / "lexer.py"
     if not keywords_file.exists():
         return _fallback_moyan_keywords()
 
