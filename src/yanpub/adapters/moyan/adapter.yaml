@@ -9,7 +9,7 @@ backend:
 
 syntax:
   file_extensions: [".墨", ".moyan"]
-  comment_syntax: "#"
+  comment_syntax: "--"
 
 execution:
   run: "python -m moyan run {file}"
