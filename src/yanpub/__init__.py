@@ -4,7 +4,7 @@
 即可获得完整工具链（Playground / REPL / LSP / 包管理 / 文档站 / VSCode 扩展）。
 """
 
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 
 from yanpub.core.adapter.adapter import (
     LanguageAdapter,
