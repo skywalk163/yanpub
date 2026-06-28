@@ -3,10 +3,10 @@
 核心能力：
 1. SandboxConfig / SandboxResult — 沙箱配置与结果数据结构
 2. SandboxBackend — 沙箱后端抽象基类
-3. DockerSandbox — Docker/Podman 容器沙箱（命令行调用）
-4. FreeBSDJailSandbox — FreeBSD jail 沙箱
-5. ProcessSandbox — 进程级沙箱（fallback，无容器依赖）
-6. SandboxManager — 统一沙箱生命周期管理器
+3. SandboxManager — 统一沙箱生命周期管理器
+
+后端实现已拆分到 yanpub.core.sandbox_backends：
+  DockerSandbox, FreeBSDJailSandbox, ProcessSandbox
 
 命令:
   yanpub sandbox <lang_id> <file>       — 在沙箱中安全执行代码
@@ -38,6 +38,9 @@ from pathlib import Path
 from typing import Optional
 
 from yanpub.core.adapter.adapter import LanguageAdapter, SubprocessAdapter
+
+# 延迟 re-export 后端实现，保持向后兼容
+# （不能在顶层 import，因为 sandbox_backends 会 import 本模块的数据类）
 
 logger = logging.getLogger("yanpub.sandbox")
 
@@ -161,546 +164,18 @@ class SandboxBackend(ABC):
 
 
 # ============================================================
-# Docker/Podman 沙箱后端
+# 延迟 re-export 后端实现
 # ============================================================
 
 
-class DockerSandbox(SandboxBackend):
-    """Docker/Podman 沙箱后端
-
-    通过命令行调用 docker run / podman run 创建容器执行代码。
-    自动检测 docker 或 podman 可用性。
-    """
-
-    def __init__(self):
-        self._runtime: Optional[str] = None
-        self._sandboxes: dict[str, dict] = {}  # sandbox_id -> metadata
-
-    def _detect_runtime(self) -> Optional[str]:
-        """检测可用的容器运行时（docker 或 podman）"""
-        for runtime in ("docker", "podman"):
-            if _which(runtime):
-                # 验证运行时能正常工作
-                try:
-                    result = subprocess.run(
-                        [runtime, "info"],
-                        capture_output=True,
-                        timeout=10,
-                    )
-                    if result.returncode == 0:
-                        self._runtime = runtime
-                        return runtime
-                except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-                    continue
-        return None
-
-    def is_available(self) -> bool:
-        return self._detect_runtime() is not None
-
-    @property
-    def runtime(self) -> Optional[str]:
-        if self._runtime is None:
-            self._detect_runtime()
-        return self._runtime
-
-    def create(self, config: SandboxConfig) -> str:
-        runtime = self.runtime
-        if runtime is None:
-            raise RuntimeError("无可用的容器运行时（docker/podman）")
-
-        sandbox_id = f"yanpub-{uuid.uuid4().hex[:12]}"
-
-        # 构建容器名称
-        container_name = sandbox_id
-
-        # 保存元数据
-        self._sandboxes[sandbox_id] = {
-            "container_name": container_name,
-            "runtime": runtime,
-            "config": config,
-            "created_at": time.time(),
-        }
-
-        return sandbox_id
-
-    def execute(self, sandbox_id: str, command: list[str], stdin: str = "") -> SandboxResult:
-        meta = self._sandboxes.get(sandbox_id)
-        if meta is None:
-            return SandboxResult(
-                stderr=f"沙箱实例不存在: {sandbox_id}",
-                exit_code=-1,
-                sandbox_id=sandbox_id,
-                backend=self.runtime or "docker",
-            )
-
-        runtime = meta["runtime"]
-        config: SandboxConfig = meta["config"]
-        container_name = meta["container_name"]
-
-        # 构建 docker/podman run 命令
-        cmd = [runtime, "run", "--rm", "--name", container_name]
-
-        # 内存限制
-        cmd.extend(["--memory", config.memory_limit])
-
-        # CPU 限制
-        cmd.extend(["--cpus", str(config.cpu_limit)])
-
-        # 网络隔离
-        if not config.network:
-            cmd.extend(["--network", "none"])
-
-        # 进程数限制
-        cmd.extend(["--pids-limit", str(config.max_processes)])
-
-        # 工作目录
-        cmd.extend(["--workdir", config.workdir])
-
-        # 只读路径挂载
-        for ro_path in config.read_only_paths:
-            p = Path(ro_path)
-            if p.exists():
-                cmd.extend(["-v", f"{p}:{p}:ro"])
-
-        # 环境变量
-        for key, value in config.env_vars.items():
-            cmd.extend(["-e", f"{key}={value}"])
-
-        # 设置 PYTHONIOENCODING
-        cmd.extend(["-e", "PYTHONIOENCODING=utf-8"])
-
-        # 镜像
-        cmd.append(config.image)
-
-        # 执行命令
-        cmd.extend(command)
-
-        start = time.monotonic()
-        try:
-            result = subprocess.run(
-                cmd,
-                input=stdin,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=config.timeout,
-            )
-            elapsed = (time.monotonic() - start) * 1000
-
-            return SandboxResult(
-                stdout=result.stdout,
-                stderr=result.stderr,
-                exit_code=result.returncode,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend=runtime,
-            )
-
-        except subprocess.TimeoutExpired:
-            elapsed = (time.monotonic() - start) * 1000
-            # 尝试杀掉超时容器
-            try:
-                subprocess.run(
-                    [runtime, "kill", container_name],
-                    capture_output=True,
-                    timeout=5,
-                )
-            except Exception:
-                pass
-            return SandboxResult(
-                stderr=f"执行超时（{config.timeout}秒）",
-                exit_code=-1,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend=runtime,
-            )
-        except FileNotFoundError:
-            return SandboxResult(
-                stderr=f"容器运行时未找到: {runtime}",
-                exit_code=-2,
-                sandbox_id=sandbox_id,
-                backend=runtime or "docker",
-            )
-        except Exception as e:
-            elapsed = (time.monotonic() - start) * 1000
-            return SandboxResult(
-                stderr=f"沙箱执行错误: {e}",
-                exit_code=-3,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend=runtime or "docker",
-            )
-
-    def destroy(self, sandbox_id: str) -> None:
-        meta = self._sandboxes.pop(sandbox_id, None)
-        if meta is None:
-            return
-
-        runtime = meta["runtime"]
-        container_name = meta["container_name"]
-
-        # 尝试停止并移除容器
-        try:
-            subprocess.run(
-                [runtime, "rm", "-f", container_name],
-                capture_output=True,
-                timeout=10,
-            )
-        except Exception:
-            pass
-
-
-# ============================================================
-# FreeBSD jail 沙箱后端
-# ============================================================
-
-
-class FreeBSDJailSandbox(SandboxBackend):
-    """FreeBSD jail 沙箱后端
-
-    通过 jail/jexec 命令创建和管理 FreeBSD jail 实例。
-    需要在 FreeBSD 系统上运行，且需要 root 权限。
-    """
-
-    def __init__(self):
-        self._jails: dict[str, dict] = {}  # sandbox_id -> metadata
-        self._jail_counter = 0
-
-    def is_available(self) -> bool:
-        """检测 FreeBSD jail 是否可用"""
-        if not _is_freebsd():
-            return False
-        # 检查 jail 命令是否存在
-        if _which("jail") is None:
-            return False
-        # 检查是否有 root 权限
-        try:
-            return os.geteuid() == 0
-        except AttributeError:
-            return False
-
-    def create(self, config: SandboxConfig) -> str:
-        if not self.is_available():
-            raise RuntimeError("FreeBSD jail 不可用（需要 FreeBSD 系统和 root 权限）")
-
-        self._jail_counter += 1
-        jail_id = self._jail_counter
-        sandbox_id = f"yanpub-jail-{jail_id}"
-        jail_name = f"yanpub_{jail_id}"
-
-        # jail 根目录
-        jail_root = Path(config.jail_path) / jail_name
-        jail_root.mkdir(parents=True, exist_ok=True)
-
-        # 创建基本目录结构
-        (jail_root / "workspace").mkdir(exist_ok=True)
-        (jail_root / "tmp").mkdir(exist_ok=True)
-        (jail_root / "dev").mkdir(exist_ok=True)
-
-        # 创建 jail.conf 配置
-        jail_conf = jail_root / "jail.conf"
-        conf_content = (
-            f"{jail_name} {{\n"
-            f'    path = "{jail_root}";\n'
-            f'    host.hostname = "{jail_name}.yanpub";\n'
-            f"    ip4.addr = {config.jail_ip};\n"
-            f"    mount.devfs;\n"
-            f"    exec.stop = \"/bin/sh -c 'umount /dev 2>/dev/null; true'\";\n"
-            f"    persist;\n"
-            f"}}\n"
-        )
-        jail_conf.write_text(conf_content, encoding="utf-8")
-
-        # 创建 jail
-        try:
-            result = subprocess.run(
-                ["jail", "-c", jail_name],
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=30,
-            )
-            if result.returncode != 0:
-                # jail 创建失败，清理目录
-                shutil.rmtree(jail_root, ignore_errors=True)
-                raise RuntimeError(f"创建 jail 失败: {result.stderr}")
-        except FileNotFoundError:
-            shutil.rmtree(jail_root, ignore_errors=True)
-            raise RuntimeError("jail 命令未找到")
-
-        # 保存元数据
-        self._jails[sandbox_id] = {
-            "jail_name": jail_name,
-            "jail_root": str(jail_root),
-            "config": config,
-            "created_at": time.time(),
-        }
-
-        return sandbox_id
-
-    def execute(self, sandbox_id: str, command: list[str], stdin: str = "") -> SandboxResult:
-        meta = self._jails.get(sandbox_id)
-        if meta is None:
-            return SandboxResult(
-                stderr=f"沙箱实例不存在: {sandbox_id}",
-                exit_code=-1,
-                sandbox_id=sandbox_id,
-                backend="freebsd_jail",
-            )
-
-        jail_name = meta["jail_name"]
-        config: SandboxConfig = meta["config"]
-
-        # 使用 jexec 在 jail 中执行命令
-        cmd = ["jexec", jail_name] + command
-
-        start = time.monotonic()
-        try:
-            env = os.environ.copy()
-            env.update(config.env_vars)
-            env.setdefault("PYTHONIOENCODING", "utf-8")
-
-            result = subprocess.run(
-                cmd,
-                input=stdin,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=config.timeout,
-                env=env,
-            )
-            elapsed = (time.monotonic() - start) * 1000
-
-            return SandboxResult(
-                stdout=result.stdout,
-                stderr=result.stderr,
-                exit_code=result.returncode,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend="freebsd_jail",
-            )
-
-        except subprocess.TimeoutExpired:
-            elapsed = (time.monotonic() - start) * 1000
-            return SandboxResult(
-                stderr=f"执行超时（{config.timeout}秒）",
-                exit_code=-1,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend="freebsd_jail",
-            )
-        except FileNotFoundError:
-            return SandboxResult(
-                stderr="jexec 命令未找到",
-                exit_code=-2,
-                sandbox_id=sandbox_id,
-                backend="freebsd_jail",
-            )
-        except Exception as e:
-            elapsed = (time.monotonic() - start) * 1000
-            return SandboxResult(
-                stderr=f"jail 执行错误: {e}",
-                exit_code=-3,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend="freebsd_jail",
-            )
-
-    def destroy(self, sandbox_id: str) -> None:
-        meta = self._jails.pop(sandbox_id, None)
-        if meta is None:
-            return
-
-        jail_name = meta["jail_name"]
-        jail_root = meta["jail_root"]
-
-        # 停止 jail
-        try:
-            subprocess.run(
-                ["jail", "-r", jail_name],
-                capture_output=True,
-                timeout=10,
-            )
-        except Exception:
-            pass
-
-        # 清理 jail 根目录
-        try:
-            shutil.rmtree(jail_root, ignore_errors=True)
-        except Exception:
-            pass
-
-
-# ============================================================
-# 进程级沙箱（fallback）
-# ============================================================
-
-
-class ProcessSandbox(SandboxBackend):
-    """进程级沙箱（fallback，无容器）
-
-    使用 subprocess + resource limits 实现基本的安全隔离。
-    适用于无法使用 Docker/Podman/jail 的环境。
-    """
-
-    def __init__(self):
-        self._sandboxes: dict[str, dict] = {}  # sandbox_id -> metadata
-
-    def is_available(self) -> bool:
-        """进程级沙箱始终可用"""
-        return True
-
-    def create(self, config: SandboxConfig) -> str:
-        sandbox_id = f"yanpub-proc-{uuid.uuid4().hex[:12]}"
-
-        # 创建临时工作目录
-        work_dir = Path(tempfile.mkdtemp(prefix="yanpub_sandbox_"))
-        workspace = work_dir / "workspace"
-        workspace.mkdir(exist_ok=True)
-
-        self._sandboxes[sandbox_id] = {
-            "work_dir": str(work_dir),
-            "config": config,
-            "created_at": time.time(),
-        }
-
-        return sandbox_id
-
-    def execute(self, sandbox_id: str, command: list[str], stdin: str = "") -> SandboxResult:
-        meta = self._sandboxes.get(sandbox_id)
-        if meta is None:
-            return SandboxResult(
-                stderr=f"沙箱实例不存在: {sandbox_id}",
-                exit_code=-1,
-                sandbox_id=sandbox_id,
-                backend="process",
-            )
-
-        config: SandboxConfig = meta["config"]
-        work_dir = meta["work_dir"]
-
-        start = time.monotonic()
-
-        # 构建环境变量
-        env = os.environ.copy()
-        env.update(config.env_vars)
-        env.setdefault("PYTHONIOENCODING", "utf-8")
-
-        # 在非 Windows 系统上设置资源限制
-        preexec_fn = None
-        if sys.platform != "win32":
-            preexec_fn = self._set_resource_limits
-
-        try:
-            result = subprocess.run(
-                command,
-                input=stdin,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=config.timeout,
-                cwd=work_dir,
-                env=env,
-                preexec_fn=preexec_fn,
-            )
-            elapsed = (time.monotonic() - start) * 1000
-
-            # 尝试获取内存使用信息
-            memory_mb = 0.0
-            if sys.platform != "win32":
-                try:
-                    import resource as res_module
-
-                    # ru_maxrss 在 Linux 上是 KB，在 macOS/BSD 上是 bytes
-                    usage = res_module.getrusage(res_module.RUSAGE_CHILDREN)
-                    if sys.platform == "darwin":
-                        memory_mb = usage.ru_maxrss / (1024 * 1024)
-                    else:
-                        memory_mb = usage.ru_maxrss / 1024
-                except Exception:
-                    pass
-
-            return SandboxResult(
-                stdout=result.stdout,
-                stderr=result.stderr,
-                exit_code=result.returncode,
-                duration_ms=elapsed,
-                memory_used_mb=memory_mb,
-                sandbox_id=sandbox_id,
-                backend="process",
-            )
-
-        except subprocess.TimeoutExpired:
-            elapsed = (time.monotonic() - start) * 1000
-            return SandboxResult(
-                stderr=f"执行超时（{config.timeout}秒）",
-                exit_code=-1,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend="process",
-            )
-        except FileNotFoundError:
-            elapsed = (time.monotonic() - start) * 1000
-            return SandboxResult(
-                stderr=f"命令未找到: {command[0] if command else ''}",
-                exit_code=-2,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend="process",
-            )
-        except Exception as e:
-            elapsed = (time.monotonic() - start) * 1000
-            return SandboxResult(
-                stderr=f"沙箱执行错误: {e}",
-                exit_code=-3,
-                duration_ms=elapsed,
-                sandbox_id=sandbox_id,
-                backend="process",
-            )
-
-    def destroy(self, sandbox_id: str) -> None:
-        meta = self._sandboxes.pop(sandbox_id, None)
-        if meta is None:
-            return
-
-        work_dir = meta["work_dir"]
-        try:
-            shutil.rmtree(work_dir, ignore_errors=True)
-        except Exception:
-            pass
-
-    @staticmethod
-    def _set_resource_limits():
-        """设置进程资源限制（preexec_fn 回调）"""
-        try:
-            import resource
-
-            # CPU 时间限制（秒）— 设为 2 倍超时作为安全上限
-            resource.setrlimit(resource.RLIMIT_CPU, (60, 60))
-
-            # 内存限制（字节）
-            memory_bytes = 512 * 1024 * 1024  # 默认 512MB
-            try:
-                resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
-            except (ValueError, OSError):
-                pass  # 某些系统不支持 RLIMIT_AS
-
-            # 文件大小限制
-            file_size = 10 * 1024 * 1024  # 10MB
-            resource.setrlimit(resource.RLIMIT_FSIZE, (file_size, file_size))
-
-            # 进程数限制
-            try:
-                resource.setrlimit(resource.RLIMIT_NPROC, (10, 10))
-            except (ValueError, OSError):
-                pass  # macOS 上可能不支持
-
-        except ImportError:
-            pass  # Windows 没有 resource 模块
+def __getattr__(name: str):
+    """从 sandbox_backends 子包延迟 re-export，保持向后兼容"""
+    _reexports = {"DockerSandbox", "FreeBSDJailSandbox", "ProcessSandbox"}
+    if name in _reexports:
+        from yanpub.core import sandbox_backends
+
+        return getattr(sandbox_backends, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 # ============================================================
@@ -708,13 +183,18 @@ class ProcessSandbox(SandboxBackend):
 # ============================================================
 
 
-# 后端注册表
-_BACKEND_CLASSES: dict[str, type[SandboxBackend]] = {
-    "docker": DockerSandbox,
-    "podman": DockerSandbox,  # DockerSandbox 自动检测 docker/podman
-    "freebsd_jail": FreeBSDJailSandbox,
-    "process": ProcessSandbox,
-}
+# 后端注册表 — 延迟加载避免循环依赖
+def _get_backend_classes() -> dict[str, type]:
+    """获取后端类注册表"""
+    from yanpub.core.sandbox_backends import DockerSandbox, FreeBSDJailSandbox, ProcessSandbox
+
+    return {
+        "docker": DockerSandbox,
+        "podman": DockerSandbox,  # DockerSandbox 自动检测 docker/podman
+        "freebsd_jail": FreeBSDJailSandbox,
+        "process": ProcessSandbox,
+    }
+
 
 # 后端检测优先级
 _BACKEND_PRIORITY = ["docker", "podman", "freebsd_jail", "nsjail", "process"]
@@ -733,7 +213,7 @@ class SandboxManager:
     def _get_backend(self, name: str) -> SandboxBackend:
         """获取或创建指定后端实例"""
         if name not in self._backends:
-            cls = _BACKEND_CLASSES.get(name)
+            cls = _get_backend_classes().get(name)
             if cls is None:
                 raise ValueError(f"未知的沙箱后端: {name}")
             self._backends[name] = cls()
@@ -749,6 +229,8 @@ class SandboxManager:
     @staticmethod
     def detect_available_backends() -> list[str]:
         """检测所有可用的沙箱后端（按优先级排序）"""
+        from yanpub.core.sandbox_backends import DockerSandbox, FreeBSDJailSandbox
+
         available = []
 
         # 检测 Docker/Podman
@@ -900,6 +382,8 @@ class SandboxManager:
     @staticmethod
     def get_backend_status() -> dict[str, dict]:
         """获取所有后端的状态信息"""
+        from yanpub.core.sandbox_backends import DockerSandbox, FreeBSDJailSandbox
+
         status = {}
 
         # Docker/Podman

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-06-28
+
+### Changed
+
+- 架构卫生重构（第二轮）：7 个 800+ 行文件科学拆分，800+ 行文件从 7 个降至 0 个
+  - `core/syntax_matrix.py` (1123行) → 250 行主文件 + `syntax_matrix_data.py` (642行数据) + `syntax_matrix_html.py` (280行HTML)
+  - `playground/server.py` (1115行) → 410 行主文件 + `routes_ai.py` + `routes_project.py` + `routes_share.py` + `routes_challenge.py` + `routes_monitor.py`
+  - `core/perf/profiler.py` (948行) → 422 行主文件 + `flamegraph.py` (587行)
+  - `core/security/sandbox.py` (939行) → 423 行主文件 + `sandbox_backends/` (docker/freebsd/process 3个后端)
+  - `core/dev/debugger.py` (936行) → 310 行主文件 + `line_tracer.py` (416行) + `dap_adapter.py`
+  - `docs/site_builder.py` (903行) → 270 行主文件 + `seo.py` (428行) + `site_templates.py`
+  - `core/adapter_test.py` (899行) → 407 行主文件 + `adapter_test_builtin.py` + `adapter_test_report.py` + `adapter_compat.py` + `adapter_regression.py`
+- 所有拆分保留向后兼容（re-export），公共 API 不变
+- 1284 测试全部通过
+
 ## [1.7.0] - 2026-06-28
 
 ### Added
