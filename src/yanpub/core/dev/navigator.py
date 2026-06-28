@@ -10,36 +10,14 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-
-# 定义类关键字 → 符号类型映射
-_DEFINITION_KEYWORDS: dict[str, str] = {
-    "段落": "function",
-    "函数": "function",
-    "函": "function",
-    "方法": "method",
-    "类": "class",
-    "定义": "function",
-    "宏定": "function",
-    "构造": "method",
-}
-
-# 符号类型 → SymbolKind 数值（LSP 协议）
-_SYMBOL_KIND_MAP: dict[str, int] = {
-    "function": 12,  # Function
-    "method": 6,  # Method
-    "class": 5,  # Class
-    "variable": 13,  # Variable
-}
-
-
-def _is_ident_char(ch: str) -> bool:
-    """判断字符是否属于标识符（ASCII + CJK）"""
-    return ch.isalnum() or ch == "_" or "\u4e00" <= ch <= "\u9fff"
-
-
-def _is_cjk(ch: str) -> bool:
-    """判断字符是否为 CJK 统一汉字"""
-    return "\u4e00" <= ch <= "\u9fff"
+from yanpub.core.dev._ident_utils import (
+    _CN_KEYWORDS,
+    _DEFINITION_KEYWORDS,
+    _SYMBOL_KIND_MAP,
+    _is_cjk,
+    _is_ident_char,
+    _is_word_boundary,
+)
 
 
 def _extract_identifier_at(
@@ -129,16 +107,6 @@ def _extract_identifier_at(
             return None
 
         return (code_line[start:end], start, end)
-
-
-def _is_word_boundary(text: str, idx: int, length: int) -> bool:
-    """检查位置 idx 处长度为 length 的匹配是否具有单词边界
-
-    用于引用搜索时排除子串匹配。
-    """
-    before_ok = idx == 0 or not _is_ident_char(text[idx - 1])
-    after_ok = idx + length >= len(text) or not _is_ident_char(text[idx + length])
-    return before_ok and after_ok
 
 
 class SymbolNavigator:

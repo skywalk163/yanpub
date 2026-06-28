@@ -24,9 +24,6 @@ created_at = "2026-06-17T12:00:00"
 
 from __future__ import annotations
 
-import re
-import time
-from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -34,275 +31,23 @@ from typing import Optional
 from yanpub.pkg.workspace import Workspace
 from yanpub.pkg.registry import PackageRegistry
 
-
-# ---------------------------------------------------------------------------
-# VersionConstraint — 版本约束解析
-# ---------------------------------------------------------------------------
+from .version_constraint import VersionConstraint, _VERSION_RE, _parse_version, _same_major, _same_minor  # noqa: F401
+from .workspace_lock import ResolvedVersion, WorkspaceLock, _toml_str  # noqa: F401
 
 
-@dataclass
-class VersionConstraint:
-    """版本约束
-
-    支持格式：
-      ">=1.0.0"       大于等于
-      "^1.0.0"        兼容版本（主版本相同）
-      "~1.0.0"        近似版本（主+次版本相同）
-      "1.0.0"         精确版本
-      "*"             任意版本
-      ">=1.0.0,<2.0.0" 逗号分隔的与（AND）约束
-    """
-
-    raw: str
-    parts: list[tuple[str, str]] = field(default_factory=list)
-    """每个元素为 (operator, target_version)"""
-
-    @classmethod
-    def parse(cls, spec: str) -> VersionConstraint:
-        """解析版本约束字符串"""
-        spec = spec.strip()
-        if not spec:
-            spec = "*"
-
-        parts: list[tuple[str, str]] = []
-
-        if spec == "*":
-            parts.append(("*", "*"))
-        elif "," in spec:
-            # 组合约束：">=1.0.0,<2.0.0"
-            for segment in spec.split(","):
-                segment = segment.strip()
-                parts.append(cls._parse_single(segment))
+def __getattr__(name):
+    _moved = {
+        "VersionConstraint", "_VERSION_RE", "_parse_version", "_same_major", "_same_minor",
+        "ResolvedVersion", "WorkspaceLock", "_toml_str",
+    }
+    if name in _moved:
+        import importlib
+        if name in {"VersionConstraint", "_VERSION_RE", "_parse_version", "_same_major", "_same_minor"}:
+            mod = importlib.import_module(".version_constraint", __name__)
         else:
-            parts.append(cls._parse_single(spec))
-
-        return cls(raw=spec, parts=parts)
-
-    @staticmethod
-    def _parse_single(segment: str) -> tuple[str, str]:
-        """解析单条约束，返回 (operator, target)"""
-        segment = segment.strip()
-        if segment == "*":
-            return ("*", "*")
-        if segment.startswith(">="):
-            return (">=", segment[2:].strip())
-        if segment.startswith(">"):
-            return (">", segment[1:].strip())
-        if segment.startswith("<="):
-            return ("<=", segment[2:].strip())
-        if segment.startswith("<"):
-            return ("<", segment[1:].strip())
-        if segment.startswith("^"):
-            return ("^", segment[1:].strip())
-        if segment.startswith("~"):
-            return ("~", segment[1:].strip())
-        # 精确版本
-        return ("==", segment)
-
-    def matches(self, version: str) -> bool:
-        """检查版本是否满足约束"""
-        return all(self._match_single(op, target, version) for op, target in self.parts)
-
-    @staticmethod
-    def _match_single(op: str, target: str, version: str) -> bool:
-        """匹配单条约束"""
-        if op == "*":
-            return True
-        if op == "==":
-            return _parse_version(version) == _parse_version(target)
-        if op == ">=":
-            return _parse_version(version) >= _parse_version(target)
-        if op == ">":
-            return _parse_version(version) > _parse_version(target)
-        if op == "<=":
-            return _parse_version(version) <= _parse_version(target)
-        if op == "<":
-            return _parse_version(version) < _parse_version(target)
-        if op == "^":
-            # 兼容版本：主版本相同且 version >= target
-            vv = _parse_version(version)
-            tv = _parse_version(target)
-            return vv >= tv and _same_major(version, target)
-        if op == "~":
-            # 近似版本：主+次版本相同且 version >= target
-            vv = _parse_version(version)
-            tv = _parse_version(target)
-            return vv >= tv and _same_minor(version, target)
-        return False
-
-
-# ---------------------------------------------------------------------------
-# 辅助函数（简单字符串分割 + 整数比较）
-# ---------------------------------------------------------------------------
-
-_VERSION_RE = re.compile(r"^(\d+)(?:\.(\d+))?(?:\.(\d+))?.*$")
-
-
-def _parse_version(v: str) -> tuple[int, ...]:
-    """将版本字符串解析为可比较的整数元组"""
-    m = _VERSION_RE.match(v.strip())
-    if not m:
-        return (0,)
-    parts = []
-    for i in range(1, 4):
-        group = m.group(i)
-        parts.append(int(group) if group is not None else 0)
-    return tuple(parts)
-
-
-def _same_major(a: str, b: str) -> bool:
-    va = _parse_version(a)
-    vb = _parse_version(b)
-    return va[0] == vb[0] if va and vb else False
-
-
-def _same_minor(a: str, b: str) -> bool:
-    va = _parse_version(a)
-    vb = _parse_version(b)
-    return va[:2] == vb[:2] if len(va) >= 2 and len(vb) >= 2 else False
-
-
-# ---------------------------------------------------------------------------
-# ResolvedVersion — 已解析版本
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class ResolvedVersion:
-    """已解析的版本记录"""
-
-    package_name: str
-    version: str
-    source: str = "registry"  # registry / path / git
-    resolved_at: float = 0.0  # 解析时间戳
-    checksum: str = ""  # 校验和（可选）
-
-    def __post_init__(self):
-        if self.resolved_at == 0.0:
-            self.resolved_at = time.time()
-
-    def to_dict(self) -> dict:
-        d: dict[str, str | float] = {
-            "package_name": self.package_name,
-            "version": self.version,
-            "source": self.source,
-            "resolved_at": self.resolved_at,
-        }
-        if self.checksum:
-            d["checksum"] = self.checksum
-        return d
-
-
-# ---------------------------------------------------------------------------
-# WorkspaceLock — 工作空间版本锁定
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class WorkspaceLock:
-    """工作空间版本锁定文件"""
-
-    workspace_name: str
-    created_at: str = ""
-    members: dict[str, ResolvedVersion] = field(default_factory=dict)
-    dependencies: dict[str, ResolvedVersion] = field(default_factory=dict)
-
-    def __post_init__(self):
-        if not self.created_at:
-            self.created_at = datetime.now().isoformat()
-
-    def to_dict(self) -> dict:
-        return {
-            "workspace": {
-                "name": self.workspace_name,
-                "created_at": self.created_at,
-            },
-            "members": {name: rv.to_dict() for name, rv in self.members.items()},
-            "dependencies": {name: rv.to_dict() for name, rv in self.dependencies.items()},
-        }
-
-    def to_toml(self) -> str:
-        """生成人类可读的 TOML 格式锁定文件"""
-        lines: list[str] = []
-
-        # [workspace]
-        lines.append("[workspace]")
-        lines.append(f"name = {_toml_str(self.workspace_name)}")
-        lines.append(f"created_at = {_toml_str(self.created_at)}")
-
-        # [members]
-        if self.members:
-            lines.append("")
-            lines.append("[members]")
-            for name in sorted(self.members):
-                rv = self.members[name]
-                lines.append(
-                    f"{_toml_str(name)} = {{version = {_toml_str(rv.version)}, "
-                    f"source = {_toml_str(rv.source)}}}"
-                )
-
-        # [dependencies]
-        if self.dependencies:
-            lines.append("")
-            lines.append("[dependencies]")
-            for name in sorted(self.dependencies):
-                rv = self.dependencies[name]
-                lines.append(
-                    f"{_toml_str(name)} = {{version = {_toml_str(rv.version)}, "
-                    f"source = {_toml_str(rv.source)}}}"
-                )
-
-        lines.append("")  # 末尾换行
-        return "\n".join(lines)
-
-    @classmethod
-    def from_toml(cls, text: str) -> WorkspaceLock:
-        """从 TOML 文本加载锁定文件"""
-        try:
-            import tomllib
-        except ImportError:
-            import tomli as tomllib
-
-        data = tomllib.loads(text)
-
-        ws_data = data.get("workspace", {})
-        name = ws_data.get("name", "unknown")
-        created_at = ws_data.get("created_at", "")
-
-        members: dict[str, ResolvedVersion] = {}
-        for pkg_name, info in data.get("members", {}).items():
-            members[pkg_name] = ResolvedVersion(
-                package_name=pkg_name,
-                version=info.get("version", "0.0.0"),
-                source=info.get("source", "path"),
-                resolved_at=0.0,
-                checksum=info.get("checksum", ""),
-            )
-
-        dependencies: dict[str, ResolvedVersion] = {}
-        for pkg_name, info in data.get("dependencies", {}).items():
-            dependencies[pkg_name] = ResolvedVersion(
-                package_name=pkg_name,
-                version=info.get("version", "0.0.0"),
-                source=info.get("source", "registry"),
-                resolved_at=0.0,
-                checksum=info.get("checksum", ""),
-            )
-
-        lock = cls(
-            workspace_name=name,
-            created_at=created_at,
-            members=members,
-            dependencies=dependencies,
-        )
-        return lock
-
-
-def _toml_str(s: str) -> str:
-    """生成 TOML 带引号的字符串值"""
-    # 简单转义：处理内部引号和反斜杠
-    escaped = s.replace("\\", "\\\\").replace('"', '\\"')
-    return f'"{escaped}"'
+            mod = importlib.import_module(".workspace_lock", __name__)
+        return getattr(mod, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 # ---------------------------------------------------------------------------

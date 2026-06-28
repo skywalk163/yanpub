@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-06-28
+
+### Changed
+
+- 架构卫生重构（第三轮）：9 个 600+ 行文件科学拆分，最大文件从 862 行降至 830 行
+  - `core/adapter/adapter.py` (739行) → 294 行主文件 + `types.py` (4个数据类) + `base.py` (LanguageAdapter ABC)
+  - `core/ai_assist.py` (832行) → 692 行主文件 + `ai_data.py` (175行配置/模板/规则数据)
+  - `core/dev/navigator.py` + `core/dev/refactor.py` → 提取 `_ident_utils.py` 共享标识符工具（消除 3 个重复函数 + 4 个常量集）
+  - `playground/collab.py` (679行) → 400 行主文件 + `crdt.py` (278行 CRDT 数据模型)
+  - `core/wasm.py` (652行) → 155 行主文件 + `wasm_executor.py` (263行) + `wasm_pyodide.py` (235行)
+  - `pkg/versionset.py` (648行) → 328 行主文件 + `version_constraint.py` (175行) + `workspace_lock.py` (148行)
+  - `core/security/signing.py` (623行) → 222 行主文件 + `keys.py` (140行) + `trust_store.py` (268行)
+  - `core/perf/bench_viz.py` (667行) → 514 行主文件 + `bench_history.py` (183行)
+- 所有拆分保留向后兼容（`__getattr__` re-export），公共 API 不变
+- 消除 `navigator.py` 与 `refactor.py` 之间约 70 行代码重复
+- 1284 测试全部通过
+
 ## [1.8.0] - 2026-06-28
 
 ### Changed

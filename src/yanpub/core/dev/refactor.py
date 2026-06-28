@@ -11,89 +11,13 @@ import re
 from typing import Optional
 
 from yanpub.core.adapter.adapter import LanguageAdapter
-
-
-# ---- 标识符工具函数 ----
-
-
-def _is_ident_char(ch: str) -> bool:
-    """判断字符是否属于标识符（ASCII + CJK）"""
-    return ch.isalnum() or ch == "_" or "\u4e00" <= ch <= "\u9fff"
-
-
-def _is_cjk(ch: str) -> bool:
-    """判断字符是否为 CJK 统一汉字"""
-    return "\u4e00" <= ch <= "\u9fff"
-
-
-def _is_word_boundary(text: str, idx: int, length: int) -> bool:
-    """检查位置 idx 处长度为 length 的匹配是否具有单词边界"""
-    before_ok = idx == 0 or not _is_ident_char(text[idx - 1])
-    after_ok = idx + length >= len(text) or not _is_ident_char(text[idx + length])
-    return before_ok and after_ok
-
-
-# ---- 中文编程语言关键字集合 ----
-# 用于 safe_rename 检测新名称是否是关键字
-_CN_KEYWORDS: set[str] = {
-    "段落",
-    "函数",
-    "函",
-    "方法",
-    "类",
-    "定义",
-    "宏定",
-    "构造",
-    "当",
-    "遍历",
-    "循环",
-    "对于",
-    "如果",
-    "若",
-    "尝试",
-    "否则",
-    "否则若",
-    "否则如果",
-    "捕获",
-    "最终",
-    "结束",
-    "完",
-    "完毕",
-    "返回",
-    "设",
-    "为",
-    "参数",
-    "导入",
-    "从",
-    "导出",
-    "继承",
-    "属性",
-    "己",
-    "新建",
-    "抛出",
-    "空",
-    "真",
-    "假",
-    "打印",
-    "输出",
-    "显示",
-}
-
-# 中文运算符集合（不作为标识符）
-_CN_OPERATORS: set[str] = {
-    "加",
-    "减",
-    "乘",
-    "除",
-    "取余",
-    "等于",
-    "不等于",
-    "大于",
-    "小于",
-    "且",
-    "或",
-    "非",
-}
+from yanpub.core.dev._ident_utils import (
+    _CN_KEYWORDS,
+    _CN_OPERATORS,
+    _is_cjk,
+    _is_ident_char,
+    _is_word_boundary,
+)
 
 
 class RefactoringEngine:
