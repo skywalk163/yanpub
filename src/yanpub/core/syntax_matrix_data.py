@@ -46,7 +46,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", '打印("你好，世界！")', "C 风格语法"),
         "yanlv": SnippetEntry("yanlv", '输出("你好，世界！")', "用「输出」而非「打印」"),
         "yanzhi": SnippetEntry("yanzhi", '打印("你好，世界！")', "C 风格语法"),
-        "hua": SnippetEntry("hua", '输出 "你好，世界！"', "无括号输出，空格分隔"),
+        "hua": SnippetEntry("hua", '输出 "你好，世界！"', "无括号输出"),
     },
     # === 变量声明 ===
     "var_declare": {
@@ -60,7 +60,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "定义 甲 = 42", "定义 + 等号赋值"),
         "yanlv": SnippetEntry("yanlv", "定 甲 = 42", "「定」缩写形式"),
         "yanzhi": SnippetEntry("yanzhi", "定义 甲 = 42", "定义 + 等号赋值"),
-        "hua": SnippetEntry("hua", "变量甲 为 42", "「变量…为…」声明"),
+        "hua": SnippetEntry("hua", "变量 甲 为 42", "「变量…为…」声明"),
     },
     "var_assign": {
         "duan": SnippetEntry("duan", "设甲为甲加一。", "重新设值（中文运算符）"),
@@ -73,7 +73,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "为 甲 = 甲 加 1", "「为」赋值 + 中文运算"),
         "yanlv": SnippetEntry("yanlv", "设置 甲 = 甲 + 1", "「设置」关键字"),
         "yanzhi": SnippetEntry("yanzhi", "赋值 甲 = 甲 + 1", "显式「赋值」关键字"),
-        "hua": SnippetEntry("hua", "甲 += 1", "复合赋值运算符"),
+        "hua": SnippetEntry("hua", "甲 为 甲 加 1", "「为」重新赋值 + 中文运算"),
     },
     # === 函数定义 ===
     "func_def": {
@@ -93,7 +93,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}", "C 风格花括号"),
         "yanlv": SnippetEntry("yanlv", "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}", "C 风格花括号"),
         "yanzhi": SnippetEntry("yanzhi", "函数 求和(甲, 乙) {\n  返回 甲 + 乙\n}", "C 风格花括号"),
-        "hua": SnippetEntry("hua", "函数 求和\n  参数 甲 为 整数\n  参数 乙 为 整数\n  返回 甲 + 乙", "函数…参数…为类型…返回 + 缩进块"),
+        "hua": SnippetEntry("hua", "函数 求和\n  参数 甲 为 整数\n  参数 乙 为 整数\n  返回 甲 加 乙", "函数…参数…为类型…返回 + 缩进块"),
     },
     "func_call": {
         "duan": SnippetEntry("duan", "设结果为 求和(三, 五)。", "括号调用 + 中文运算"),
@@ -106,7 +106,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "定义 结果 = 求和(3, 5)", "括号调用"),
         "yanlv": SnippetEntry("yanlv", "定 结果 = 求和(3, 5)", "括号调用"),
         "yanzhi": SnippetEntry("yanzhi", "定义 结果 = 求和(3, 5)", "括号调用"),
-        "hua": SnippetEntry("hua", "变量结果 为 (求和 3 5)", "无括号调用 + 空格分隔参数"),
+        "hua": SnippetEntry("hua", "变量 结果 为 求和(3, 5)", "括号调用 + 逗号分隔参数"),
     },
     "if_else": {
         "duan": SnippetEntry(
@@ -219,8 +219,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "hua": SnippetEntry(
             "hua",
-            "当 甲 小于 10 循环\n  输出 甲\n  甲 += 1",
-            "当…循环 + 缩进块",
+            "当 甲 小于 10\n  输出(字符串(甲))\n  甲 为 甲 加 1",
+            "当… + 缩进块 + 中文运算",
         ),
     },
     # === 遍历循环 ===
@@ -277,7 +277,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "hua": SnippetEntry(
             "hua",
-            "对于 值 在 列表\n  输出 值",
+            "对于 值 在 [1, 2, 3]\n  输出(字符串(值))",
             "对于…在 + 缩进块",
         ),
     },
@@ -335,8 +335,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "hua": SnippetEntry(
             "hua",
-            "变量甲 为 [3, 5, 8]\n变量乙 为 (索引 甲 0)\n变量丙 为 (大小 甲)",
-            "变量…为 + 内置函数无括号",
+            "变量 甲 为 [3, 5, 8]\n变量 乙 为 甲[0]\n变量 丙 为 大小(甲)",
+            "变量…为 + 方括号索引 + 函数调用",
         ),
     },
     # === 字典操作 ===
@@ -393,8 +393,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "hua": SnippetEntry(
             "hua",
-            '变量甲 为 ["名" 映射到 "张三"]\n变量乙 为 (获取 甲 "名")',
-            "「映射到」字面量 + 获取",
+            '变量 甲 为 创建字典()\n甲["名"] 为 "张三"\n变量 乙 为 甲["名"]',
+            "创建字典() + 方括号赋值/取值",
         ),
     },
     "class_def": {
@@ -507,7 +507,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "hua": SnippetEntry(
             "hua",
-            "尝试\n  变量甲 为 危险操作()\n捕获 错误\n  输出 错误\n最终\n  输出 \"完成\"",
+            "尝试\n  变量 甲 为 危险操作()\n捕获 错误 为 文本\n  输出(错误)\n最终\n  输出 \"完成\"",
             "尝试…捕获…最终 + 缩进块",
         ),
     },
@@ -522,7 +522,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "hanyu": SnippetEntry("hanyu", "导入 数学", "空格分隔"),
         "yanlv": SnippetEntry("yanlv", "导入 数学", "空格分隔"),
         "yanzhi": SnippetEntry("yanzhi", "导入 数学", "空格分隔"),
-        "hua": SnippetEntry("hua", "导入 从 数学库 中的 [平方根]", "选择性导入 + 从…中的"),
+        "hua": SnippetEntry("hua", "导入 从 数学库 中的 [平方根]", "从…中的 选择性导入"),
     },
     "recursion": {
         "duan": SnippetEntry(
@@ -577,8 +577,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "hua": SnippetEntry(
             "hua",
-            "函数 斐波那契\n  参数 甲 为 整数\n  如果 甲 小于等于 1\n    返回 1\n  返回 甲 * (斐波那契 (甲 - 1))",
-            "函数递归 + 缩进块",
+            "函数 斐波那契\n  参数 甲 为 整数\n  如果 甲 小于等于 1\n    返回 1\n  返回 甲 乘 斐波那契(甲 减 1)",
+            "函数递归 + 缩进块 + 中文运算",
         ),
     },
     # === 高阶函数 ===
