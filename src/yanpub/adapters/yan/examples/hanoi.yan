@@ -1,19 +1,20 @@
 ---
-title: '循环与运算'
-tags: ['循环', '运算']
-difficulty: '简单'
-description: '展示循环和运算'
+title: '汉诺塔'
+tags: ['递归', '算法']
+difficulty: '中等'
+description: '经典递归问题(双轨制Python嵌入)'
 ---
 
--- 言 - 循环与运算
+-- 言 - 汉诺塔
+-- 经典递归问题：使用言语言双轨制(Python嵌入)
 
--- 当循环
-定义 i = 1。
-当时 i 小于 5：
-  输出 i。
-  定义 i = 加 i 1。
-。
+{{
+def hanoi(n, src, dst, aux):
+    if n > 0:
+        hanoi(n-1, src, aux, dst)
+        print(f"移动圆盘从{src}到{dst}")
+        hanoi(n-1, aux, dst, src)
 
--- 列表管道
-范围5，皆乘2，印。
-列1 2 3 4 5，只大3，皆乘2，印。
+print("汉诺塔 3 层：")
+hanoi(3, "A", "C", "B")
+}}。

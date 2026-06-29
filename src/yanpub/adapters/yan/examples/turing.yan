@@ -1,20 +1,27 @@
 ---
-title: '列表与高阶函数'
-tags: ['列表', '管道']
-difficulty: '中等'
-description: '列表操作与管道式编程'
+title: '图灵机原型'
+tags: ['模拟', '算法']
+difficulty: '困难'
+description: '模拟二进制加一器(双轨制Python嵌入)'
 ---
 
--- 言 - 列表与高阶函数
+-- 言 - 图灵机原型机
+-- 模拟二进制加一器：使用言语言双轨制(Python嵌入)
 
--- 列表创建
-印列10 20 30 40 50。
-
--- 列表操作
-范围5，印。
-范围10，皆乘2，印。
-范围10，只大5，印。
-范围10，只大5，归加0，印。
-
--- 管道组合
-列1 2 3 4 5，只大3，皆乘2，印。
+{{
+tape = list("1011")
+head = len(tape) - 1
+carry = 1
+while head >= 0 and carry:
+    if tape[head] == "0":
+        tape[head] = "1"
+        carry = 0
+    else:
+        tape[head] = "0"
+        carry = 1
+    head -= 1
+if carry:
+    tape.insert(0, "1")
+print("初始: 1011")
+print("加一后: " + "".join(tape))
+}}。

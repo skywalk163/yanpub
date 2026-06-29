@@ -1,19 +1,24 @@
 ---
-title: '条件判断'
-tags: ['条件', '逻辑']
-difficulty: '简单'
-description: '条件表达式和逻辑运算'
+title: '冒泡排序'
+tags: ['排序', '算法']
+difficulty: '中等'
+description: '经典排序算法(双轨制Python嵌入)'
 ---
 
--- 言 - 条件判断
+-- 言 - 冒泡排序
+-- 经典排序算法：使用言语言双轨制(Python嵌入)
 
--- 简单条件
-印若5大3则"5大"否则"3大"。
+{{
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if arr[j] > arr[j+1]:
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+    return arr
 
--- 变量条件
-定x=10。
-定y=20。
-印若x大y则"x大"否则"y大"。
-
--- 管道条件
-范围10，只大5，印。
+nums = [5, 3, 8, 1, 2]
+print("排序前：" + str(nums))
+result = bubble_sort(nums[:])
+print("排序后：" + str(result))
+}}。
