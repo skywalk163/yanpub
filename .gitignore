@@ -48,3 +48,4 @@ site/
 
 # Hatch
 hatch.toml
+.vs/
