@@ -37,7 +37,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
     # === 你好世界 ===
     "hello": {
         "duan": SnippetEntry("duan", '打印("你好，世界！")。', "中文句号结束"),
-        "yan": SnippetEntry("yan", '打印("你好，世界！")', "前缀调用风格"),
+        "yan": SnippetEntry("yan", '印"你好，世界！"。', "印 + 紧凑写法 + 中文句号"),
         "moyan": SnippetEntry("moyan", '打印 "你好，世界！"。', "前缀调用 + 中文句号"),
         "mingdao": SnippetEntry("mingdao", '打印 "你好，世界！"', "主谓式，无括号"),
         "zhixing": SnippetEntry("zhixing", '"你好，世界！"，印。', "管道式风格"),
@@ -51,7 +51,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
     # === 变量声明 ===
     "var_declare": {
         "duan": SnippetEntry("duan", "设甲为四十二。", "「设…为…」统一格式"),
-        "yan": SnippetEntry("yan", "定义 甲 = 42", "定义 + 等号赋值"),
+        "yan": SnippetEntry("yan", "定x=42。", "「定」+ 等号 + 紧凑写法 + 句号"),
         "moyan": SnippetEntry("moyan", "定义 甲 = 42。", "定义 + 等号赋值 + 中文句号"),
         "mingdao": SnippetEntry("mingdao", "定义 甲 = 42", "定义 + 等号赋值"),
         "zhixing": SnippetEntry("zhixing", "定甲是42。", "「定…是…」声明 + 句号"),
@@ -64,7 +64,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
     },
     "var_assign": {
         "duan": SnippetEntry("duan", "设甲为甲加一。", "重新设值（中文运算符）"),
-        "yan": SnippetEntry("yan", "赋值 甲 = 甲 + 1", "显式「赋值」关键字"),
+        "yan": SnippetEntry("yan", "x=x加1。", "直接赋值 + 中文运算 + 句号"),
         "moyan": SnippetEntry("moyan", "赋值 甲 = 相加 甲 1。", "赋值 + 前缀运算 + 中文句号"),
         "mingdao": SnippetEntry("mingdao", "赋值 甲 = 甲 + 1", "显式「赋值」关键字"),
         "zhixing": SnippetEntry("zhixing", "设甲是甲加1。", "「设…是…」赋值 + 中文运算"),
@@ -80,7 +80,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         "duan": SnippetEntry(
             "duan", "段落 求和 参数 甲 乙\n  返回 甲 加 乙。\n结束", "「段落…参数…结束」结构"
         ),
-        "yan": SnippetEntry("yan", "定义 求和 = 函数 甲 乙 那么 相加 甲 乙", "前缀调用 + 内联函数"),
+        "yan": SnippetEntry("yan", "定求和=函a b a加b。", "「定…=函…」内联函数 + 句号"),
         "moyan": SnippetEntry("moyan", "定义 求和 = 函数 甲 乙 那么 相加 甲 乙。", "前缀调用 + 内联函数 + 中文句号"),
         "mingdao": SnippetEntry("mingdao", "就是函 求和 (甲 乙) (+ 甲 乙)", "Lisp 风格前缀表达式"),
         "zhixing": SnippetEntry(
@@ -97,7 +97,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
     },
     "func_call": {
         "duan": SnippetEntry("duan", "设结果为 求和(三, 五)。", "括号调用 + 中文运算"),
-        "yan": SnippetEntry("yan", "定义 结果 = 求和 3 5", "空格分隔参数（前缀风格）"),
+        "yan": SnippetEntry("yan", "印求和 3 5。", "空格调用 + 句号"),
         "moyan": SnippetEntry("moyan", "定义 结果 = 求和 3 5。", "空格分隔参数（前缀风格）+ 中文句号"),
         "mingdao": SnippetEntry("mingdao", "定义 结果 = 求和(3, 5)", "括号调用"),
         "zhixing": SnippetEntry("zhixing", "dbl 5，印。", "空格调用 + 管道印"),
@@ -116,8 +116,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "yan": SnippetEntry(
             "yan",
-            '如果 甲 大于 乙 那么\n  打印("甲大")\n否则\n  打印("乙大")',
-            "如果…那么…否则",
+            '印若5大3则"大"否则"小"。',
+            "若…则…否则 + 印 + 句号",
         ),
         "moyan": SnippetEntry(
             "moyan",
@@ -174,8 +174,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "yan": SnippetEntry(
             "yan",
-            "每当 甲 小于 10 时候\n  打印(甲)\n  赋值 甲 = 甲 + 1",
-            "每当…时候",
+            "当时 甲大0：\n  印甲。\n  定甲=甲减1。\n。",
+            "当时 + 缩进块 + 句号",
         ),
         "moyan": SnippetEntry(
             "moyan",
@@ -232,8 +232,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "yan": SnippetEntry(
             "yan",
-            "遍历 甲 于中 列表\n  打印(甲)",
-            "遍历…于中",
+            "遍历 i 于 范围5：\n  印i。\n。",
+            "遍历…于…范围() + 缩进块 + 句号",
         ),
         "moyan": SnippetEntry(
             "moyan",
@@ -290,8 +290,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "yan": SnippetEntry(
             "yan",
-            "定义 甲 = [3, 5, 8]\n定义 乙 = 甲[0]\n定义 丙 = 长度 甲",
-            "前缀调用「长度」",
+            "定甲=列3 5 8。\n定乙=起始0甲。",
+            "「列」构造 + 「起始」索引 + 紧凑写法 + 句号",
         ),
         "moyan": SnippetEntry(
             "moyan",
@@ -348,8 +348,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "yan": SnippetEntry(
             "yan",
-            '定义 甲 = 字典()\n设置 甲 "名" "张三"\n定义 乙 = 获取 甲 "名"',
-            "前缀调用风格",
+            '定甲=字典。\n设置甲"名""张三"。\n印获取甲"名"。',
+            "字典 + 设置/获取 + 紧凑写法 + 句号",
         ),
         "moyan": SnippetEntry(
             "moyan",
@@ -462,7 +462,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "yan": SnippetEntry(
             "yan",
-            "试\n  定义 甲 = 危险操作()\n捕获 错误\n  打印(错误)",
+            "试\n  定甲=危险操作()。\n捕获错误\n  印错误。",
             "试…捕获",
         ),
         "moyan": SnippetEntry(
@@ -513,7 +513,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
     },
     "import_mod": {
         "duan": SnippetEntry("duan", "导入《数学》。", "书名号模块名"),
-        "yan": SnippetEntry("yan", "导入 数学", "空格分隔"),
+        "yan": SnippetEntry("yan", "导入 从 数学 中的 [平方根]", "从…中的 选择性导入"),
         "moyan": SnippetEntry("moyan", "导入 数学", "空格分隔"),
         "mingdao": SnippetEntry("mingdao", "导入 数学", "空格分隔"),
         "zhixing": SnippetEntry("zhixing", "导入 数学", "空格分隔"),
@@ -532,8 +532,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "yan": SnippetEntry(
             "yan",
-            "定义 斐波那契 = 函数 甲\n  如果 甲 小于 2 那么 返回 甲\n  返回 相加 (斐波那契 甲 减 1) (斐波那契 甲 减 2)",
-            "前缀调用递归",
+            "定阶乘=函n若n小等于1则1否则n乘阶乘n减1。\n印阶乘5。",
+            "函…若…则…否则…递归 + 紧凑写法 + 句号",
         ),
         "moyan": SnippetEntry(
             "moyan",
@@ -590,8 +590,8 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
         ),
         "yan": SnippetEntry(
             "yan",
-            "定义 结果 = 皆 列表 函数 甲 那么 甲 乘 2",
-            "「皆」映射",
+            "范围10，皆乘2，印。",
+            "管道式：范围→皆乘→印",
         ),
         "moyan": SnippetEntry(
             "moyan",
