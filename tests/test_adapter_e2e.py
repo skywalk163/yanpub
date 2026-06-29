@@ -195,12 +195,23 @@ class TestEvalMode:
     def test_arg_mode_adapters(self):
         """使用 -e/-c 参数模式的适配器应正确配置"""
         registry = get_registry()
-        arg_mode_ids = {"yan", "moyan", "zhixing", "yanzhi"}
+        arg_mode_ids = {"moyan", "zhixing", "yanzhi"}
         for lang_id in arg_mode_ids:
             adapter = registry.get(lang_id)
             if adapter is None:
                 continue
             assert adapter._eval_mode == "arg", f"{lang_id} 应使用 arg 模式"
+            assert adapter._eval_command is not None, f"{lang_id} 应有 eval_command"
+
+    def test_stdin_mode_adapters(self):
+        """使用 stdin 传递代码的适配器应正确配置"""
+        registry = get_registry()
+        stdin_mode_ids = {"yan"}
+        for lang_id in stdin_mode_ids:
+            adapter = registry.get(lang_id)
+            if adapter is None:
+                continue
+            assert adapter._eval_mode == "stdin", f"{lang_id} 应使用 stdin 模式"
             assert adapter._eval_command is not None, f"{lang_id} 应有 eval_command"
 
     def test_fallback_mode_adapters(self):

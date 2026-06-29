@@ -1,9 +1,9 @@
 r"""言 (Yan) 语言适配器
 
-言/墨言项目位于 G:\atomcode\atomyan
-CLI 入口: python yan.py <file>
-Eval: python yan.py -e '代码'
-REPL: python yan.py -i
+言语言项目位于 G:\dumategithub\newlisp\yan
+CLI 入口: python main.py <file>
+Eval: python main.py -c (从 stdin 读取)
+REPL: python main.py
 """
 
 from __future__ import annotations
@@ -14,10 +14,9 @@ from yanpub.adapters._keywords_cache import load_cached_keywords
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
-# 言/墨言项目根目录
-_ATOMYAN_PROJECT_DIR = r"G:\atomcode\atomyan"
-_YAN_CLI = str(Path(_ATOMYAN_PROJECT_DIR) / "yan.py")
-_YANREPL = str(Path(_ATOMYAN_PROJECT_DIR) / "yanrepl.py")
+# 言语言项目根目录
+_YAN_PROJECT_DIR = r"G:\dumategithub\newlisp\yan"
+_YAN_CLI = str(Path(_YAN_PROJECT_DIR) / "main.py")
 
 
 class YanAdapter(SubprocessAdapter):
@@ -30,9 +29,9 @@ class YanAdapter(SubprocessAdapter):
             version="3.0.0",
             extensions=[".言", ".yan"],
             run_command=["python", _YAN_CLI],
-            eval_command=["python", _YAN_CLI, "-e"],
-            eval_mode="arg",
-            repl_command=["python", _YAN_CLI, "-i"],
+            eval_command=["python", _YAN_CLI, "-c"],
+            eval_mode="stdin",
+            repl_command=["python", _YAN_CLI],
             keywords_loader=_load_yan_keywords,
             primary_color="#2980B9",
         )
@@ -47,7 +46,7 @@ class YanAdapter(SubprocessAdapter):
 
     @property
     def repl_welcome(self) -> str:
-        return f"言 v{self.version} — 墨言编程语言\n输入代码并回车执行，输入 :help 查看帮助"
+        return f"言 v{self.version} — 言编程语言\n输入代码并回车执行，输入 :help 查看帮助"
 
 
 def _load_yan_keywords() -> list[str]:
@@ -57,7 +56,7 @@ def _load_yan_keywords() -> list[str]:
 
 def _load_yan_keywords_dynamic() -> list[str]:
     """从言项目的 lexer.py 动态加载关键字列表"""
-    keywords_file = Path(_ATOMYAN_PROJECT_DIR) / "lexer.py"
+    keywords_file = Path(_YAN_PROJECT_DIR) / "lexer.py"
     if not keywords_file.exists():
         return _fallback_yan_keywords()
 

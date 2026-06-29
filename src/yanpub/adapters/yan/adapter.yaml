@@ -1,20 +1,22 @@
 # 言 (Yan) 适配器配置
 name: 言
 id: yan
-version: "1.0.0"
+version: "3.0.0"
 
 backend:
   type: subprocess
   command: "python"
+  project_dir: "G:\\dumategithub\\newlisp\\yan"
 
 syntax:
   file_extensions: [".言", ".yan"]
-  comment_syntax: "#"
+  comment_syntax: "--"
 
 execution:
-  run: "python -m yan run {file}"
-  eval: "python -m yan eval {code}"
-  repl: "python -m yan repl"
+  run: "python main.py {file}"
+  eval: "python main.py -c"
+  eval_mode: stdin
+  repl: "python main.py"
 
 capabilities:
   repl: true
