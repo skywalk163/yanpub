@@ -45,6 +45,7 @@ bench_history/
 bench_report.html
 wasm_build/
 site/
+.codearts_io_test.tmp
 
 # Hatch
 hatch.toml
