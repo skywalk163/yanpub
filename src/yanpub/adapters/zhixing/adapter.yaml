@@ -12,9 +12,9 @@ syntax:
   comment_syntax: "#"
 
 execution:
-  run: "python -m yan.cli {file}"
-  eval: "python -m yan.cli -c {code}"
-  repl: "python -m yan.cli -i"
+  run: "python -m zhixing.cli {file}"
+  eval: "python -m zhixing.cli -c {code}"
+  repl: "python -m zhixing.cli -i"
 
 capabilities:
   repl: true
