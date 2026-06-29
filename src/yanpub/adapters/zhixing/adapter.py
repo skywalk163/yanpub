@@ -16,7 +16,7 @@ from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
 _ZHIXING_PROJECT_DIR = r"G:\zhixing"
-_ZHIXING_CLI = os.path.join(_ZHIXING_PROJECT_DIR, "src", "yan", "cli.py")
+_ZHIXING_CLI = os.path.join(_ZHIXING_PROJECT_DIR, "src", "zhixing", "cli.py")
 
 
 class ZhixingAdapter(SubprocessAdapter):
@@ -56,7 +56,7 @@ def _load_zhixing_keywords() -> list[str]:
 
 def _load_zhixing_keywords_dynamic() -> list[str]:
     """从知行项目的 pre_tokenizer.py 动态加载关键字列表"""
-    keywords_file = Path(_ZHIXING_PROJECT_DIR) / "src" / "yan" / "compiler" / "pre_tokenizer.py"
+    keywords_file = Path(_ZHIXING_PROJECT_DIR) / "src" / "zhixing" / "compiler" / "pre_tokenizer.py"
     if not keywords_file.exists():
         return _fallback_keywords()
 

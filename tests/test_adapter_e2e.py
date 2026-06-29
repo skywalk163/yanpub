@@ -195,7 +195,7 @@ class TestEvalMode:
     def test_arg_mode_adapters(self):
         """使用 -e/-c 参数模式的适配器应正确配置"""
         registry = get_registry()
-        arg_mode_ids = {"yan", "moyan", "xinyu", "zhixing", "yanzhi"}
+        arg_mode_ids = {"yan", "moyan", "zhixing", "yanzhi"}
         for lang_id in arg_mode_ids:
             adapter = registry.get(lang_id)
             if adapter is None:
@@ -206,7 +206,7 @@ class TestEvalMode:
     def test_fallback_mode_adapters(self):
         """使用临时文件 fallback 的适配器应正确配置"""
         registry = get_registry()
-        fallback_ids = {"duan", "yanlv", "traeyan", "mingdao", "hanyu"}
+        fallback_ids = {"duan", "yanlv", "traeyan", "mingdao", "hanyu", "xinyu"}
         for lang_id in fallback_ids:
             adapter = registry.get(lang_id)
             if adapter is None:

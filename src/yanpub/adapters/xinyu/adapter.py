@@ -28,8 +28,7 @@ class XinyuAdapter(SubprocessAdapter):
             version="0.9.0",
             extensions=[".心", ".xinyu"],
             run_command=["python", _XINYU_CLI],
-            eval_command=["python", _XINYU_CLI, "-c"],
-            eval_mode="arg",
+            eval_command=None,  # -c 不支持多行代码，使用临时文件 fallback
             repl_command=["python", _XINYU_CLI],
             keywords_loader=_load_xinyu_keywords,
             primary_color="#27AE60",
