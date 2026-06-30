@@ -47,6 +47,10 @@ wasm_build/
 site/
 .codearts_io_test.tmp
 
+# Playwright e2e test artifacts
+test_screenshots/
+test_docs_output/
+
 # Hatch
 hatch.toml
 .vs/
