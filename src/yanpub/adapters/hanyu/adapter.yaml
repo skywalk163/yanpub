@@ -1,7 +1,7 @@
 # 翰语 (Hanyu) 适配器配置
 name: 翰语
 id: hanyu
-version: "0.1.0"
+version: "0.6.0"
 
 backend:
   type: subprocess
@@ -13,14 +13,15 @@ syntax:
 
 execution:
   run: "python -m hanyu.compiler {file}"
-  repl: ""
+  repl: "python -m hanyu.repl"
 
 capabilities:
-  repl: false
+  repl: true
   lsp: true
   package_manager: false
   wasm: true
   debug: false
+  type_checker: true
 
 colors:
   primary: "#D35400"
