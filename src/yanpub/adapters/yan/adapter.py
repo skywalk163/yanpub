@@ -11,11 +11,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
+from yanpub.adapters._path_resolver import resolve_lang_dir
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
-# 言语言项目根目录
-_YAN_PROJECT_DIR = r"G:\dumategithub\newlisp\yan"
+# 言语言项目根目录（支持 YAN_DIR 环境变量覆盖）
+_YAN_PROJECT_DIR = resolve_lang_dir("yan")
 _YAN_CLI = str(Path(_YAN_PROJECT_DIR) / "main.py")
 
 

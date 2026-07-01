@@ -11,10 +11,11 @@ from __future__ import annotations
 import os
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
+from yanpub.adapters._path_resolver import resolve_lang_dir
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
-_MINGDAO_PROJECT_DIR = r"G:\dumategithub\langbyracket"
+_MINGDAO_PROJECT_DIR = resolve_lang_dir("mingdao")
 
 
 class MingdaoAdapter(SubprocessAdapter):

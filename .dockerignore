@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+eggs/
+*.whl
+.venv/
+venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+test_screenshots/
+test_docs_output/
+
+# Lint / type
+.ruff_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project specific
+yanpkg.lock
+*.bench.json
+bench_history/
+bench_report.html
+wasm_build/
+site/
+.codearts_io_test.tmp
+.vs/
+
+# Git
+.git/
+.gitignore
+
+# Docs output
+yandocs_site/
+
+# Large / unnecessary files
+*.exe
+*.dll
+*.dylib
+*.o
+*.obj
+*.lib
+*.exp
+*.gz
+*.tmp
+
+# Language project internals (copied by deploy.sh sync, but skip caches)
+langs/*/.git/
+langs/*/.venv/
+langs/*/node_modules/
+langs/*/__pycache__/
+langs/*/*.egg-info/
+langs/*/*.pyc

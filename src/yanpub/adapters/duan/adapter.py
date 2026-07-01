@@ -10,11 +10,12 @@ import os
 from pathlib import Path
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
+from yanpub.adapters._path_resolver import resolve_lang_dir
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
 # 段言项目根目录
-_DUAN_PROJECT_DIR = r"G:\dumategithub\duan"
+_DUAN_PROJECT_DIR = resolve_lang_dir("duan")
 _DUAN_CLI = os.path.join(_DUAN_PROJECT_DIR, "cli", "duan.py")
 
 

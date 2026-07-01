@@ -11,11 +11,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
+from yanpub.adapters._path_resolver import resolve_lang_dir
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
 # 墨言项目根目录
-_MOYAN_PROJECT_DIR = r"G:\atomcode\atomyan"
+_MOYAN_PROJECT_DIR = resolve_lang_dir("moyan")
 _MOYAN_CLI = str(Path(_MOYAN_PROJECT_DIR) / "moyan.py")
 
 

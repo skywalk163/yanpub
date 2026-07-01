@@ -1,0 +1,25 @@
+# YanPub — 一键部署
+# docker compose up -d 即可启动
+#
+# 首次部署（从 gitcode 拿到 yanpub 后）:
+#   1. ./deploy.sh sync    — 自动 git clone 11 种语言后端
+#   2. ./deploy.sh build   — 构建 Docker 镜像
+#   3. ./deploy.sh up      — 启动服务
+
+services:
+  yanpub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yanpub
+    ports:
+      - "${YANPUB_PORT:-8080}:8080"
+    environment:
+      - YANPUB_LANG_DIR=/opt/langs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/languages"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

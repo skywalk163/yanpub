@@ -12,11 +12,12 @@ import tempfile
 from pathlib import Path
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
+from yanpub.adapters._path_resolver import resolve_lang_dir
 from yanpub.core.adapter.adapter import ExecutionResult, SubprocessAdapter
 
 
 # 华语项目根目录
-_HUA_PROJECT_DIR = r"G:\mimowork\hua"
+_HUA_PROJECT_DIR = resolve_lang_dir("hua")
 _HUA_CLI = str(Path(_HUA_PROJECT_DIR) / "华码.py")
 
 

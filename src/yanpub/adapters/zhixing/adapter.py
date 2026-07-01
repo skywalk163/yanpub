@@ -12,10 +12,11 @@ import os
 from pathlib import Path
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
+from yanpub.adapters._path_resolver import resolve_lang_dir
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
-_ZHIXING_PROJECT_DIR = r"G:\zhixing"
+_ZHIXING_PROJECT_DIR = resolve_lang_dir("zhixing")
 _ZHIXING_CLI = os.path.join(_ZHIXING_PROJECT_DIR, "src", "zhixing", "cli.py")
 
 

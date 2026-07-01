@@ -11,10 +11,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from yanpub.adapters._keywords_cache import load_cached_keywords
+from yanpub.adapters._path_resolver import resolve_lang_dir
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
-_TRAEYAN_PROJECT_DIR = r"G:\traework\traeyan"
+_TRAEYAN_PROJECT_DIR = resolve_lang_dir("traeyan")
 
 
 class TraeyanAdapter(SubprocessAdapter):

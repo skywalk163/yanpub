@@ -11,10 +11,11 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from yanpub.adapters._path_resolver import resolve_lang_dir
 from yanpub.core.adapter.adapter import SubprocessAdapter
 
 
-_XINYU_PROJECT_DIR = r"G:\dumategithub\chineseprogram"
+_XINYU_PROJECT_DIR = resolve_lang_dir("xinyu")
 _XINYU_CLI = os.path.join(_XINYU_PROJECT_DIR, "src", "main.py")
 
 
