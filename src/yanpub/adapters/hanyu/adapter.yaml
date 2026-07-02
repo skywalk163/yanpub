@@ -1,7 +1,7 @@
 # 翰语 (Hanyu) 适配器配置
 name: 翰语
 id: hanyu
-version: "0.6.0"
+version: "0.2.2"
 
 backend:
   type: subprocess
@@ -22,6 +22,9 @@ capabilities:
   wasm: true
   debug: false
   type_checker: true
+  struct: true
+  import: true
+  gc: true
 
 colors:
   primary: "#D35400"

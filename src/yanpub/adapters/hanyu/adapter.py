@@ -3,8 +3,8 @@ r"""翰语 (Hanyu) 语言适配器
 翰语项目位于 G:\opencode\hanyu
 CLI 入口: hanyu <file> 或 python -m hanyu.compiler <file.翰>
 REPL 入口: python -m hanyu.repl
-特色: LLVM IR 代码生成、百家姓标识符（406姓）、Tree-sitter/Lark/Python三后端、
-      类型检查、JIT执行、WASM编译、自举编译器
+特色: LLVM IR 代码生成、百家姓标识符（406姓）、类型检查、JIT执行、
+      WASM编译、结构体、导入系统、自举编译器、GC内存管理
 """
 
 from __future__ import annotations
@@ -23,14 +23,15 @@ class HanyuAdapter(SubprocessAdapter):
     """翰语适配器 — 通过子进程调用翰语后端
 
     翰语使用 LLVM IR 进行代码生成，支持 JIT 和子进程两种执行模式。
-    v0.2.0 新增 REPL（repl.py）、类型检查器、百家姓标识符、冒号缩进语法。
+    v0.2.2 移除 Lark/Tree-sitter 后端（统一使用 Python 解析器），
+    新增结构体、导入系统、GC内存管理、自举编译器。
     """
 
     def __init__(self):
         super().__init__(
             name="翰语",
             lang_id="hanyu",
-            version="0.6.0",
+            version="0.2.2",
             extensions=[".翰", ".hanyu"],
             run_command=["python", "-m", "hanyu.compiler"],
             eval_command=None,  # 编译型语言，无单行 eval
@@ -46,13 +47,16 @@ class HanyuAdapter(SubprocessAdapter):
     @property
     def capabilities(self) -> dict[str, bool]:
         return {
-            "repl": True,  # v0.2.0 新增 REPL
+            "repl": True,
             "lsp": len(self.keywords) > 0,
             "package_manager": False,
             "debug": False,
-            "wasm": True,  # 支持 WASM 编译目标
-            "llvm": True,  # 声明使用 LLVM 后端
-            "type_checker": True,  # v0.2.0 新增类型检查
+            "wasm": True,
+            "llvm": True,
+            "type_checker": True,
+            "struct": True,       # v0.2.1 结构体
+            "import": True,       # v0.2.1 导入系统
+            "gc": True,           # v0.2.1 GC内存管理
         }
 
 
@@ -152,12 +156,10 @@ def _fallback_keywords() -> list[str]:
         "乘",
         "除",
         "余",
-        "负",
         # 内置函数
         "打印",
         "打印字符串",
         "调用",
         "不等于",
         "写JSON",
-        "长度",
     ]
