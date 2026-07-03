@@ -81,8 +81,15 @@ class SubprocessAdapter(LanguageAdapter):
     def primary_color(self) -> str:
         return self._primary_color
 
-    def _exec(self, cmd: list[str], timeout: float = 30.0, stdin: str = "") -> ExecutionResult:
-        """执行子命令"""
+    def _exec(self, cmd: list[str], timeout: float = 30.0, stdin: str = "", max_output: int = 65536) -> ExecutionResult:
+        """执行子命令
+
+        Args:
+            cmd: 命令列表
+            timeout: 超时秒数（默认 30s）
+            stdin: 标准输入内容
+            max_output: 最大输出字符数（默认 64KB）
+        """
         import os as _os
 
         start = time.monotonic()
@@ -98,6 +105,39 @@ class SubprocessAdapter(LanguageAdapter):
                 errors="replace",
                 timeout=timeout,
                 env=env,
+            )
+            elapsed = (time.monotonic() - start) * 1000
+
+            # 截断超大输出，防止内存耗尽
+            stdout = result.stdout
+            stderr = result.stderr
+            if len(stdout) > max_output:
+                stdout = stdout[:max_output] + f"\n... [输出截断，共 {len(result.stdout)} 字符]"
+            if len(stderr) > max_output:
+                stderr = stderr[:max_output] + f"\n... [错误输出截断，共 {len(result.stderr)} 字符]"
+
+            return ExecutionResult(
+                stdout=stdout,
+                stderr=stderr,
+                exit_code=result.returncode,
+                duration_ms=elapsed,
+            )
+        except subprocess.TimeoutExpired:
+            elapsed = (time.monotonic() - start) * 1000
+            return ExecutionResult(
+                stderr=f"执行超时（{timeout}秒）",
+                exit_code=-1,
+                duration_ms=elapsed,
+            )
+        except FileNotFoundError:
+            return ExecutionResult(
+                stderr=f"命令未找到: {cmd[0] if cmd else ''}",
+                exit_code=-1,
+            )
+        except OSError as e:
+            return ExecutionResult(
+                stderr=f"执行失败: {e}",
+                exit_code=-1,
             )
             elapsed = (time.monotonic() - start) * 1000
             return ExecutionResult(

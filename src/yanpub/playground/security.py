@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import time
@@ -35,8 +36,15 @@ RATE_LIMIT_PER_MINUTE = int(os.environ.get("YANPUB_RATE_LIMIT", "60"))
 # 限流：执行类端点每 IP 每分钟最大请求数（更严格）
 EXEC_RATE_LIMIT_PER_MINUTE = int(os.environ.get("YANPUB_EXEC_RATE_LIMIT", "10"))
 
+# WebSocket 每连接每分钟最大执行次数
+WS_EXEC_RATE_LIMIT_PER_MINUTE = int(os.environ.get("YANPUB_WS_EXEC_RATE_LIMIT", "30"))
+
 # 执行类端点
 EXEC_ENDPOINTS = {"/api/run", "/api/sandbox/run", "/ws/run"}
+
+# 全局执行并发限制（同时最多 N 个代码执行）
+MAX_CONCURRENT_EXEC = int(os.environ.get("YANPUB_MAX_CONCURRENT_EXEC", "5"))
+_exec_semaphore = asyncio.Semaphore(MAX_CONCURRENT_EXEC)
 
 # WebSocket 允许的 origin（逗号分隔，空表示允许所有）
 _ws_origins_env = os.environ.get("YANPUB_WS_ORIGINS", "")
@@ -88,12 +96,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     对普通 API 限流 RATE_LIMIT_PER_MINUTE 次/分钟，
     对执行类端点限流 EXEC_RATE_LIMIT_PER_MINUTE 次/分钟。
+    对 WebSocket 执行端点也进行限流（不再跳过）。
     """
 
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
         self._general: dict[str, _RateBucket] = defaultdict(_RateBucket)
         self._exec: dict[str, _RateBucket] = defaultdict(_RateBucket)
+        # WebSocket 每连接执行速率限制
+        self._ws_exec: dict[str, _RateBucket] = defaultdict(_RateBucket)
 
     def _check_and_count(self, ip: str, path: str) -> tuple[bool, int]:
         """返回 (是否放行, 当前窗口计数)"""
@@ -112,14 +123,24 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return False, bucket.count
         return True, bucket.count
 
+    def _check_ws_exec(self, ip: str) -> tuple[bool, int]:
+        """检查 WebSocket 执行速率"""
+        now = time.monotonic()
+        bucket = self._ws_exec[ip]
+        if now - bucket.window_start >= 60.0:
+            bucket.count = 0
+            bucket.window_start = now
+
+        bucket.count += 1
+        if bucket.count > WS_EXEC_RATE_LIMIT_PER_MINUTE:
+            return False, bucket.count
+        return True, bucket.count
+
     async def dispatch(self, request: Request, call_next):  # type: ignore[override]
         ip = request.client.host if request.client else "unknown"
         path = request.url.path
 
-        # WebSocket 由 ASGI 层处理，不经过此中间件
-        if path.startswith("/ws/"):
-            return await call_next(request)
-
+        # WebSocket 执行端点也限流（不再跳过）
         allowed, count = self._check_and_count(ip, path)
         if not allowed:
             logger.warning("限流触发: ip=%s path=%s count=%d", ip, path, count)
@@ -204,10 +225,26 @@ class WSOriginValidator:
 
         await self.app(scope, receive, send)
 
+# ---------------------------------------------------------------------------
+# 执行并发控制
+# ---------------------------------------------------------------------------
+
+
+async def acquire_exec_slot() -> bool:
+    """获取代码执行槽位（非阻塞检查）
+
+    返回 True 表示成功获取，False 表示当前并发已满。
+    实际执行时应使用:
+        async with _exec_semaphore:
+            result = await loop.run_in_executor(None, adapter.eval, code)
+    """
+    return _exec_semaphore.locked() is False or _exec_semaphore._value > 0
+
 
 # ---------------------------------------------------------------------------
 # WebSocket 连接数限制
 # ---------------------------------------------------------------------------
+
 
 MAX_WS_CONNECTIONS = int(os.environ.get("YANPUB_MAX_WS_CONNECTIONS", "50"))
 _active_ws: set[int] = set()

@@ -189,14 +189,26 @@ def create_app() -> FastAPI:
                 status_code=400,
             )
 
-        # 在线程池中执行，避免阻塞事件循环
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, adapter.eval, code)
+        # 使用信号量限制并发执行数，防止资源耗尽攻击
+        from yanpub.playground.security import _exec_semaphore
+
+        async with _exec_semaphore:
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(None, adapter.eval, code)
+
+        # 截断超大输出（防止恶意代码打印 GB 级数据）
+        MAX_OUTPUT_SIZE = 32768  # 32KB
+        stdout = result.stdout
+        stderr = result.stderr
+        if len(stdout) > MAX_OUTPUT_SIZE:
+            stdout = stdout[:MAX_OUTPUT_SIZE] + f"\n... [输出截断，共 {len(result.stdout)} 字符]"
+        if len(stderr) > MAX_OUTPUT_SIZE:
+            stderr = stderr[:MAX_OUTPUT_SIZE] + f"\n... [错误输出截断，共 {len(result.stderr)} 字符]"
 
         return {
             "type": "result",
-            "stdout": result.stdout,
-            "stderr": result.stderr,
+            "stdout": stdout,
+            "stderr": stderr,
             "exitCode": result.exit_code,
             "durationMs": result.duration_ms,
         }
@@ -240,15 +252,27 @@ def create_app() -> FastAPI:
                     )
                     continue
 
-                # 在线程池中执行
-                loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(None, adapter.eval, code)
+                # 使用信号量限制并发执行数
+                from yanpub.playground.security import _exec_semaphore
+
+                async with _exec_semaphore:
+                    loop = asyncio.get_event_loop()
+                    result = await loop.run_in_executor(None, adapter.eval, code)
+
+                # 截断超大输出
+                MAX_OUTPUT_SIZE = 32768
+                stdout = result.stdout
+                stderr = result.stderr
+                if len(stdout) > MAX_OUTPUT_SIZE:
+                    stdout = stdout[:MAX_OUTPUT_SIZE] + f"\n... [输出截断，共 {len(result.stdout)} 字符]"
+                if len(stderr) > MAX_OUTPUT_SIZE:
+                    stderr = stderr[:MAX_OUTPUT_SIZE] + f"\n... [错误输出截断，共 {len(result.stderr)} 字符]"
 
                 await websocket.send_json(
                     {
                         "type": "result",
-                        "stdout": result.stdout,
-                        "stderr": result.stderr,
+                        "stdout": stdout,
+                        "stderr": stderr,
                         "exitCode": result.exit_code,
                         "durationMs": result.duration_ms,
                         "id": request_id,
@@ -364,7 +388,12 @@ def create_app() -> FastAPI:
         manager = SandboxManager(config)
 
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, manager.execute_code, adapter, code)
+
+        # 使用信号量限制并发执行数
+        from yanpub.playground.security import _exec_semaphore
+
+        async with _exec_semaphore:
+            result = await loop.run_in_executor(None, manager.execute_code, adapter, code)
 
         # 清理
         try:
