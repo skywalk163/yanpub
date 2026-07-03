@@ -69,7 +69,7 @@ cd yanpub
 # 1. 自动 git clone 11 种语言后端
 ./deploy.sh sync
 
-# 2. 构建 Docker 镜像（首次约 5-10 分钟）
+# 2. 构建 Docker 镜像（默认约 3-5 分钟，纯 Python 镜像）
 ./deploy.sh build
 
 # 3. 启动服务
@@ -97,6 +97,37 @@ cd yanpub
 Docker 镜像采用三阶段构建（系统依赖 → 语言后端 → YanPub 自身），优化层缓存。
 容器内通过 `YANPUB_LANG_DIR=/opt/langs` 环境变量统一解析语言路径，适配器无需逐个配置。
 
+### 国内加速
+
+默认配置已内置国内镜像加速，开箱即用：
+
+| 组件 | 加速源 |
+|------|--------|
+| Docker 基础镜像 | `docker.m.daocloud.io` |
+| apt 软件源 | 清华大学镜像站 |
+| pip 包源 | 清华大学镜像站 |
+| Racket 安装包 | 清华大学镜像站 |
+| 语言 Git 仓库 | gitcode.com |
+
+如能直连 Docker Hub，可在 `.env` 中改为 `PYTHON_IMAGE=python:3.12-slim`。
+
+### 可选组件
+
+默认构建为纯 Python 镜像（~800MB），以下组件可按需启用：
+
+```bash
+# 启用明道语言（需要 Racket 运行时，+250MB）
+INSTALL_RACKET=1 ./deploy.sh build
+
+# 启用翰语 JIT 原生执行（需要 LLVM/clang，+400MB；默认已内置 Python 回退）
+INSTALL_LLVM=1 ./deploy.sh build
+
+# 同时启用
+INSTALL_RACKET=1 INSTALL_LLVM=1 ./deploy.sh build
+```
+
+也可在 `.env` 中持久配置（参考 `docker/.env.example`）。
+
 ## 已接入语言（11种）
 
 | 语言 | ID | 版本 | 关键字 | 适配方式 |
@@ -108,8 +139,8 @@ Docker 镜像采用三阶段构建（系统依赖 → 语言后端 → YanPub �
 | 知行 Zhixing | zhixing | 1.0.0 | 37 | 子进程 |
 | 言律 Yanlv | yanlv | 2.0.0 | 62 | 子进程 |
 | 言知 Yanzhi | yanzhi | 1.0.0 | 52 | 子进程 |
-| 明道 Mingdao | mingdao | 1.0.0 | 47 | 子进程(Racket) |
-| 翰语 Hanyu | hanyu | 1.0.0 | 48 | 子进程(LLVM) |
+| 明道 Mingdao | mingdao | 1.0.0 | 47 | 子进程(Racket，可选) |
+| 翰语 Hanyu | hanyu | 1.0.0 | 48 | 子进程(LLVM可选/Python回退) |
 | 趣言 Traeyan | traeyan | 1.0.0 | 119 | 子进程 |
 | 华语 Hua | hua | 0.5.0 | 69 | 子进程 |
 
@@ -435,6 +466,17 @@ CI 集成：推送到 main 后自动评分并部署徽章到 gh-pages，PR 自�
 - `YANPUB_LANG_DIR` 基础目录环境变量，自动派生所有语言路径
 - 11 个适配器路径从硬编码改为 `resolve_lang_dir()` 动态解析
 - 容器入口支持 playground / repl / lsp / health / test / bash 子命令
+
+### v2.0.1 (Docker 国内加速 + 翰语解释器)
+- 基础镜像升级 python:3.11-slim → python:3.12-slim (Debian 13 Trixie)
+- Docker 基础镜像参数化 (`ARG PYTHON_IMAGE`)，支持 daocloud / 官方切换
+- apt / pip 全局清华源加速（兼容 DEB822 格式 + 传统格式）
+- Racket 安装包使用清华镜像
+- 移除 JRE（11 种语言均不依赖 Java）、LLVM/clang 默认安装
+- Racket / LLVM 改为可选构建参数 (`INSTALL_RACKET=1` / `INSTALL_LLVM=1`)
+- 默认镜像从 ~1.5GB 降至 ~800MB
+- 翰语适配器新增 Python AST 解释器回退（无需 LLVM 也可执行）
+- 修复翰语 AST 属性名不匹配和 NumberLiteral 字符串类型问题
 
 ### v1.6.1 (Windows 兼容修复)
 - 修复 Windows 下 7 个测试失败（`echo` 非独立可执行文件导致 `shutil.which` 和子进程行为不一致）

@@ -19,6 +19,7 @@
 ```bash
 # 安装 Racket（https://racket-lang.org/）
 # Windows: 下载安装包或使用 scoop install racket
+# Linux: curl -fSL https://mirrors.tuna.tsinghua.edu.cn/racket-installers/9.2/racket-9.2-x86_64-linux-buster-cs.sh | sh
 
 # 运行明道文件
 racket -S <项目路径> <file>
@@ -26,6 +27,8 @@ racket -S <项目路径> <file>
 # 进入 REPL
 racket mingdao/repl.rkt
 ```
+
+Docker 部署时，需设置 `INSTALL_RACKET=1` 启用 Racket 运行时（默认不安装以节省空间）。
 
 文件必须以 `#lang mingdao` 开头声明语言。
 
@@ -85,7 +88,7 @@ racket mingdao/repl.rkt
 
 ## 已知限制
 
-- 需要系统安装 Racket 运行时，依赖较重
+- 需要系统安装 Racket 运行时（Docker 中需 `INSTALL_RACKET=1`）
 - 无内置 eval 命令，代码片段执行需自动添加 `#lang mingdao` 头部
 - 不支持包管理器和 WASM 执行
 - SVO（主谓宾）调用风格需要适应

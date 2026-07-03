@@ -7,23 +7,28 @@
 | 属性 | 值 |
 |------|-----|
 | 语言 ID | `hanyu` |
-| 版本 | 0.6.0 |
+| 版本 | 0.2.2 |
 | 文件扩展名 | `.翰`、`.hanyu` |
 | 注释语法 | `#` |
 | REPL 提示符 | `翰> ` |
 
 ## 安装
 
-翰语基于 LLVM IR 进行代码生成，支持 JIT 和子进程两种执行模式：
+翰语基于 LLVM IR 进行代码生成，支持三种执行模式：
+
+1. **LLVM JIT** — 直接执行 IR（需 `llvmlite`）
+2. **LLVM 子进程** — 通过 `lli`/`clang` 执行（需系统安装 LLVM）
+3. **Python AST 解释器**（默认回退）— 无需 LLVM，支持翰语核心子集
 
 ```bash
-# 确保已安装 Python 3.10+
-# 运行文件
-python -m hanyu.compiler <file.翰>
+# 运行文件（自动选择最佳执行模式）
+python -m yanpub.adapters.hanyu.runner <file.翰>
 
 # 交互式 REPL
 python -m hanyu.repl
 ```
+
+Docker 部署时，默认使用 Python 解释器回退；如需 JIT 执行，设置 `INSTALL_LLVM=1`。
 
 ## 语法示例
 
@@ -80,9 +85,10 @@ python -m hanyu.repl
 ## 已知限制
 
 - 编译型语言，无单行 eval 模式
-- LLVM 后端依赖较重，构建环境要求较高
-- 不支持包管理器和调试器
+- LLVM 后端依赖较重，Docker 默认使用 Python AST 解释器回退
+- 解释器不支持结构体、导入系统、GC 等高级特性
 - 部分 Windows 环境下 GC 运行时需 pthread 兼容层
+- 不支持包管理器和调试器
 
 ## 贡献
 
