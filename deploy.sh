@@ -32,6 +32,16 @@ ACTION="${1:-up}"
 REPOS_CONF="${SCRIPT_DIR}/docker/lang-repos.conf"
 LANGS_DIR="${SCRIPT_DIR}/langs"
 
+# ── 构建参数 ──────────────────────────────────────────
+# 优先从 .env 或环境变量读取 Python 镜像
+load_build_env() {
+    if [ -f "${SCRIPT_DIR}/.env" ]; then
+        # shellcheck disable=SC1090
+        source "${SCRIPT_DIR}/.env"
+    fi
+    export PYTHON_IMAGE="${PYTHON_IMAGE:-docker.m.daocloud.io/library/python:3.12-slim}"
+}
+
 # ── 读取仓库配置 ──────────────────────────────────────
 # lang-repos.conf 格式: lang_id  git_url  subdir
 read_repos_conf() {
@@ -156,22 +166,25 @@ case "$ACTION" in
     build)
         check_docker
         sync_langs
-        info "构建 Docker 镜像（首次构建约需 5-10 分钟）..."
-        docker compose build
+        load_build_env
+        info "构建 Docker 镜像（基础镜像: ${PYTHON_IMAGE}）..."
+        info "首次构建约需 5-10 分钟，后续构建利用缓存更快"
+        docker compose build --build-arg PYTHON_IMAGE="$PYTHON_IMAGE"
         info "构建完成!"
         ;;
     up|start)
         check_docker
         check_langs || exit 1
+        load_build_env
         info "启动 YanPub..."
         docker compose up -d
         echo ""
         info "YanPub 已启动!"
         echo ""
-        echo -e "  ${CYAN}Playground${NC}:  http://localhost:8080"
-        echo -e "  ${CYAN}挑战赛${NC}:      http://localhost:8080/challenges"
-        echo -e "  ${CYAN}监控面板${NC}:    http://localhost:8080/monitor"
-        echo -e "  ${CYAN}质量评分${NC}:    http://localhost:8080/quality"
+        echo -e "  ${CYAN}Playground${NC}:  http://localhost:${YANPUB_PORT:-8080}"
+        echo -e "  ${CYAN}挑战赛${NC}:      http://localhost:${YANPUB_PORT:-8080}/challenges"
+        echo -e "  ${CYAN}监控面板${NC}:    http://localhost:${YANPUB_PORT:-8080}/monitor"
+        echo -e "  ${CYAN}质量评分${NC}:    http://localhost:${YANPUB_PORT:-8080}/quality"
         echo ""
         echo "  查看日志:  ./deploy.sh logs"
         echo "  进入容器:  ./deploy.sh shell"
@@ -191,12 +204,12 @@ case "$ACTION" in
         ;;
     health)
         info "检查服务状态..."
-        if curl -sf http://localhost:8080/api/languages > /dev/null 2>&1; then
+        if curl -sf http://localhost:${YANPUB_PORT:-8080}/api/languages > /dev/null 2>&1; then
             info "Playground 服务正常"
             echo ""
-            curl -s http://localhost:8080/api/languages 2>/dev/null | \
+            curl -s http://localhost:${YANPUB_PORT:-8080}/api/languages 2>/dev/null | \
                 python3 -m json.tool 2>/dev/null || \
-                curl -s http://localhost:8080/api/languages
+                curl -s http://localhost:${YANPUB_PORT:-8080}/api/languages
         else
             error "Playground 服务未响应"
             echo "  查看日志: ./deploy.sh logs"
@@ -240,5 +253,9 @@ case "$ACTION" in
         echo "  1. ./deploy.sh sync      # 自动克隆语言项目"
         echo "  2. ./deploy.sh build     # 构建镜像"
         echo "  3. ./deploy.sh up        # 启动服务"
+        echo ""
+        echo "自定义构建:"
+        echo "  PYTHON_IMAGE=python:3.12-slim ./deploy.sh build  # 用官方镜像"
+        echo "  YANPUB_PORT=9090 ./deploy.sh up                  # 自定义端口"
         ;;
 esac

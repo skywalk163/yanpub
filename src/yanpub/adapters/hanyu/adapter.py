@@ -1,10 +1,11 @@
 r"""翰语 (Hanyu) 语言适配器
 
 翰语项目位于 G:\opencode\hanyu
-CLI 入口: hanyu <file> 或 python -m hanyu.compiler <file.翰>
+CLI 入口: python -m yanpub.adapters.hanyu.runner <file.翰>
 REPL 入口: python -m hanyu.repl
 特色: LLVM IR 代码生成、百家姓标识符（406姓）、类型检查、JIT执行、
       WASM编译、结构体、导入系统、自举编译器、GC内存管理
+执行策略: 优先 LLVM JIT/lli/clang 原生执行，不可用时回退 Python AST 解释器
 """
 
 from __future__ import annotations
@@ -23,8 +24,8 @@ class HanyuAdapter(SubprocessAdapter):
     """翰语适配器 — 通过子进程调用翰语后端
 
     翰语使用 LLVM IR 进行代码生成，支持 JIT 和子进程两种执行模式。
-    v0.2.2 移除 Lark/Tree-sitter 后端（统一使用 Python 解析器），
-    新增结构体、导入系统、GC内存管理、自举编译器。
+    优先使用 LLVM 原生执行（JIT/lli/clang），不可用时自动回退到
+    Python AST 解释器（支持翰语核心子集）。
     """
 
     def __init__(self):
@@ -33,7 +34,7 @@ class HanyuAdapter(SubprocessAdapter):
             lang_id="hanyu",
             version="0.2.2",
             extensions=[".翰", ".hanyu"],
-            run_command=["python", "-m", "hanyu.compiler"],
+            run_command=["python", "-m", "yanpub.adapters.hanyu.runner"],
             eval_command=None,  # 编译型语言，无单行 eval
             repl_command=["python", "-m", "hanyu.repl"],
             keywords_loader=_load_hanyu_keywords,

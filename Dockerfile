@@ -10,21 +10,44 @@
 #   stage1 (deps): 安装系统依赖 + pip 包（变化少，缓存好）
 #   stage2 (langs): 安装 11 种语言后端（语言项目独立变化）
 #   stage3 (app):   安装 YanPub 自身（变化最频繁，缓存最差）
+#
+# 国内加速:
+#   - Docker 基础镜像: docker.m.daocloud.io
+#   - apt 源: 清华大学镜像站
+#   - pip 源: 清华大学镜像站
+#   - Racket: 清华大学镜像站
+#   - Git 仓库: gitcode.com（国内托管）
 
 # ── Stage 1: 系统依赖 + Python 包 ─────────────────────
-FROM python:3.11-slim AS deps
+# 国内加速镜像；如能直连 Docker Hub 可改为 python:3.12-slim
+ARG PYTHON_IMAGE=docker.m.daocloud.io/library/python:3.12-slim
+FROM ${PYTHON_IMAGE} AS deps
+
+# 1. 替换为清华 Debian 源 (Trixie/Bookworm 自动适配)
+# Debian 13 Trixie 使用 DEB822 格式 /etc/apt/sources.list.d/debian.sources
+# Debian 12 Bookworm 使用传统 /etc/apt/sources.list
+RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's|deb.debian.org|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list.d/debian.sources; \
+        sed -i 's|security.debian.org|mirrors.tuna.tsinghua.edu.cn/debian-security|g' /etc/apt/sources.list.d/debian.sources; \
+    elif [ -f /etc/apt/sources.list ]; then \
+        sed -i 's|deb.debian.org|mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list; \
+        sed -i 's|security.debian.org|mirrors.tuna.tsinghua.edu.cn/debian-security|g' /etc/apt/sources.list; \
+    fi
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONIOENCODING=utf-8 \
     PYTHONUNBUFFERED=1 \
-    LANG=C.UTF-8
+    LANG=C.UTF-8 \
+    PIP_INDEX_URL=https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple \
+    PIP_TRUSTED_HOST=mirrors.tuna.tsinghua.edu.cn
 
-# 系统依赖
+# 系统依赖 + Racket（清华镜像加速）
+# 注意: Racket 安装脚本用 --in-place 避免交互
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl git ca-certificates \
     default-jre-headless \
     clang llvm \
-    && curl -fSL https://download.racket-lang.org/installers/9.2/racket-9.2-x86_64-linux-cs.sh \
+    && curl -fSL https://mirrors.tuna.tsinghua.edu.cn/racket-installers/9.2/racket-9.2-x86_64-linux-buster-cs.sh \
        -o /tmp/racket-install.sh \
     && sh /tmp/racket-install.sh --in-place --dest /usr/racket \
     && ln -s /usr/racket/bin/racket /usr/local/bin/racket \
@@ -33,7 +56,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# pip 升级 + 全局配置清华源（ENV 已设 PIP_INDEX_URL，这里额外设置 pip config 做冗余）
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+
 # Python 依赖 — 先安装不变的第三方包，利用 Docker 缓存
+# 清华源通过 ENV PIP_INDEX_URL 自动生效，无需每行 -i
 RUN pip install --no-cache-dir \
     "antlr4-python3-runtime==4.13.2" \
     "flask>=3.0.0" "flask-cors>=4.0.0" \
@@ -54,6 +82,7 @@ RUN mkdir -p ${LANGS_DIR}
 
 # 逐个 COPY + install，利用 Docker 层缓存
 # 某个语言变化时只重建该层及其后
+# pip 清华源通过 ENV PIP_INDEX_URL 自动生效
 
 # 1. 言语言 yan
 COPY ./langs/yan ${LANGS_DIR}/yan

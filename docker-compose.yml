@@ -5,12 +5,20 @@
 #   1. ./deploy.sh sync    — 自动 git clone 11 种语言后端
 #   2. ./deploy.sh build   — 构建 Docker 镜像
 #   3. ./deploy.sh up      — 启动服务
+#
+# 自定义构建:
+#   PYTHON_IMAGE=python:3.12-slim docker compose build  # 使用官方镜像
+#   YANPUB_PORT=9090 docker compose up -d               # 自定义端口
 
 services:
   yanpub:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Python 基础镜像，默认使用国内加速镜像
+        # 能直连 Docker Hub 时可改为: python:3.12-slim
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-docker.m.daocloud.io/library/python:3.12-slim}
     container_name: yanpub
     ports:
       - "${YANPUB_PORT:-8080}:8080"
