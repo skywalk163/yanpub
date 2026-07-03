@@ -8,7 +8,9 @@
 #
 # 自定义构建:
 #   PYTHON_IMAGE=python:3.12-slim docker compose build  # 使用官方镜像
-#   YANPUB_PORT=9090 docker compose up -d               # 自定义端口
+#   INSTALL_RACKET=1 docker compose build                # 启用明道语言(Racket)
+#   INSTALL_LLVM=1 docker compose build                  # 启用翰语JIT(LLVM)
+#   YANPUB_PORT=9090 docker compose up -d                # 自定义端口
 
 services:
   yanpub:
@@ -19,6 +21,10 @@ services:
         # Python 基础镜像，默认使用国内加速镜像
         # 能直连 Docker Hub 时可改为: python:3.12-slim
         PYTHON_IMAGE: ${PYTHON_IMAGE:-docker.m.daocloud.io/library/python:3.12-slim}
+        # 可选: 安装 Racket 运行时（明道语言需要，约 250MB）
+        INSTALL_RACKET: ${INSTALL_RACKET:-0}
+        # 可选: 安装 LLVM/clang（翰语 JIT 原生执行，约 400MB；默认 Python 回退）
+        INSTALL_LLVM: ${INSTALL_LLVM:-0}
     container_name: yanpub
     ports:
       - "${YANPUB_PORT:-8080}:8080"

@@ -40,6 +40,8 @@ load_build_env() {
         source "${SCRIPT_DIR}/.env"
     fi
     export PYTHON_IMAGE="${PYTHON_IMAGE:-docker.m.daocloud.io/library/python:3.12-slim}"
+    export INSTALL_RACKET="${INSTALL_RACKET:-0}"
+    export INSTALL_LLVM="${INSTALL_LLVM:-0}"
 }
 
 # ── 读取仓库配置 ──────────────────────────────────────
@@ -169,7 +171,10 @@ case "$ACTION" in
         load_build_env
         info "构建 Docker 镜像（基础镜像: ${PYTHON_IMAGE}）..."
         info "首次构建约需 5-10 分钟，后续构建利用缓存更快"
-        docker compose build --build-arg PYTHON_IMAGE="$PYTHON_IMAGE"
+        docker compose build \
+            --build-arg PYTHON_IMAGE="$PYTHON_IMAGE" \
+            --build-arg INSTALL_RACKET="$INSTALL_RACKET" \
+            --build-arg INSTALL_LLVM="$INSTALL_LLVM"
         info "构建完成!"
         ;;
     up|start)
@@ -256,6 +261,8 @@ case "$ACTION" in
         echo ""
         echo "自定义构建:"
         echo "  PYTHON_IMAGE=python:3.12-slim ./deploy.sh build  # 用官方镜像"
+        echo "  INSTALL_RACKET=1 ./deploy.sh build               # 启用明道语言(Racket)"
+        echo "  INSTALL_LLVM=1 ./deploy.sh build                 # 启用翰语JIT(LLVM)"
         echo "  YANPUB_PORT=9090 ./deploy.sh up                  # 自定义端口"
         ;;
 esac
