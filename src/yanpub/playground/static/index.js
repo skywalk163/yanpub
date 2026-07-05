@@ -1247,8 +1247,16 @@
         }
 
         function createProject() {
-            var langId = projectLangSelect.value || (languages.length > 0 ? languages[0].id : 'duan');
+            // Use the currently selected language in the dropdown, or fall back to single-mode language
+            var selectedLang = projectLangSelect.value;
+            if (!selectedLang && currentLang) {
+                selectedLang = currentLang.id;
+            }
+            var langId = selectedLang || (languages.length > 0 ? languages[0].id : 'duan');
             var name = '我的项目';
+
+            projectStatusEl.textContent = '创建项目中...';
+            projectLangSelect.disabled = true;
 
             fetch('/api/project/create', {
                 method: 'POST',
@@ -1260,21 +1268,22 @@
                 currentProject = data;
                 projectFileContents = {};
                 // Load file contents
-                (data.files || {}).forEach ? null : null;
                 var files = data.files || {};
                 Object.keys(files).forEach(function(k) {
                     projectFileContents[k] = files[k].content || '';
                 });
                 projectNameDisplay.textContent = data.name;
                 projectLangSelect.value = data.language;
+                projectLangSelect.disabled = false;
                 renderProjectFileList();
                 // Open main file
                 if (data.mainFile) {
                     openProjectTab(data.mainFile);
                 }
-                projectStatusEl.textContent = '项目已创建';
+                projectStatusEl.textContent = '项目已创建 (' + data.language + ')';
             })
             .catch(function(err) {
+                projectLangSelect.disabled = false;
                 projectStatusEl.textContent = '创建失败: ' + err.message;
             });
         }
@@ -1578,6 +1587,13 @@
                 alert('请先创建项目');
                 return;
             }
+            // Prefer running the active file, fallback to main file
+            var targetFile = activeTabPath || currentProject.mainFile;
+            runProjectFile(targetFile);
+        }
+
+        function runProjectFile(filePath) {
+            if (!currentProject) return;
             // Save current file first
             if (activeTabPath && projectEditor) {
                 projectFileContents[activeTabPath] = projectEditor.getValue();
@@ -1585,11 +1601,13 @@
             }
 
             projectOutputEl.innerHTML = '';
-            appendToOutput(projectOutputEl, 'info', '执行项目中...');
+            appendToOutput(projectOutputEl, 'info', '执行 ' + filePath + '...');
             projectStatusEl.textContent = '执行中...';
 
             fetch('/api/project/' + currentProject.id + '/run', {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file: filePath }),
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
@@ -1649,6 +1667,10 @@
                         opt.textContent = lang.name + ' (' + lang.id + ')';
                         projectLangSelect.appendChild(opt);
                     });
+                    // Sync with single-mode language selection if available
+                    if (currentLang) {
+                        projectLangSelect.value = currentLang.id;
+                    }
                     createProject();
                 }
                 setTimeout(function() {
@@ -1726,6 +1748,8 @@
                     setMainFile(path);
                 } else if (action === 'delete') {
                     deleteProjectFile(path);
+                } else if (action === 'run-file') {
+                    runProjectFile(path);
                 }
             });
         });

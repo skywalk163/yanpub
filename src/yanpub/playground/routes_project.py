@@ -162,8 +162,11 @@ def register_project_routes(app: FastAPI) -> None:
             return JSONResponse({"error": f"重命名失败: {old_path} → {new_path}"}, status_code=400)
 
     @app.post("/api/project/{project_id}/run")
-    async def run_project(project_id: str):
-        """执行项目"""
+    async def run_project(project_id: str, body: dict = None):
+        """执行项目
+
+        body: {"file": "path/to/file"} — 可选，执行指定文件而非 main_file
+        """
         pm = get_project_manager()
         project = pm.get_project(project_id)
         if project is None:
@@ -178,7 +181,8 @@ def register_project_routes(app: FastAPI) -> None:
             )
 
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(None, pm.execute_project, project_id, adapter)
+        target_file = (body or {}).get("file")
+        result = await loop.run_in_executor(None, pm.execute_project, project_id, adapter, target_file)
 
         return {
             "type": "result",

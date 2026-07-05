@@ -492,7 +492,7 @@ class ProjectManager:
         project.updated_at = time.time()
         self._projects[project.id] = project
 
-    def execute_project(self, project_id: str, adapter: LanguageAdapter) -> ExecutionResult:
+    def execute_project(self, project_id: str, adapter: LanguageAdapter, target_file: str = None) -> ExecutionResult:
         """执行项目 — 将所有文件写入临时目录，运行 main_file"""
         project = self._projects.get(project_id)
         if project is None:
@@ -507,10 +507,12 @@ class ProjectManager:
                 exit_code=-1,
             )
 
-        main_file = project.get_file(project.main_file)
-        if main_file is None:
+        # 确定要执行的文件（target_file 优先，否则回退到 main_file）
+        exec_file_path = target_file or project.main_file
+        exec_file = project.get_file(exec_file_path)
+        if exec_file is None:
             return ExecutionResult(
-                stderr=f"入口文件不存在: {project.main_file}",
+                stderr=f"文件不存在: {exec_file_path}",
                 exit_code=-1,
             )
 
@@ -528,10 +530,10 @@ class ProjectManager:
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(pf.content)
 
-            # 执行 main_file
-            main_rel = project.main_file.replace("\\", "/")
-            main_path = os.path.join(tmp_dir, *main_rel.split("/"))
-            return adapter.run(main_path)
+            # 执行目标文件
+            target_rel = exec_file_path.replace("\\", "/")
+            target_path = os.path.join(tmp_dir, *target_rel.split("/"))
+            return adapter.run(target_path)
         except Exception as e:
             return ExecutionResult(
                 stderr=f"执行失败: {e}",
