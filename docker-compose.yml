@@ -11,6 +11,11 @@
 #   INSTALL_RACKET=1 docker compose build                # 启用明道语言(Racket)
 #   INSTALL_LLVM=1 docker compose build                  # 启用翰语JIT(LLVM)
 #   YANPUB_PORT=9090 docker compose up -d                # 自定义端口
+#
+# 服务器内存配置:
+#   2GB 内存: 默认配置即可（容器限 900MB，留余量给系统）
+#   4GB+ 内存: 可调大 YANPUB_MEMORY_LIMIT 环境变量
+#   排查 OOM: docker inspect yanpub --format='{{.State.OOMKilled}}'
 
 services:
   yanpub:
@@ -31,22 +36,25 @@ services:
     environment:
       - YANPUB_LANG_DIR=/opt/langs
       # 安全限制（可通过 .env 覆盖）
-      - YANPUB_MAX_CONCURRENT_EXEC=3
-      - YANPUB_EXEC_RATE_LIMIT=5
-      - YANPUB_WS_EXEC_RATE_LIMIT=15
+      - YANPUB_MAX_CONCURRENT_EXEC=${YANPUB_MAX_CONCURRENT_EXEC:-3}
+      - YANPUB_EXEC_RATE_LIMIT=${YANPUB_EXEC_RATE_LIMIT:-5}
+      - YANPUB_WS_EXEC_RATE_LIMIT=${YANPUB_WS_EXEC_RATE_LIMIT:-15}
     # 资源限制 — 防止单个容器耗尽主机资源导致机器假死
+    # 2GB 服务器: 容器限 900MB，给系统+Docker daemon 留 ~1.1GB
+    # 4GB+ 服务器: 通过 YANPUB_MEMORY_LIMIT 环境变量调大
     deploy:
       resources:
         limits:
-          cpus: '2.0'
-          memory: 1200M
+          cpus: '${YANPUB_CPU_LIMIT:-2.0}'
+          memory: ${YANPUB_MEMORY_LIMIT:-900M}
         reservations:
           cpus: '0.5'
-          memory: 512M
+          memory: 256M
     restart: unless-stopped
+    # 健康检查 — 低配机器启动慢，给更长的宽限期
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/languages"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
