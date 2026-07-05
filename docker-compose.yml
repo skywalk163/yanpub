@@ -42,6 +42,9 @@ services:
     # 资源限制 — 防止单个容器耗尽主机资源导致机器假死
     # 2GB 服务器: 容器限 900MB，给系统+Docker daemon 留 ~1.1GB
     # 4GB+ 服务器: 通过 YANPUB_MEMORY_LIMIT 环境变量调大
+    # 注意: mem_limit/cpus 是 Compose 实际生效字段，deploy.resources 仅 Swarm 模式生效
+    mem_limit: ${YANPUB_MEMORY_LIMIT:-900m}
+    cpus: ${YANPUB_CPU_LIMIT:-2.0}
     deploy:
       resources:
         limits:
