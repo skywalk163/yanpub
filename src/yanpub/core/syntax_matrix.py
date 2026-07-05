@@ -116,7 +116,7 @@ class SyntaxMatrix:
         if func_snippet:
             code = func_snippet.code
             if "段落" in code:
-                styles["函数风格"] = "段落…参数…结束"
+                styles["函数风格"] = "段落…接收…：…结束"
             elif "就是函" in code:
                 styles["函数风格"] = "Lisp 风格"
             elif "{" in code:

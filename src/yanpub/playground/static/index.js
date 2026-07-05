@@ -1690,17 +1690,32 @@
         // ---- Project language change ----
 
         projectLangSelect.addEventListener('change', function() {
-            if (!currentProject) return;
+            if (!currentProject) {
+                console.log('[LangSwitch] No current project, ignoring');
+                return;
+            }
             var newLang = projectLangSelect.value;
-            // Recreate project with new language template
+            var oldLang = currentProject.language;
+            console.log('[LangSwitch] Switching from', oldLang, 'to', newLang, 'project:', currentProject.id);
+
             var name = currentProject.name || '我的项目';
+            projectStatusEl.textContent = '切换语言到 ' + newLang + '...';
+            projectLangSelect.disabled = true;
+
             fetch('/api/project/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: name, language: newLang }),
             })
-            .then(function(r) { return r.json(); })
+            .then(function(r) {
+                if (!r.ok) {
+                    return r.json().then(function(err) { throw new Error(err.error || '请求失败: ' + r.status); });
+                }
+                return r.json();
+            })
             .then(function(data) {
+                console.log('[LangSwitch] New project:', data.id, 'lang:', data.language, 'mainFile:', data.mainFile);
+                console.log('[LangSwitch] Files:', Object.keys(data.files || {}));
                 currentProject = data;
                 projectFileContents = {};
                 openTabs = [];
@@ -1711,13 +1726,17 @@
                 });
                 projectNameDisplay.textContent = data.name;
                 projectLangSelect.value = data.language;
+                projectLangSelect.disabled = false;
                 renderProjectFileList();
                 if (data.mainFile) {
                     openProjectTab(data.mainFile);
                 }
-                projectStatusEl.textContent = '已切换到 ' + newLang;
+                projectStatusEl.textContent = '已切换到 ' + newLang + ' (项目 ' + data.id.substr(0, 6) + ')';
             })
             .catch(function(err) {
+                console.error('[LangSwitch] Failed:', err);
+                projectLangSelect.value = oldLang;
+                projectLangSelect.disabled = false;
                 projectStatusEl.textContent = '切换语言失败: ' + err.message;
             });
         });

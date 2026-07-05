@@ -78,7 +78,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
     # === 函数定义 ===
     "func_def": {
         "duan": SnippetEntry(
-            "duan", "段落 求和 参数 甲 乙\n  返回 甲 加 乙。\n结束", "「段落…参数…结束」结构"
+            "duan", "段落 求和 接收 甲, 乙：\n  返回 甲 加 乙。\n结束", "「段落…接收…：」结构"
         ),
         "yan": SnippetEntry("yan", "定求和=函a b a加b。", "「定…=函…」内联函数 + 句号"),
         "moyan": SnippetEntry("moyan", "定义 求和 = 函数 甲 乙 那么 相加 甲 乙。", "前缀调用 + 内联函数 + 中文句号"),
@@ -400,7 +400,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
     "class_def": {
         "duan": SnippetEntry(
             "duan",
-            '类 动物。\n  属性 名字。\n  构造 参数 名字。\n    己名字 为 名字。\n  结束\n  段落 说话 参数\n    打印(己名字 + "叫了一声")。\n  结束\n结束',
+            '类 动物。\n  属性 名字。\n  构造 接收 名字：\n    己名字 为 名字。\n  结束\n  段落 说话：\n    打印(己名字 + "叫了一声")。\n  结束\n结束',
             "类…属性…构造…结束",
         ),
         "yan": SnippetEntry(
@@ -527,7 +527,7 @@ SNIPPETS: dict[str, dict[str, SnippetEntry]] = {
     "recursion": {
         "duan": SnippetEntry(
             "duan",
-            "段落 斐波那契 参数 甲\n  如果 甲 小于 二 那么：\n    返回 甲。\n  结束\n  返回 斐波那契(甲减一) 加 斐波那契(甲减二)。\n结束",
+            "段落 斐波那契 接收 甲：\n  如果 甲 小于 2 那么：\n    返回 甲。\n  结束\n  返回 斐波那契(甲减1) 加 斐波那契(甲减2)。\n结束",
             "段落递归 + 中文运算",
         ),
         "yan": SnippetEntry(
