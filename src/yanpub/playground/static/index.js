@@ -1539,9 +1539,11 @@
             renderProjectFileList();
             renderProjectTabs();
             projectStatusEl.textContent = '入口文件已设置: ' + path;
-            // Save to server by updating project — simple approach: re-save
+            // Persist to server
             fetch('/api/project/' + currentProject.id, {
-                method: 'GET',
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mainFile: path }),
             }).catch(function() {});
         }
 
@@ -1666,9 +1668,36 @@
         // ---- Project language change ----
 
         projectLangSelect.addEventListener('change', function() {
-            if (currentProject) {
-                currentProject.language = projectLangSelect.value;
-            }
+            if (!currentProject) return;
+            var newLang = projectLangSelect.value;
+            // Recreate project with new language template
+            var name = currentProject.name || '我的项目';
+            fetch('/api/project/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, language: newLang }),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                currentProject = data;
+                projectFileContents = {};
+                openTabs = [];
+                activeTabPath = null;
+                var files = data.files || {};
+                Object.keys(files).forEach(function(k) {
+                    projectFileContents[k] = files[k].content || '';
+                });
+                projectNameDisplay.textContent = data.name;
+                projectLangSelect.value = data.language;
+                renderProjectFileList();
+                if (data.mainFile) {
+                    openProjectTab(data.mainFile);
+                }
+                projectStatusEl.textContent = '已切换到 ' + newLang;
+            })
+            .catch(function(err) {
+                projectStatusEl.textContent = '切换语言失败: ' + err.message;
+            });
         });
 
         // ---- Project run ----

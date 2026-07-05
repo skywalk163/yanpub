@@ -26,6 +26,24 @@ def register_project_routes(app: FastAPI) -> None:
 
         return project.to_dict()
 
+    @app.put("/api/project/{project_id}")
+    async def update_project(project_id: str, body: dict):
+        """更新项目元数据（语言、入口文件、名称）"""
+        pm = get_project_manager()
+        project = pm.get_project(project_id)
+        if project is None:
+            return JSONResponse({"error": "项目不存在"}, status_code=404)
+
+        if "language" in body:
+            project.language = body["language"]
+        if "mainFile" in body:
+            project.main_file = body["mainFile"]
+        if "name" in body:
+            project.name = body["name"]
+
+        pm.save_project(project)
+        return project.to_dict()
+
     @app.get("/api/projects")
     async def list_projects():
         """列出所有项目"""
