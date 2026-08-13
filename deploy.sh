@@ -27,16 +27,17 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # ── 颜色（用 printf 替代 echo -e，POSIX 兼容） ───────
+# 所有日志输出到 stderr，避免污染 stdout（函数返回值走 stdout）
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-info()  { printf '%b[INFO]%b %s\n' "$GREEN" "$NC" "$1"; }
-warn()  { printf '%b[WARN]%b %s\n' "$YELLOW" "$NC" "$1"; }
-error() { printf '%b[ERROR]%b %s\n' "$RED" "$NC" "$1"; }
-step()  { printf '%b[STEP]%b %s\n' "$CYAN" "$NC" "$1"; }
+info()  { printf '%b[INFO]%b %s\n' "$GREEN" "$NC" "$1" >&2; }
+warn()  { printf '%b[WARN]%b %s\n' "$YELLOW" "$NC" "$1" >&2; }
+error() { printf '%b[ERROR]%b %s\n' "$RED" "$NC" "$1" >&2; }
+step()  { printf '%b[STEP]%b %s\n' "$CYAN" "$NC" "$1" >&2; }
 
 ACTION="${1:-up}"
 REPOS_CONF="${SCRIPT_DIR}/docker/lang-repos.conf"
@@ -80,7 +81,7 @@ read_repos_conf() {
 
     # 优先使用 languages.yaml + select-mirror.py
     if [ -f "$LANGS_YAML" ] && python3 -c "import yaml" 2>/dev/null; then
-        python3 "${SCRIPT_DIR}/docker/select-mirror.py" "$resolved_source" 2>/dev/null
+        python3 "${SCRIPT_DIR}/docker/select-mirror.py" "$resolved_source"
         return
     fi
 
@@ -241,10 +242,10 @@ case "$ACTION" in
         echo ""
         info "YanPub 已启动!"
         echo ""
-        printf '%b  %bPlayground%b:  http://localhost:%s\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}"
-        printf '%b  %b挑战赛%b:      http://localhost:%s/challenges\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}"
-        printf '%b  %b监控面板%b:    http://localhost:%s/monitor\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}"
-        printf '%b  %b质量评分%b:    http://localhost:%s/quality\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}"
+        printf '%b  %bPlayground%b:  http://localhost:%s\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}" >&2
+        printf '%b  %b挑战赛%b:      http://localhost:%s/challenges\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}" >&2
+        printf '%b  %b监控面板%b:    http://localhost:%s/monitor\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}" >&2
+        printf '%b  %b质量评分%b:    http://localhost:%s/quality\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}" >&2
         echo ""
         echo "  查看日志:  ./deploy.sh logs"
         echo "  进入容器:  ./deploy.sh shell"
