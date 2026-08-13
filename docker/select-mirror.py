@@ -47,10 +47,10 @@ def auto_detect_mirror() -> str:
     """
     try:
         result = subprocess.run(
-            ["curl", "-sf", "--connect-timeout", "3", "-o", "/dev/null",
-             "https://github.com"],
+            ["curl", "-sf", "--connect-timeout", "3", "--max-time", "5",
+             "-o", "/dev/null", "https://github.com"],
             capture_output=True,
-            timeout=5,
+            timeout=8,
         )
         if result.returncode == 0:
             return "github"

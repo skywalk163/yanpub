@@ -47,18 +47,28 @@ LANGS_DIR="${SCRIPT_DIR}/langs"
 # ── 镜像选择 ──────────────────────────────────────────
 # REPO_SOURCE: auto | gitcode | github | internal
 REPO_SOURCE="${REPO_SOURCE:-auto}"
+_RESOLVED_SOURCE=""
 
 resolve_repo_source() {
-    if [ "$REPO_SOURCE" != "auto" ]; then
-        echo "$REPO_SOURCE"
+    # 缓存：只检测一次
+    if [ -n "$_RESOLVED_SOURCE" ]; then
+        echo "$_RESOLVED_SOURCE"
         return
     fi
-    # auto 模式: 尝试连接 github.com（3s 超时）
-    if curl -sf --connect-timeout 3 -o /dev/null https://github.com 2>/dev/null; then
-        echo "github"
-    else
-        echo "gitcode"
+    if [ "$REPO_SOURCE" != "auto" ]; then
+        _RESOLVED_SOURCE="$REPO_SOURCE"
+        echo "$_RESOLVED_SOURCE"
+        return
     fi
+    # auto 模式: 尝试连接 github.com（connect 3s + 总超时 5s）
+    info "自动检测镜像源（尝试 GitHub, 超时 5s）..."
+    if curl -sf --connect-timeout 3 --max-time 5 -o /dev/null https://github.com 2>/dev/null; then
+        _RESOLVED_SOURCE="github"
+    else
+        _RESOLVED_SOURCE="gitcode"
+    fi
+    info "选中镜像: $_RESOLVED_SOURCE"
+    echo "$_RESOLVED_SOURCE"
 }
 
 # ── 构建参数 ──────────────────────────────────────────
@@ -98,6 +108,7 @@ read_repos_conf() {
 # ── 同步语言项目到 ./langs/ ──────────────────────────
 # 从 gitcode 自动 git clone，已有则 git pull 更新
 sync_langs() {
+    # resolve_repo_source 会缓存结果，read_repos_conf 内部会复用
     local resolved_source
     resolved_source=$(resolve_repo_source)
     info "同步语言项目到 ./langs/ (镜像: $resolved_source) ..."
@@ -129,7 +140,7 @@ sync_langs() {
                 }
             else
                 step "  克隆 $lang_id <- $git_url"
-                if git clone --depth 1 "$git_url" "$target" 2>&1; then
+                if git clone --depth 1 --progress "$git_url" "$target"; then
                     :
                 else
                     warn "  $lang_id: git clone 失败"
@@ -149,7 +160,7 @@ sync_langs() {
             else
                 step "  克隆 $lang_id 仓库 <- $git_url"
                 mkdir -p "$LANGS_DIR/.repos"
-                if git clone --depth 1 "$git_url" "$repo_cache" 2>&1; then
+                if git clone --depth 1 --progress "$git_url" "$repo_cache"; then
                     :
                 else
                     warn "  $lang_id: git clone 失败"
