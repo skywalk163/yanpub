@@ -17,11 +17,15 @@ from yanpub.core.adapter.adapter import SubprocessAdapter
 
 # 极快项目根目录
 _JIKUAI_PROJECT_DIR = resolve_lang_dir("jikuai")
-_JIKUAI_MAIN = os.path.join(_JIKUAI_PROJECT_DIR, "src", "jikuai", "main.py")
+_JIKUAI_SRC_DIR = os.path.join(_JIKUAI_PROJECT_DIR, "src")
 
 
 class JikuaiAdapter(SubprocessAdapter):
-    """极快适配器 — 通过子进程调用极快后端"""
+    """极快适配器 — 通过子进程调用极快后端
+
+    极快 main.py 使用相对导入 (from ._version import ...)，
+    必须用 python -m jikuai.main 方式启动，且 cwd 设为 src/ 目录。
+    """
 
     def __init__(self):
         super().__init__(
@@ -29,11 +33,12 @@ class JikuaiAdapter(SubprocessAdapter):
             lang_id="jikuai",
             version="0.20.0",
             extensions=[".快", ".jk"],
-            run_command=["python", _JIKUAI_MAIN],
+            run_command=["python", "-m", "jikuai.main"],
             eval_command=None,
-            repl_command=["python", _JIKUAI_MAIN],
+            repl_command=["python", "-m", "jikuai.main"],
             keywords_loader=_load_jikuai_keywords,
             primary_color="#00BFA5",
+            cwd=_JIKUAI_SRC_DIR,
         )
 
     @property

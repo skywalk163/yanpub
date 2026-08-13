@@ -37,6 +37,8 @@ class SubprocessAdapter(LanguageAdapter):
         keywords_loader: Callable[[], list[str]] | None = None,
         primary_color: str = "#2C3E50",
         enable_cache: bool = True,
+        cwd: str | None = None,
+        env_extra: dict[str, str] | None = None,
     ):
         self._name = name
         self._id = lang_id
@@ -50,6 +52,8 @@ class SubprocessAdapter(LanguageAdapter):
         self._keywords_loader = keywords_loader
         self._primary_color = primary_color
         self._enable_cache = enable_cache
+        self._cwd = cwd
+        self._env_extra = env_extra or {}
 
     @property
     def name(self) -> str:
@@ -96,6 +100,7 @@ class SubprocessAdapter(LanguageAdapter):
         try:
             env = _os.environ.copy()
             env.setdefault("PYTHONIOENCODING", "utf-8")
+            env.update(self._env_extra)
             result = subprocess.run(
                 cmd,
                 input=stdin,
@@ -105,6 +110,7 @@ class SubprocessAdapter(LanguageAdapter):
                 errors="replace",
                 timeout=timeout,
                 env=env,
+                cwd=self._cwd,
             )
             elapsed = (time.monotonic() - start) * 1000
 
