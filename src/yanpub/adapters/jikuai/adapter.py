@@ -1,8 +1,8 @@
 r"""极快 (Jikuai) 语言适配器
 
 极快项目位于 G:\jikuai
-CLI 入口: python -m jikuai.main <file>
-REPL: python -m jikuai.main (无参数进入 REPL)
+CLI 入口: python -m jikuai <file>
+REPL: python -m jikuai (无参数进入 REPL)
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ class JikuaiAdapter(SubprocessAdapter):
     """极快适配器 — 通过子进程调用极快后端
 
     极快 main.py 使用相对导入 (from ._version import ...)，
-    必须用 python -m jikuai.main 方式启动，且 cwd 设为 src/ 目录。
+    必须用 python -m jikuai 方式启动（走 __main__.py），且 cwd 设为 src/ 目录。
     """
 
     def __init__(self):
@@ -33,9 +33,9 @@ class JikuaiAdapter(SubprocessAdapter):
             lang_id="jikuai",
             version="0.20.0",
             extensions=[".快", ".jk"],
-            run_command=["python", "-W", "ignore::RuntimeWarning", "-m", "jikuai.main"],
+            run_command=["python", "-m", "jikuai"],
             eval_command=None,
-            repl_command=["python", "-W", "ignore::RuntimeWarning", "-m", "jikuai.main"],
+            repl_command=["python", "-m", "jikuai"],
             keywords_loader=_load_jikuai_keywords,
             primary_color="#00BFA5",
             cwd=_JIKUAI_SRC_DIR,
