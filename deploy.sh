@@ -26,17 +26,17 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# ── 颜色 ─────────────────────────────────────────────
+# ── 颜色（用 printf 替代 echo -e，POSIX 兼容） ───────
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
-warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1"; }
-step()  { echo -e "${CYAN}[STEP]${NC} $1"; }
+info()  { printf '%b[INFO]%b %s\n' "$GREEN" "$NC" "$1"; }
+warn()  { printf '%b[WARN]%b %s\n' "$YELLOW" "$NC" "$1"; }
+error() { printf '%b[ERROR]%b %s\n' "$RED" "$NC" "$1"; }
+step()  { printf '%b[STEP]%b %s\n' "$CYAN" "$NC" "$1"; }
 
 ACTION="${1:-up}"
 REPOS_CONF="${SCRIPT_DIR}/docker/lang-repos.conf"
@@ -65,7 +65,7 @@ resolve_repo_source() {
 load_build_env() {
     if [ -f "${SCRIPT_DIR}/.env" ]; then
         # shellcheck disable=SC1090
-        source "${SCRIPT_DIR}/.env"
+        . "${SCRIPT_DIR}/.env"
     fi
     export PYTHON_IMAGE="${PYTHON_IMAGE:-docker.m.daocloud.io/library/python:3.12-slim}"
     export INSTALL_RACKET="${INSTALL_RACKET:-0}"
@@ -90,8 +90,8 @@ read_repos_conf() {
         exit 1
     fi
     warn "回退到 lang-repos.conf（仅 gitcode 镜像）。安装 PyYAML 可启用多镜像支持。"
-    # 返回非空非注释行
-    grep -v '^\s*#' "$REPOS_CONF" | grep -v '^\s*$'
+    # 返回非空非注释行（POSIX 兼容：用 [[:space:]] 替代 \s）
+    grep -v '^[[:space:]]*#' "$REPOS_CONF" | grep -v '^[[:space:]]*$'
 }
 
 # ── 同步语言项目到 ./langs/ ──────────────────────────
@@ -123,16 +123,18 @@ sync_langs() {
             # 适配器路径 = 仓库根，直接 clone 到 langs/$lang_id
             if [ -d "$target/.git" ]; then
                 step "  更新 $lang_id (git pull)..."
-                (cd "$target" && git pull --ff-only 2>/dev/null) || {
+                (cd "$target" && git pull --ff-only) || {
                     warn "  $lang_id: git pull 失败，保留现有版本"
                 }
             else
                 step "  克隆 $lang_id <- $git_url"
-                git clone --depth 1 "$git_url" "$target" 2>/dev/null || {
+                if git clone --depth 1 "$git_url" "$target" 2>&1; then
+                    :
+                else
                     warn "  $lang_id: git clone 失败"
                     failed=$((failed + 1))
                     continue
-                }
+                fi
             fi
         else
             # 适配器路径 = 仓库内的子目录（如 yan）
@@ -140,17 +142,19 @@ sync_langs() {
             local repo_cache="$LANGS_DIR/.repos/${lang_id}_repo"
             if [ -d "$repo_cache/.git" ]; then
                 step "  更新 $lang_id 仓库 (git pull)..."
-                (cd "$repo_cache" && git pull --ff-only 2>/dev/null) || {
+                (cd "$repo_cache" && git pull --ff-only) || {
                     warn "  $lang_id: git pull 失败，保留现有版本"
                 }
             else
                 step "  克隆 $lang_id 仓库 <- $git_url"
                 mkdir -p "$LANGS_DIR/.repos"
-                git clone --depth 1 "$git_url" "$repo_cache" 2>/dev/null || {
+                if git clone --depth 1 "$git_url" "$repo_cache" 2>&1; then
+                    :
+                else
                     warn "  $lang_id: git clone 失败"
                     failed=$((failed + 1))
                     continue
-                }
+                fi
             fi
             # 复制子目录到目标位置
             if [ -d "$repo_cache/$subdir" ]; then
@@ -237,10 +241,10 @@ case "$ACTION" in
         echo ""
         info "YanPub 已启动!"
         echo ""
-        echo -e "  ${CYAN}Playground${NC}:  http://localhost:${YANPUB_PORT:-8080}"
-        echo -e "  ${CYAN}挑战赛${NC}:      http://localhost:${YANPUB_PORT:-8080}/challenges"
-        echo -e "  ${CYAN}监控面板${NC}:    http://localhost:${YANPUB_PORT:-8080}/monitor"
-        echo -e "  ${CYAN}质量评分${NC}:    http://localhost:${YANPUB_PORT:-8080}/quality"
+        printf '%b  %bPlayground%b:  http://localhost:%s\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}"
+        printf '%b  %b挑战赛%b:      http://localhost:%s/challenges\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}"
+        printf '%b  %b监控面板%b:    http://localhost:%s/monitor\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}"
+        printf '%b  %b质量评分%b:    http://localhost:%s/quality\n' "$NC" "$CYAN" "$NC" "${YANPUB_PORT:-8080}"
         echo ""
         echo "  查看日志:  ./deploy.sh logs"
         echo "  进入容器:  ./deploy.sh shell"
