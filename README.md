@@ -97,9 +97,11 @@ cd yanpub
 Docker 镜像采用三阶段构建（系统依赖 → 语言后端 → YanPub 自身），优化层缓存。
 容器内通过 `YANPUB_LANG_DIR=/opt/langs` 环境变量统一解析语言路径，适配器无需逐个配置。
 
-### 国内/海外镜像自动选择
+### 国内/海外镜像选择
 
-`deploy.sh sync` 支持通过 `REPO_SOURCE` 环境变量切换 Git 仓库镜像：
+`deploy.sh sync` 默认从 **GitCode** 克隆语言后端（国内推荐，速度快不卡墙）。
+
+通过 `REPO_SOURCE` 环境变量切换：
 
 | 设置 | 说明 |
 |------|------|
@@ -513,6 +515,112 @@ CI 集成：推送到 main 后自动评分并部署徽章到 gh-pages，PR 自�
 - Playground API 测试补全（85 个新测试覆盖 examples/wasm/ai/monitor/challenges/quality/collab/search）
 - 10 个适配器文档编写（README.md + CONTRIBUTING.md）
 - 适配器质量评分提升（平均 81→84，5 个 A 级）
+
+## 常见问题
+
+### `deploy.sh sync` 卡住很久没有输出
+
+**原因**：默认镜像已改为 GitCode，但如果手动设置了 `REPO_SOURCE=github` 或使用了旧版本的 `auto` 模式，会尝试连接 `github.com`。国内服务器访问 GitHub 经常超时（TCP 连接成功但数据传输挂起），导致长时间无输出。
+
+**解决**：
+
+```bash
+# 1. 确认使用 gitcode 镜像（v2.1.0+ 默认）
+./deploy.sh sync
+
+# 2. 如果仍卡住，显式指定
+REPO_SOURCE=gitcode ./deploy.sh sync
+
+# 3. 如果已有 langs/ 目录但同步失败，先清理
+rm -rf langs/
+./deploy.sh sync
+```
+
+### `git push github` 超时或失败
+
+**原因**：国内环境推送代码到 GitHub 经常因网络问题超时。
+
+**解决**：
+
+```bash
+# 方案 1：先推 GitCode，GitHub 稍后通过代理/VPN 推送
+git push gitcode main
+# 后续有条件时再推
+git push github main
+
+# 方案 2：增大 git 超时
+git config http.postBuffer 524288000
+git push github main
+
+# 方案 3：使用 gitcode 作为唯一远程（移除 github remote）
+git remote remove github
+git push gitcode main
+```
+
+### `deploy.sh sync` 报 `Syntax error: redirection unexpected`
+
+**原因**：脚本使用了 POSIX 兼容语法，但被 `sh deploy.sh` 执行时系统默认 `sh` 指向 `dash`，旧版脚本有 bash 扩展语法。v2.1.0+ 已修复为 POSIX 兼容。
+
+**解决**：
+
+```bash
+# 确保 deploy.sh 有执行权限
+chmod +x deploy.sh
+
+# 直接执行（推荐）
+./deploy.sh sync
+
+# 或显式用 bash
+bash deploy.sh sync
+```
+
+### `deploy.sh sync` 报 `python3: command not found` 或找不到 yaml 模块
+
+**原因**：`deploy.sh` 优先从 `languages.yaml` 读取多镜像配置，需要 Python3 + PyYAML。如果未安装，会回退到 `docker/lang-repos.conf`（仅含 GitCode 镜像）。
+
+**解决**：
+
+```bash
+# 安装 PyYAML（启用多镜像支持）
+pip install pyyaml
+
+# 或不安装也能用，只是回退到 gitcode-only 配置（功能正常，只是不能切换 github/internal）
+```
+
+### Docker 构建失败：拉取基础镜像超时
+
+**原因**：默认使用 `docker.m.daocloud.io` 国内加速镜像，某些网络环境下可能不稳定。
+
+**解决**：
+
+```bash
+# 方案 1：直连 Docker Hub（海外或能直连的环境）
+PYTHON_IMAGE=python:3.12-slim ./deploy.sh build
+
+# 方案 2：换用其他国内镜像源
+PYTHON_IMAGE=registry.cn-hangzhou.aliyuncs.com/library/python:3.12-slim ./deploy.sh build
+
+# 方案 3：先手动拉取
+docker pull docker.m.daocloud.io/library/python:3.12-slim
+./deploy.sh build
+```
+
+### 某个语言 git clone 失败
+
+**原因**：该语言的 GitCode 仓库可能未创建、为空仓库、或网络波动。
+
+**解决**：
+
+```bash
+# 1. 查看具体错误信息（v2.1.0+ 已显示 git stderr）
+./deploy.sh sync
+
+# 2. 手动克隆验证
+git clone https://gitcode.com/skywalk163/<lang_id>.git langs/<lang_id>
+
+# 3. 用 GitHub 镜像重试
+REPO_SOURCE=github ./deploy.sh sync
+```
 
 ## License
 
