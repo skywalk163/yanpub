@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # YanPub 一键部署脚本
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -105,6 +105,11 @@ sync_langs() {
     local synced=0
     local failed=0
 
+    # 写入临时文件再读取（POSIX 兼容，避免 bash 的 < <() 进程替换）
+    local repos_tmp
+    repos_tmp=$(mktemp)
+    read_repos_conf > "$repos_tmp"
+
     while IFS= read -r line; do
         # 解析: lang_id  git_url  subdir
         lang_id=$(echo "$line" | awk '{print $1}')
@@ -159,7 +164,8 @@ sync_langs() {
         fi
 
         synced=$((synced + 1))
-    done < <(read_repos_conf)
+    done < "$repos_tmp"
+    rm -f "$repos_tmp"
 
     echo ""
     if [ $synced -gt 0 ]; then
@@ -172,12 +178,12 @@ sync_langs() {
 
 # ── 检查 Docker ──────────────────────────────────────
 check_docker() {
-    if ! command -v docker &>/dev/null; then
+    if ! command -v docker >/dev/null 2>&1; then
         error "Docker 未安装，请先安装 Docker"
         echo "  https://docs.docker.com/get-docker/"
         exit 1
     fi
-    if ! docker info &>/dev/null 2>&1; then
+    if ! docker info >/dev/null 2>&1; then
         error "Docker daemon 未运行，请先启动 Docker"
         exit 1
     fi
@@ -187,11 +193,15 @@ check_docker() {
 check_langs() {
     local found=0
     local total=0
+    local repos_tmp
+    repos_tmp=$(mktemp)
+    read_repos_conf > "$repos_tmp"
     while IFS= read -r line; do
         lang_id=$(echo "$line" | awk '{print $1}')
         total=$((total + 1))
         [ -d "$LANGS_DIR/$lang_id" ] && found=$((found + 1))
-    done < <(read_repos_conf)
+    done < "$repos_tmp"
+    rm -f "$repos_tmp"
 
     if [ $found -lt $total ]; then
         warn "仅 $found/$total 个语言项目就绪"
@@ -274,10 +284,12 @@ case "$ACTION" in
         docker compose down -v --rmi local 2>/dev/null || true
         info "Docker 资源已清理"
         read -p "是否同时删除 ./langs/ (含克隆的语言项目)? [y/N] " confirm
-        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        case "$confirm" in
+            [Yy]*)
             rm -rf "$LANGS_DIR"
             info "./langs/ 已删除"
-        fi
+            ;;
+        esac
         ;;
     *)
         echo "言埠 YanPub — 一键部署"
