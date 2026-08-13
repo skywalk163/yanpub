@@ -60,13 +60,13 @@ yanpub compare --from duan --to yan
 
 ## Docker 一键部署
 
-从 gitcode 拿到 yanpub 后，三步即可启动含 11 种中文编程语言的完整环境：
+从 gitcode 拿到 yanpub 后，三步即可启动含 13 种中文编程语言的完整环境：
 
 ```bash
 git clone https://gitcode.com/skywalk163/yanpub.git
 cd yanpub
 
-# 1. 自动 git clone 11 种语言后端
+# 1. 自动 git clone 13 种语言后端
 ./deploy.sh sync
 
 # 2. 构建 Docker 镜像（默认约 3-5 分钟，纯 Python 镜像）
@@ -82,7 +82,7 @@ cd yanpub
 
 | 命令 | 说明 |
 |------|------|
-| `./deploy.sh sync` | 自动 git clone 11 种语言后端到 `./langs/` |
+| `./deploy.sh sync` | 自动 git clone 13 种语言后端到 `./langs/` |
 | `./deploy.sh build` | sync + 构建 Docker 镜像 |
 | `./deploy.sh up` | 启动服务（默认端口 8080） |
 | `./deploy.sh down` | 停止服务 |
@@ -92,10 +92,34 @@ cd yanpub
 | `./deploy.sh test` | 在容器中运行测试 |
 | `./deploy.sh clean` | 清理 Docker 资源 |
 
-语言仓库地址配置在 `docker/lang-repos.conf`，可自定义修改。
+语言仓库地址配置在根目录 `languages.yaml`（多镜像：GitCode / GitHub / 内网 Gitea），`docker/lang-repos.conf` 为回退配置（仅 GitCode）。
 
 Docker 镜像采用三阶段构建（系统依赖 → 语言后端 → YanPub 自身），优化层缓存。
 容器内通过 `YANPUB_LANG_DIR=/opt/langs` 环境变量统一解析语言路径，适配器无需逐个配置。
+
+### 国内/海外镜像自动选择
+
+`deploy.sh sync` 支持通过 `REPO_SOURCE` 环境变量切换 Git 仓库镜像：
+
+| 设置 | 说明 |
+|------|------|
+| `auto`（默认） | 自动检测：GitHub 3s 超时则回退 GitCode |
+| `gitcode` | 固定使用 GitCode（国内推荐） |
+| `github` | 固定使用 GitHub（海外推荐） |
+| `internal` | 固定使用内网 Gitea（仅局域网可用） |
+
+```bash
+# 国内用户（默认 auto 即可，或显式指定）
+REPO_SOURCE=gitcode ./deploy.sh sync
+
+# 海外用户
+REPO_SOURCE=github ./deploy.sh sync
+
+# 内网用户
+REPO_SOURCE=internal ./deploy.sh sync
+```
+
+镜像优先级在 `languages.yaml` 的 `mirror_priority` 中配置，首选镜像不可用时自动回退。
 
 ### 国内加速
 
@@ -107,7 +131,7 @@ Docker 镜像采用三阶段构建（系统依赖 → 语言后端 → YanPub �
 | apt 软件源 | 清华大学镜像站 |
 | pip 包源 | 清华大学镜像站 |
 | Racket 安装包 | 清华大学镜像站 |
-| 语言 Git 仓库 | gitcode.com |
+| 语言 Git 仓库 | GitCode / GitHub / 内网 Gitea（可切换） |
 
 如能直连 Docker Hub，可在 `.env` 中改为 `PYTHON_IMAGE=python:3.12-slim`。
 
@@ -128,7 +152,7 @@ INSTALL_RACKET=1 INSTALL_LLVM=1 ./deploy.sh build
 
 也可在 `.env` 中持久配置（参考 `docker/.env.example`）。
 
-## 已接入语言（11种）
+## 已接入语言（13种）
 
 | 语言 | ID | 版本 | 关键字 | 适配方式 |
 |------|----|------|--------|----------|
@@ -143,6 +167,8 @@ INSTALL_RACKET=1 INSTALL_LLVM=1 ./deploy.sh build
 | 翰语 Hanyu | hanyu | 1.0.0 | 48 | 子进程(LLVM可选/Python回退) |
 | 趣言 Traeyan | traeyan | 1.0.0 | 119 | 子进程 |
 | 华语 Hua | hua | 0.5.0 | 69 | 子进程 |
+| 极快 Jikuai | jikuai | 0.20.0 | 35 | 子进程 |
+| 光明 Light | light | 6.0.0 | 96 | 子进程 |
 
 ## 架构
 
@@ -156,7 +182,7 @@ yanpub
 │   ├── perf/          # 基准测试、可视化、基线管理、性能分析、监控
 │   ├── security/      # 沙箱、代码签名、审计
 │   └── lifecycle/     # 热重载、热更新、插件、进程池、配置
-├── adapters/          # 各语言适配器（11种）
+├── adapters/          # 各语言适配器（13种）
 ├── pkg/               # 统一包管理器（语义发布、工作空间、版本约束）
 ├── playground/        # 统一 Playground（协作、分享、项目、AI辅助、挑战赛）
 ├── lsp/               # 统一 LSP 服务（补全、导航、重构、诊断、语义高亮、折叠）
@@ -459,12 +485,12 @@ CI 集成：推送到 main 后自动评分并部署徽章到 gh-pages，PR 自�
 - Playground 多文件项目新增华语默认模板
 
 ### v2.0.0 (Docker 一键部署)
-- Docker 三阶段构建（系统依赖 → 11 种语言后端 → YanPub 自身）
+- Docker 三阶段构建（系统依赖 → 13 种语言后端 → YanPub 自身）
 - `deploy.sh` 一键部署脚本（自动 git clone 语言项目 + 构建 + 启动）
 - `docker/lang-repos.conf` 语言仓库地址配置
 - `_path_resolver.py` 路径双轨制（环境变量优先 → Windows 默认回退）
 - `YANPUB_LANG_DIR` 基础目录环境变量，自动派生所有语言路径
-- 11 个适配器路径从硬编码改为 `resolve_lang_dir()` 动态解析
+- 13 个适配器路径从硬编码改为 `resolve_lang_dir()` 动态解析
 - 容器入口支持 playground / repl / lsp / health / test / bash 子命令
 
 ### v2.0.1 (Docker 国内加速 + 翰语解释器)
@@ -472,7 +498,7 @@ CI 集成：推送到 main 后自动评分并部署徽章到 gh-pages，PR 自�
 - Docker 基础镜像参数化 (`ARG PYTHON_IMAGE`)，支持 daocloud / 官方切换
 - apt / pip 全局清华源加速（兼容 DEB822 格式 + 传统格式）
 - Racket 安装包使用清华镜像
-- 移除 JRE（11 种语言均不依赖 Java）、LLVM/clang 默认安装
+- 移除 JRE（13 种语言均不依赖 Java）、LLVM/clang 默认安装
 - Racket / LLVM 改为可选构建参数 (`INSTALL_RACKET=1` / `INSTALL_LLVM=1`)
 - 默认镜像从 ~1.5GB 降至 ~800MB
 - 翰语适配器新增 Python AST 解释器回退（无需 LLVM 也可执行）

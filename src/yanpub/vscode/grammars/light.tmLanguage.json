@@ -1,0 +1,63 @@
+{
+  "scopeName": "source.light",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.light",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.light",
+          "match": "\\b(若|否|当|遍|跳|过|返|设|段|类|承|接|配|试|捕|抛|终|自|之|并|从|是|且|或|非|真|假|空|导|出|定义|常量|类型|导入|导出|为|如果|那么|否则|否则若|则|遍历|跳出|跳过|在|对|中的|于|函数|段落|接收|返回|严格|松散|尝试|捕获|抛出|最终|继承|属性|构造|新建|接口|实现|私有|公有|保护|静态|模块|标准库|异步|等待|作用域|匹配|情况|使用|标注|嵌入|结束嵌入|外部|结构体|联合体|枚举)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.light",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.light",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.light",
+          "begin": "'",
+          "end": "'"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.light",
+          "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,29 @@
+# 极快 (Jikuai) 适配器配置
+name: 极快
+id: jikuai
+version: "0.20.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".快", ".jk"]
+  comment_syntax: "--"
+
+execution:
+  run: "python -m jikuai.main {file}"
+  eval: "python -m jikuai.main {code}"
+  repl: "python -m jikuai.main"
+
+capabilities:
+  repl: true
+  lsp: false
+  package_manager: true
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#00BFA5"
+  secondary: "#69F0AE"
+  accent: "#004D40"

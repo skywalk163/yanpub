@@ -9,7 +9,7 @@
     "vscode": "^1.75.0"
   },
   "categories": ["Debuggers", "Programming Languages", "Other"],
-  "keywords": ["chinese", "programming-language", "duan", "yan", "moyan", "xinyu", "yanlv", "yanzhi", "zhixing", "mingdao", "hanyu", "traeyan", "中文编程", "debug", "sandbox", "ai"],
+  "keywords": ["chinese", "programming-language", "duan", "yan", "moyan", "xinyu", "yanlv", "yanzhi", "zhixing", "mingdao", "hanyu", "traeyan", "jikuai", "light", "中文编程", "debug", "sandbox", "ai"],
   "icon": "icon.png",
   "activationEvents": [
     "onLanguage:duan",
@@ -22,6 +22,8 @@
     "onLanguage:mingdao",
     "onLanguage:hanyu",
     "onLanguage:traeyan",
+    "onLanguage:jikuai",
+    "onLanguage:light",
     "onCommand:yanpub.sandbox.run",
     "onCommand:yanpub.ai.complete",
     "onCommand:yanpub.ai.nl2code",
@@ -83,6 +85,18 @@
         "id": "traeyan",
         "extensions": [".trae", ".traeyan"],
         "aliases": ["趣言 traeyan", "traeyan"]
+      },
+      {
+        "id": "jikuai",
+        "extensions": [".快", ".jk"],
+        "aliases": ["极快 Jikuai", "Jikuai"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "light",
+        "extensions": [".明", ".light"],
+        "aliases": ["光明 Light", "Light"],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -135,6 +149,16 @@
         "language": "traeyan",
         "scopeName": "source.traeyan",
         "path": "./grammars/traeyan.tmLanguage.json"
+      },
+      {
+        "language": "jikuai",
+        "scopeName": "source.jikuai",
+        "path": "./grammars/jikuai.tmLanguage.json"
+      },
+      {
+        "language": "light",
+        "scopeName": "source.light",
+        "path": "./grammars/light.tmLanguage.json"
       }
     ],
     "snippets": [

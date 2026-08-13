@@ -1,0 +1,265 @@
+# languages.yaml - 言埠语言配置中心
+#
+# 单一真源：所有语言的本地路径、仓库镜像、Docker 构建信息。
+# 被 deploy.sh（sync/build）、_path_resolver.py（开发路径解析）共同读取。
+#
+# 仓库镜像选择策略：
+#   环境变量 REPO_SOURCE 控制使用哪个镜像：
+#     auto      自动检测（默认）：尝试 GitHub 3s 超时，失败则用 GitCode
+#     gitcode   固定使用 GitCode（国内推荐）
+#     github    固定使用 GitHub（海外推荐）
+#     internal  固定使用内网 Gitea（仅局域网可用）
+#
+# 国内/国外自动判断逻辑（auto 模式）：
+#   1. 先尝试连接 github.com（3s 超时）
+#   2. 连通 → 使用 github 镜像（海外环境）
+#   3. 超时/失败 → 使用 gitcode 镜像（国内环境）
+
+# ── 镜像优先级 ──────────────────────────────────────────
+mirror_priority:
+  # 国内：优先内网，其次 GitCode，最后 GitHub
+  domestic: [internal, gitcode, github]
+  # 海外：优先 GitHub，其次 GitCode
+  overseas: [github, gitcode, internal]
+
+# ── 语言列表 ────────────────────────────────────────────
+languages:
+  # ===== 原有 11 种语言 =====
+
+  duan:
+    name: 段言
+    name_en: Duan
+    version: "1.3.8"
+    extensions: [".段", ".duan"]
+    env_var: DUAN_DIR
+    local_dir: "G:\\dumategithub\\duan"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/duan.git"
+      github: "https://github.com/skywalk163/duan.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#E85D3A"
+      secondary: "#FFB347"
+      accent: "#2C3E50"
+
+  yan:
+    name: 言
+    name_en: Yan
+    version: "3.0.0"
+    extensions: [".言", ".yan"]
+    env_var: YAN_DIR
+    local_dir: "G:\\dumategithub\\newlisp\\yan"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/yan.git"
+      github: "https://github.com/skywalk163/yan.git"
+    docker:
+      subdir: "yan"
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#2196F3"
+      secondary: "#64B5F6"
+      accent: "#0D47A1"
+
+  zhixing:
+    name: 知行
+    name_en: Zhixing
+    version: "0.1.0"
+    extensions: [".行", ".zhixing"]
+    env_var: ZHIXING_DIR
+    local_dir: "G:\\zhixing"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/zhixing.git"
+      github: "https://github.com/skywalk163/zhixing.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#4CAF50"
+      secondary: "#81C784"
+      accent: "#1B5E20"
+
+  traeyan:
+    name: 趣言
+    name_en: Traeyan
+    version: "0.1.0"
+    extensions: [".trae", ".traeyan"]
+    env_var: TRAEYAN_DIR
+    local_dir: "G:\\traework\\traeyan"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/traeyan.git"
+      github: "https://github.com/skywalk163/traeyan.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#9C27B0"
+      secondary: "#BA68C8"
+      accent: "#4A148C"
+
+  yanzhi:
+    name: 言知
+    name_en: Yanzhi
+    version: "0.1.0"
+    extensions: [".知", ".yanzhi"]
+    env_var: YANZHI_DIR
+    local_dir: "G:\\yanzhi"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/yanzhi.git"
+      github: "https://github.com/skywalk163/yanzhi.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#FF9800"
+      secondary: "#FFB74D"
+      accent: "#E65100"
+
+  xinyu:
+    name: 心语
+    name_en: Xinyu
+    version: "0.1.0"
+    extensions: [".心", ".xinyu"]
+    env_var: XINYU_DIR
+    local_dir: "G:\\dumategithub\\chineseprogram"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/xinyu.git"
+      github: "https://github.com/skywalk163/xinyu.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#E91E63"
+      secondary: "#F06292"
+      accent: "#880E4F"
+
+  moyan:
+    name: 墨言
+    name_en: Moyan
+    version: "0.1.0"
+    extensions: [".墨", ".moyan"]
+    env_var: MOYAN_DIR
+    local_dir: "G:\\atomcode\\atomyan"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/moyan.git"
+      github: "https://github.com/skywalk163/moyan.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#5C6BC0"
+      secondary: "#9FA8DA"
+      accent: "#1A237E"
+
+  yanlv:
+    name: 言律
+    name_en: Yanlv
+    version: "2.0.0"
+    extensions: [".律", ".yanlv"]
+    env_var: YANLV_DIR
+    local_dir: "G:\\dumategithub\\yanlv"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/yanlv.git"
+      github: "https://github.com/skywalk163/yanlv.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#00BCD4"
+      secondary: "#4DD0E1"
+      accent: "#006064"
+
+  mingdao:
+    name: 明道
+    name_en: Mingdao
+    version: "0.1.0"
+    extensions: [".道", ".mingdao", ".rkt"]
+    env_var: MINGDAO_DIR
+    local_dir: "G:\\dumategithub\\langbyracket"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/mingdao.git"
+      github: "https://github.com/skywalk163/mingdao.git"
+    docker:
+      subdir: "."
+      install: "raco pkg install --auto --link"
+    colors:
+      primary: "#795548"
+      secondary: "#A1887F"
+      accent: "#3E2723"
+
+  hanyu:
+    name: 翰语
+    name_en: Hanyu
+    version: "0.2.2"
+    extensions: [".翰", ".hanyu"]
+    env_var: HANYU_DIR
+    local_dir: "G:\\opencode\\hanyu"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/hanyu.git"
+      github: "https://github.com/skywalk163/hanyu.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#8D6E63"
+      secondary: "#BCAAA4"
+      accent: "#3E2723"
+
+  hua:
+    name: 华语
+    name_en: Hua
+    version: "0.5.0"
+    extensions: [".华", ".hua"]
+    env_var: HUA_DIR
+    local_dir: "G:\\mimowork\\hua"
+    repos:
+      gitcode: "https://gitcode.com/skywalk163/hua.git"
+      github: "https://github.com/skywalk163/hua.git"
+    docker:
+      subdir: "."
+      install: ""
+    colors:
+      primary: "#E67E22"
+      secondary: "#F0B27A"
+      accent: "#784212"
+
+  # ===== 新增语言 =====
+
+  jikuai:
+    name: 极快
+    name_en: Jikuai
+    version: "0.20.0"
+    extensions: [".快", ".jk"]
+    env_var: JIKUAI_DIR
+    local_dir: "G:\\jikuai"
+    repos:
+      internal: "http://192.168.1.5:3000/skywalk/jikuai.git"
+      gitcode: "https://gitcode.com/skywalk163/jikuai.git"
+      github: "https://github.com/skywalk163/jikuai.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#00BFA5"
+      secondary: "#69F0AE"
+      accent: "#004D40"
+
+  light:
+    name: 光明
+    name_en: Light
+    version: "6.0.0"
+    extensions: [".明", ".light"]
+    env_var: LIGHT_DIR
+    local_dir: "G:\\github\\light"
+    repos:
+      internal: "http://192.168.1.5:3000/skywalk/light.git"
+      gitcode: "https://gitcode.com/skywalk163/light.git"
+      github: "https://github.com/skywalk163/light.git"
+    docker:
+      subdir: "."
+      install: "pip install --no-cache-dir -e ."
+    colors:
+      primary: "#FFD600"
+      secondary: "#FFF59D"
+      accent: "#F57F17"

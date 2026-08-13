@@ -1,0 +1,29 @@
+# 光明 (Light) 适配器配置
+name: 光明
+id: light
+version: "6.0.0"
+
+backend:
+  type: subprocess
+  command: "python"
+
+syntax:
+  file_extensions: [".明", ".light"]
+  comment_syntax: "#"
+
+execution:
+  run: "python cli/light.py run {file}"
+  eval: "python cli/light.py run {code}"
+  repl: "python cli/light.py repl"
+
+capabilities:
+  repl: true
+  lsp: false
+  package_manager: true
+  wasm: false
+  debug: false
+
+colors:
+  primary: "#FFD600"
+  secondary: "#FFF59D"
+  accent: "#F57F17"

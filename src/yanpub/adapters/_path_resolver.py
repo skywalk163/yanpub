@@ -22,6 +22,8 @@
   HANYU_DIR   -> 翰语
   DUAN_DIR    -> 段言
   HUA_DIR     -> 华语
+  JIKUAI_DIR  -> 极快
+  LIGHT_DIR   -> 光明
 """
 
 from __future__ import annotations
@@ -43,6 +45,8 @@ _LANG_DIR_MAP: dict[str, tuple[str, str]] = {
     "hanyu":   ("HANYU_DIR",   r"G:\opencode\hanyu"),
     "duan":    ("DUAN_DIR",    r"G:\dumategithub\duan"),
     "hua":     ("HUA_DIR",     r"G:\mimowork\hua"),
+    "jikuai":  ("JIKUAI_DIR",  r"G:\jikuai"),
+    "light":   ("LIGHT_DIR",   r"G:\github\light"),
 }
 
 

@@ -1,5 +1,5 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# YanPub Docker — 一键部署含 11 种中文编程语言
+# YanPub Docker — 一键部署含 13 种中文编程语言
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #
 # 构建流程:
@@ -8,7 +8,7 @@
 #
 # 多阶段构建:
 #   stage1 (deps): 安装系统依赖 + pip 包（变化少，缓存好）
-#   stage2 (langs): 安装 11 种语言后端（语言项目独立变化）
+#   stage2 (langs): 安装 13 种语言后端（语言项目独立变化）
 #   stage3 (app):   安装 YanPub 自身（变化最频繁，缓存最差）
 #
 # 国内加速:
@@ -16,7 +16,7 @@
 #   - apt 源: 清华大学镜像站
 #   - pip 源: 清华大学镜像站
 #   - Racket: 清华大学镜像站（仅明道语言需要）
-#   - Git 仓库: gitcode.com（国内托管）
+#   - Git 仓库: gitcode.com（国内托管）或 github.com（海外，通过 REPO_SOURCE 切换）
 #
 # 可选组件（通过构建参数控制）:
 #   INSTALL_RACKET=1  — 安装 Racket 运行时（明道语言需要，约 250MB）
@@ -146,6 +146,14 @@ RUN cd ${LANGS_DIR}/duan && pip install --no-cache-dir -e . 2>/dev/null || true
 
 # 11. 华语 hua（无标准 pyproject.toml，依赖已在 Stage 1 安装）
 COPY ./langs/hua ${LANGS_DIR}/hua
+
+# 12. 极快 jikuai
+COPY ./langs/jikuai ${LANGS_DIR}/jikuai
+RUN cd ${LANGS_DIR}/jikuai && pip install --no-cache-dir -e . 2>/dev/null || true
+
+# 13. 光明 light
+COPY ./langs/light ${LANGS_DIR}/light
+RUN cd ${LANGS_DIR}/light && pip install --no-cache-dir -e . 2>/dev/null || true
 
 # ── Stage 3: 安装 YanPub 自身 ──────────────────────────
 FROM langs AS app

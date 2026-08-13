@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-08-13
+
+### Added
+
+- 新增极快（Jikuai）语言适配器：`adapters/jikuai/`
+  - 适配器 `JikuaiAdapter` 继承 `SubprocessAdapter`，调用 `python -m jikuai.main` 后端
+  - 35 个关键字从 `keywords.py` 动态加载 + 缓存 fallback
+  - 支持 run（文件执行）、repl（交互模式）
+  - 注释语法 `--`，扩展名 `.快` / `.jk`
+  - 主色 `#00BFA5`（青绿色）
+  - 仓库镜像：内网 Gitea + GitCode + GitHub
+- 新增光明（Light）语言适配器：`adapters/light/`
+  - 适配器 `LightAdapter` 继承 `SubprocessAdapter`，调用 `python cli/light.py run` 后端
+  - 96 个关键字从 `src/keywords.py` 动态加载 + 缓存 fallback
+  - 支持 run（文件执行）、repl（交互模式）
+  - 注释语法 `#`，扩展名 `.明` / `.light`
+  - 主色 `#FFD600`（明黄色）
+  - 仓库镜像：内网 Gitea + GitCode + GitHub
+- 新增根级语言配置文件 `languages.yaml`：统一管理 13 种语言的本地路径、仓库镜像（internal/gitcode/github）、Docker 构建信息、配色方案
+- 新增 `docker/select-mirror.py`：根据 `REPO_SOURCE` 环境变量从 `languages.yaml` 选择对应镜像 URL
+- 新增极快/光明 VSCode TextMate 语法高亮文件
+- 新增极快/光明 Playground 模板和示例代码
+- `deploy.sh` 支持 `REPO_SOURCE` 环境变量（auto/gitcode/github/internal），自动检测国内/海外环境
+
+### Changed
+
+- 已接入语言从 11 种增至 13 种
+- `_path_resolver.py` 新增极快（`JIKUAI_DIR`）和光明（`LIGHT_DIR`）路径映射
+- `Dockerfile` 新增极快/光明 COPY + pip install 构建阶段
+- `docker/lang-repos.conf` 新增极快/光明条目，统一 `.git` 后缀
+- `vscode/package.json` 注册极快和光明语言 ID、扩展名、语法文件
+- README 更新语言表格、Docker 部署文档、镜像选择说明
+
 ## [1.9.0] - 2026-06-28
 
 ### Changed

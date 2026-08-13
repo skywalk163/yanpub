@@ -1,0 +1,62 @@
+{
+  "scopeName": "source.jikuai",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-dash.jikuai",
+          "match": "--.*$"
+        },
+        {
+          "name": "comment.line.number-sign.jikuai",
+          "match": "#(?!.*\").*$"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.jikuai",
+          "match": "\\b(如果|那么|否则如果|否则|当|遍历|于|从|到|重复|次|跳出|跳过|返回|定义|赋值|设为|函数|接收|类|继承|构造|方法|新建|自身|父类|尝试|捕获|最终|抛出|导入|导出|文件|作为|真|假|空)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.jikuai",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.jikuai",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.jikuai",
+          "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+        }
+      ]
+    }
+  }
+}

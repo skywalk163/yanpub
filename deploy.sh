@@ -3,13 +3,23 @@
 # YanPub 一键部署脚本
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #
-# 从 gitcode 拿到 yanpub 后，只需三步即可部署：
+# 从 gitcode/github 拿到 yanpub 后，只需三步即可部署：
 #
-#   1. ./deploy.sh sync    — 自动 git clone 11 种语言后端
+#   1. ./deploy.sh sync    — 自动 git clone 13 种语言后端
 #   2. ./deploy.sh build   — 构建 Docker 镜像
 #   3. ./deploy.sh up      — 启动服务 → http://localhost:8080
 #
-# 前置条件：Docker + Docker Compose + Git
+# 前置条件：Docker + Docker Compose + Git + Python3 (PyYAML)
+#
+# 镜像选择（环境变量 REPO_SOURCE）:
+#   auto      自动检测（默认）：GitHub 3s 超时则回退 GitCode
+#   gitcode   固定使用 GitCode（国内推荐）
+#   github    固定使用 GitHub（海外推荐）
+#   internal  固定使用内网 Gitea（仅局域网）
+#
+# 示例:
+#   REPO_SOURCE=github ./deploy.sh sync   # 海外用户
+#   REPO_SOURCE=internal ./deploy.sh sync # 内网用户
 
 set -e
 
@@ -30,7 +40,25 @@ step()  { echo -e "${CYAN}[STEP]${NC} $1"; }
 
 ACTION="${1:-up}"
 REPOS_CONF="${SCRIPT_DIR}/docker/lang-repos.conf"
+LANGS_YAML="${SCRIPT_DIR}/languages.yaml"
 LANGS_DIR="${SCRIPT_DIR}/langs"
+
+# ── 镜像选择 ──────────────────────────────────────────
+# REPO_SOURCE: auto | gitcode | github | internal
+REPO_SOURCE="${REPO_SOURCE:-auto}"
+
+resolve_repo_source() {
+    if [ "$REPO_SOURCE" != "auto" ]; then
+        echo "$REPO_SOURCE"
+        return
+    fi
+    # auto 模式: 尝试连接 github.com（3s 超时）
+    if curl -sf --connect-timeout 3 -o /dev/null https://github.com 2>/dev/null; then
+        echo "github"
+    else
+        echo "gitcode"
+    fi
+}
 
 # ── 构建参数 ──────────────────────────────────────────
 # 优先从 .env 或环境变量读取 Python 镜像
@@ -45,12 +73,23 @@ load_build_env() {
 }
 
 # ── 读取仓库配置 ──────────────────────────────────────
-# lang-repos.conf 格式: lang_id  git_url  subdir
+# 优先从 languages.yaml 读取（支持多镜像），回退到 lang-repos.conf
 read_repos_conf() {
+    local resolved_source
+    resolved_source=$(resolve_repo_source)
+
+    # 优先使用 languages.yaml + select-mirror.py
+    if [ -f "$LANGS_YAML" ] && python3 -c "import yaml" 2>/dev/null; then
+        python3 "${SCRIPT_DIR}/docker/select-mirror.py" "$resolved_source" 2>/dev/null
+        return
+    fi
+
+    # 回退: 使用 lang-repos.conf（仅含 gitcode 镜像）
     if [ ! -f "$REPOS_CONF" ]; then
-        error "找不到仓库配置: $REPOS_CONF"
+        error "找不到仓库配置: $REPOS_CONF 或 $LANGS_YAML"
         exit 1
     fi
+    warn "回退到 lang-repos.conf（仅 gitcode 镜像）。安装 PyYAML 可启用多镜像支持。"
     # 返回非空非注释行
     grep -v '^\s*#' "$REPOS_CONF" | grep -v '^\s*$'
 }
@@ -58,7 +97,9 @@ read_repos_conf() {
 # ── 同步语言项目到 ./langs/ ──────────────────────────
 # 从 gitcode 自动 git clone，已有则 git pull 更新
 sync_langs() {
-    info "从 Git 仓库同步语言项目到 ./langs/ ..."
+    local resolved_source
+    resolved_source=$(resolve_repo_source)
+    info "同步语言项目到 ./langs/ (镜像: $resolved_source) ..."
     mkdir -p "$LANGS_DIR"
 
     local synced=0
@@ -243,7 +284,7 @@ case "$ACTION" in
         echo ""
         echo "用法: ./deploy.sh <命令>"
         echo ""
-        echo "  sync     自动 git clone 11 种语言后端到 ./langs/"
+        echo "  sync     自动 git clone 13 种语言后端到 ./langs/"
         echo "  build    同步 + 构建 Docker 镜像"
         echo "  up       启动服务（默认命令）"
         echo "  down     停止服务"
@@ -254,10 +295,16 @@ case "$ACTION" in
         echo "  test     在容器中运行测试"
         echo "  clean    清理 Docker 资源 + 可选删除 langs/"
         echo ""
-        echo "首次部署（从 gitcode 拿到 yanpub 后）:"
+        echo "首次部署（从 gitcode/github 拿到 yanpub 后）:"
         echo "  1. ./deploy.sh sync      # 自动克隆语言项目"
         echo "  2. ./deploy.sh build     # 构建镜像"
         echo "  3. ./deploy.sh up        # 启动服务"
+        echo ""
+        echo "镜像选择:"
+        echo "  REPO_SOURCE=auto ./deploy.sh sync       # 自动检测（默认）"
+        echo "  REPO_SOURCE=gitcode ./deploy.sh sync     # 国内"
+        echo "  REPO_SOURCE=github ./deploy.sh sync       # 海外"
+        echo "  REPO_SOURCE=internal ./deploy.sh sync     # 内网"
         echo ""
         echo "自定义构建:"
         echo "  PYTHON_IMAGE=python:3.12-slim ./deploy.sh build  # 用官方镜像"
