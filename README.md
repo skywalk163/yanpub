@@ -103,14 +103,13 @@ Docker 镜像采用三阶段构建（系统依赖 → 语言后端 → YanPub �
 
 | 设置 | 说明 |
 |------|------|
-| `auto`（默认） | 自动检测：GitHub 3s 超时则回退 GitCode |
-| `gitcode` | 固定使用 GitCode（国内推荐） |
-| `github` | 固定使用 GitHub（海外推荐） |
-| `internal` | 固定使用内网 Gitea（仅局域网可用） |
+| `gitcode`（默认） | 使用 GitCode（国内推荐） |
+| `github` | 使用 GitHub（海外推荐） |
+| `internal` | 使用内网 Gitea（仅局域网可用） |
 
 ```bash
-# 国内用户（默认 auto 即可，或显式指定）
-REPO_SOURCE=gitcode ./deploy.sh sync
+# 国内用户（默认即 gitcode，无需额外设置）
+./deploy.sh sync
 
 # 海外用户
 REPO_SOURCE=github ./deploy.sh sync

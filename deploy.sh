@@ -12,9 +12,8 @@
 # 前置条件：Docker + Docker Compose + Git + Python3 (PyYAML)
 #
 # 镜像选择（环境变量 REPO_SOURCE）:
-#   auto      自动检测（默认）：GitHub 3s 超时则回退 GitCode
-#   gitcode   固定使用 GitCode（国内推荐）
-#   github    固定使用 GitHub（海外推荐）
+#   gitcode   固定使用 GitCode（国内，默认）
+#   github    固定使用 GitHub（海外）
 #   internal  固定使用内网 Gitea（仅局域网）
 #
 # 示例:
@@ -45,29 +44,17 @@ LANGS_YAML="${SCRIPT_DIR}/languages.yaml"
 LANGS_DIR="${SCRIPT_DIR}/langs"
 
 # ── 镜像选择 ──────────────────────────────────────────
-# REPO_SOURCE: auto | gitcode | github | internal
-REPO_SOURCE="${REPO_SOURCE:-auto}"
+# REPO_SOURCE: gitcode(默认) | github | internal
+# 国内默认 gitcode，海外用户设 REPO_SOURCE=github，内网设 REPO_SOURCE=internal
+REPO_SOURCE="${REPO_SOURCE:-gitcode}"
 _RESOLVED_SOURCE=""
 
 resolve_repo_source() {
-    # 缓存：只检测一次
     if [ -n "$_RESOLVED_SOURCE" ]; then
         echo "$_RESOLVED_SOURCE"
         return
     fi
-    if [ "$REPO_SOURCE" != "auto" ]; then
-        _RESOLVED_SOURCE="$REPO_SOURCE"
-        echo "$_RESOLVED_SOURCE"
-        return
-    fi
-    # auto 模式: 尝试连接 github.com（connect 3s + 总超时 5s）
-    info "自动检测镜像源（尝试 GitHub, 超时 5s）..."
-    if curl -sf --connect-timeout 3 --max-time 5 -o /dev/null https://github.com 2>/dev/null; then
-        _RESOLVED_SOURCE="github"
-    else
-        _RESOLVED_SOURCE="gitcode"
-    fi
-    info "选中镜像: $_RESOLVED_SOURCE"
+    _RESOLVED_SOURCE="$REPO_SOURCE"
     echo "$_RESOLVED_SOURCE"
 }
 
@@ -329,8 +316,7 @@ case "$ACTION" in
         echo "  3. ./deploy.sh up        # 启动服务"
         echo ""
         echo "镜像选择:"
-        echo "  REPO_SOURCE=auto ./deploy.sh sync       # 自动检测（默认）"
-        echo "  REPO_SOURCE=gitcode ./deploy.sh sync     # 国内"
+        echo "  REPO_SOURCE=gitcode ./deploy.sh sync     # 国内（默认）"
         echo "  REPO_SOURCE=github ./deploy.sh sync       # 海外"
         echo "  REPO_SOURCE=internal ./deploy.sh sync     # 内网"
         echo ""

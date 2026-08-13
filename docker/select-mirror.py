@@ -93,7 +93,7 @@ def select_repo_url(repos: dict, preferred_mirror: str, priority: list[str] | No
 
 
 def main():
-    source = sys.argv[1] if len(sys.argv) > 1 else "auto"
+    source = sys.argv[1] if len(sys.argv) > 1 else "gitcode"
 
     if source == "auto":
         source = auto_detect_mirror()
