@@ -13,7 +13,8 @@
 ## 本地开发
 
 ```bash
-# 设置光明项目路径（或使用默认路径 G:\github\light）
+# 本地开发默认路径 G:\dswork\duan-light-merge\light-merge
+# 部署用 YANPUB_LANG_DIR=/opt/langs（自动派生 /opt/langs/light）
 export LIGHT_DIR=/path/to/light
 
 # 运行测试

@@ -8,7 +8,7 @@ backend:
   command: "python"
 
 syntax:
-  file_extensions: [".明", ".light"]
+  file_extensions: [".light"]
   comment_syntax: "#"
 
 execution:

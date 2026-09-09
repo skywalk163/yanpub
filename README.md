@@ -169,7 +169,7 @@ INSTALL_RACKET=1 INSTALL_LLVM=1 ./deploy.sh build
 | 趣言 Traeyan | traeyan | 1.0.0 | 119 | 子进程 |
 | 华语 Hua | hua | 0.5.0 | 69 | 子进程 |
 | 极快 Jikuai | jikuai | 0.20.0 | 35 | 子进程 |
-| 光明 Light | light | 6.0.0 | 96 | 子进程 |
+| 光明 Light | light | 7.0.0 | 123 | 子进程 |
 
 ## 架构
 

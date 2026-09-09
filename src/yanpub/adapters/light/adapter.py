@@ -27,8 +27,8 @@ class LightAdapter(SubprocessAdapter):
         super().__init__(
             name="光明",
             lang_id="light",
-            version="6.0.0",
-            extensions=[".明", ".light"],
+            version="7.0.0",
+            extensions=[".light"],
             run_command=["python", _LIGHT_CLI, "run"],
             eval_command=None,
             repl_command=["python", _LIGHT_CLI, "repl"],

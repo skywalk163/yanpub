@@ -248,10 +248,10 @@ languages:
   light:
     name: 光明
     name_en: Light
-    version: "6.0.0"
-    extensions: [".明", ".light"]
+    version: "7.0.0"
+    extensions: [".light"]
     env_var: LIGHT_DIR
-    local_dir: "G:\\github\\light"
+    local_dir: "G:\\dswork\\duan-light-merge\\light-merge"
     repos:
       internal: "http://192.168.1.5:3000/skywalk/light.git"
       gitcode: "https://gitcode.com/skywalk163/light.git"

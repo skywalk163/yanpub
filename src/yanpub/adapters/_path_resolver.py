@@ -46,7 +46,7 @@ _LANG_DIR_MAP: dict[str, tuple[str, str]] = {
     "duan":    ("DUAN_DIR",    r"G:\dumategithub\duan"),
     "hua":     ("HUA_DIR",     r"G:\mimowork\hua"),
     "jikuai":  ("JIKUAI_DIR",  r"G:\jikuai"),
-    "light":   ("LIGHT_DIR",   r"G:\github\light"),
+    "light":   ("LIGHT_DIR",   r"G:\dswork\duan-light-merge\light-merge"),
 }
 
 
